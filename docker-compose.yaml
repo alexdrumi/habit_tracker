@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  postgres:
+    container_name: postgresql
+    image: "postgres:latest"
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - habit_network
+
+  django:
+    container_name: django
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/habit_tracker
+    depends_on:
+      - postgres
+    networks:
+      - habit_network
+
+volumes:
+  postgres_data:
+
+networks:
+  habit_network:
+    driver: bridge
