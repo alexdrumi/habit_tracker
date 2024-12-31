@@ -20,8 +20,8 @@ services:
   django:
     container_name: django
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: . #look for dockerfile in the current directory
+      dockerfile: Dockerfile #when using docker-compose up --build, it calls this file
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -31,7 +31,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/habit_tracker
+      - .:/app #maps the host dir to the /app in the container
     depends_on:
       - postgres
     networks:

@@ -4,7 +4,7 @@
 set -e
 
 # Define project name and virtual environment directory
-PROJECT_NAME="habit_tracker"
+PROJECT_NAME="backend"
 VENV_DIR="venv"
 
 echo "Setting up the Django project '$PROJECT_NAME' in a virtual environment."
@@ -42,4 +42,3 @@ pip freeze > requirements.txt
 ENV_FILE=".env"
 
 echo "Setup complete. Activate the virtual environment using 'source $VENV_DIR/bin/activate'."
-
