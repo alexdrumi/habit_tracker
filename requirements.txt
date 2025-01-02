@@ -1,5 +1,7 @@
 asgiref==3.8.1
 Django==5.1.4
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.10  # PostgreSQL driver (optional if not using PostgreSQL)
 python-decouple==3.8
 sqlparse==0.5.3
+mysqlclient==2.2.6       # Add this for MySQL/MariaDB support
+django-environ #not sure about this just yet

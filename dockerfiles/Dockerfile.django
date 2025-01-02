@@ -1,8 +1,9 @@
 FROM python:3.13
 
 #Install build tools and mariadb client libraries (required for mysqlclient)
+#default-libmysqlclient-dev, library for installing mysqlclient from pip
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev gcc \
+    default-libmysqlclient-dev gcc default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # RUN apt-get install python-mysqldb -y && rm -rf /var/lib/apt/lists/*

@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 # from django.db.backends.mysql.psycopg_any import IsolationLevel
 import os
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -75,18 +80,42 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+
     "default": {
-        "ENGINE": "",
-        "NAME": os.environ.get("MARIADB_DATABASE", "MARIADB"),
-        "USER": os.environ.get("MARIADB_USER", "bmajor"),
-        "PASSWORD": os.environ.get("MARIADB_ROOT_PASSWORD", "drowssapsergtsop"),
-        # "HOST": os.environ.get("HOST", "MARIADB"),
-        # "PORT": os.environ.get("MARIADB_PORT", "5432"),
-        # "OPTIONS": {
-        #     'isolation_level': IsolationLevel.SERIALIZABLE
-        # },
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env("MARIADB_DATABASE"),
+        "USER": env("MARIADB_USER"),  # Temporarily use root
+        "PASSWORD": env("MARIADB_PASSWORD"),
+        "HOST": env("MARIADB_HOST"),
+        "PORT": env("MARIADB_PORT")
     }
+
+    #this works when hardoded
+    #  "default": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME":  "habit",
+    #     "USER": "root",  # Temporarily use root
+    #     "PASSWORD": "gc51cFzuxfAWr9DkROHzFgkrQnZDWxIuNrNNOIIWadA",
+    #     "HOST": "mariadb",
+    #     "PORT":  "3306",
+    # }
+    
 }
+
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": os.environ.get("MARIADB_DATABASE", "MARIADB"),
+#         "USER": os.environ.get("MARIADB_USER", "root"),
+#         "PASSWORD": os.environ.get("MARIADB_ROOT_PASSWORD", "drowssapsergtsop"),
+#         "HOST": os.environ.get("MARIADB_HOST", "mariadb"),
+#         "PORT": os.environ.get("MARIADB_PORT", "3306"),
+#         # "OPTIONS": {
+#         #     'isolation_level': IsolationLevel.SERIALIZABLE
+#         # },
+#     }
+# }
 
 
 # Password validation
