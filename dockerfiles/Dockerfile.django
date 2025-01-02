@@ -16,13 +16,23 @@ WORKDIR /app/backend
 
 #copies the requirements txt of the hostmachines current folder to the habit_tracker . (workdir) inside the container
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
 #habit tracker is being copied from the host machine into the app, but inside the app its gonna be also habit tracker thus workdir have to be /app/habit_tracker
-COPY . .
+# COPY . .
 
+
+COPY backend/ /app/backend/
+COPY tools/create_superuser.sh /app/backend/create_superuser.sh
+
+# Make the script executable
+RUN chmod +x /app/backend/create_superuser.sh
+
+# Expose the application port
 EXPOSE 8000
+
+#run migrations, create superuser, and start the server, cant fint the script at the correct place yet, tomorrow
+# CMD ["sh", "-c", "python manage.py migrate && /app/backend/create_superuser.sh && python manage.py runserver 0.0.0.0:8000"]
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
