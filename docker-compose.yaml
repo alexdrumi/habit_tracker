@@ -1,44 +1,53 @@
 version: '3.8'
+#---MariaDB service---
 services:
-  postgres:
-    container_name: postgresql
-    image: "postgres:latest"
+  mariadb:
+    container_name: mariadb
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.mariadb
     restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+    env_file:
+      - .env
     ports:
-      - "5432:5432"
+      - "5000:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - database_prod:/var/lib/mysql
+    healthcheck:
+      #select 1 checks if the db is operational, client is mariadb not mysql
+      test: ["CMD-SHELL", "mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e 'SELECT 1' || exit 1"]
+      start_period: "30s"  # Wait 20 seconds before starting health checks
+      interval: "5s"
+      timeout: "20s"
+      retries: 5
     networks:
       - habit_network
 
+#---Django service---
   django:
     container_name: django
     build:
       context: . #look for dockerfile in the current directory
-      dockerfile: Dockerfile #when using docker-compose up --build, it calls this file
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      dockerfile: dockerfiles/Dockerfile.django #when using docker-compose up --build, it calls this file
+    # environment:
+    #   - "MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
+    #   - "MYSQL_DATABASE=${DB_NAME}"
+    #   - "MYSQL_USER=${DB_USER}"
+    #   - "MYSQL_PASSWORD=${DB_PASSWORD}"
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     volumes:
       - .:/app #maps the host dir to the /app in the container
-    depends_on:
-      - postgres
+    depends_on: 
+      mariadb:
+        condition: service_healthy
     networks:
       - habit_network
 
 volumes:
-  postgres_data:
+  database_prod:
 
 networks:
   habit_network:

@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  MARIADB:
+    container_name: mariadb
+    image: "mariadb:latest"
+    restart: always
+    environment:
+      MARIADB_USER: bmajor
+      MARIADB_PASSWORD: drowssapsergtsop
+      MARIADB_DB: MARIADB
+      # MARIADB_HOST: localhost
+      # MARIADB_PORT: 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - MARIADB_data:/var/lib/MARIADBql/data
+    networks:
+      - habit_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bmajor -d MARIADB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  django:
+    container_name: django
+    build:
+      context: . #look for dockerfile in the current directory
+      dockerfile: Dockerfile #when using docker-compose up --build, it calls this file
+    environment:
+      MARIADB_USER: bmajor
+      MARIADB_PASSWORD: drowssapsergtsop
+      MARIADB_DB: MARIADB
+      MARIADB_HOST: MARIADB
+      MARIADB_PORT: 5432
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app #maps the host dir to the /app in the container
+    depends_on:
+      MARIADB:
+        condition: service_healthy
+    networks:
+      - habit_network
+
+volumes:
+  MARIADB_data:
+
+networks:
+  habit_network:
+    driver: bridge
