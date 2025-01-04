@@ -1,38 +1,36 @@
 FROM python:3.13
 
-#Install build tools and mariadb client libraries (required for mysqlclient)
-#default-libmysqlclient-dev, library for installing mysqlclient from pip
+#innstall system dependencies for mysql client and python development
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev gcc default-mysql-client \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# RUN apt-get install python-mysqldb -y && rm -rf /var/lib/apt/lists/*
-#Set env variables to avoid .pyc files and buffer logs
+#not sure what they do
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-#working dir inside the container
+#workin dir
 WORKDIR /app/backend
 
-#copies the requirements txt of the hostmachines current folder to the habit_tracker . (workdir) inside the container
+#makes sure all packages will be installed inside the container
 COPY requirements.txt .
+
+#install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-#habit tracker is being copied from the host machine into the app, but inside the app its gonna be also habit tracker thus workdir have to be /app/habit_tracker
-# COPY . .
+#cop application code to container, this will be used for production, for now volume
+# COPY backend/ /app/backend/
+# COPY tools/create_superuser.py /app/backend/create_superuser.py
 
-
-COPY backend/ /app/backend/
-COPY tools/create_superuser.sh /app/backend/create_superuser.sh
-
-# Make the script executable
-RUN chmod +x /app/backend/create_superuser.sh
-
-# Expose the application port
+#expose port 8000
 EXPOSE 8000
 
-#run migrations, create superuser, and start the server, cant fint the script at the correct place yet, tomorrow
-# CMD ["sh", "-c", "python manage.py migrate && /app/backend/create_superuser.sh && python manage.py runserver 0.0.0.0:8000"]
+# COPY entrypoint.sh /scripts/entrypoint.sh
+# RUN chmod +x tools/entrypoint.sh
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
+#migrate, create superuser, and then start the server
+# CMD ["sh", "-c", "chmod +x backend/create_superuser.py && python backend/create_superuser.py && python manage.py runserver 0.0.0.0:8000"]
+CMD ["scripts/entrypoint.sh"]
