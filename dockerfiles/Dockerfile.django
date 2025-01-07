@@ -1,0 +1,36 @@
+FROM python:3.13
+
+#innstall system dependencies for mysql client and python development
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+#not sure what they do ->env variables to prevent .pyc files and enable unbuffered logging
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+#workin dir
+WORKDIR /app
+
+#makes sure all packages will be installed inside the container
+COPY requirements.txt .
+
+#install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+#cop application code to container, this will be used for production, for now volume
+# COPY backend/ /app/backend/
+# COPY tools/create_superuser.py /app/backend/create_superuser.py
+
+#expose port 8000
+EXPOSE 8000
+
+# COPY entrypoint.sh /scripts/entrypoint.sh
+# RUN chmod +x tools/entrypoint.sh
+
+#migrate, create superuser, and then start the server
+# CMD ["sh", "-c", "chmod +x backend/create_superuser.py && python backend/create_superuser.py && python manage.py runserver 0.0.0.0:8000"]
+CMD ["scripts/entrypoint.sh"]
