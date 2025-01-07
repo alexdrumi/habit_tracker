@@ -1,7 +1,0 @@
-FROM mariadb:latest
-
-#Install the mysql client so you can run mysql commands inside the container
-RUN apt-get update && apt-get install -y mariadb-client && rm -rf /var/lib/apt/lists/*
-
-#Default command to run mariadb server
-CMD ["mariadbd"]
