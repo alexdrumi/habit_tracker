@@ -13,13 +13,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import environ
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 #get the env variables for database
 env = environ.Env()
-environ.Env.read_env()
+environ.Env.read_env(env_file=str(BASE_DIR / '.env'))  # Specify the .env path explicitly
+# environ.Env.read_env() #FOR PRODUCTION COMMENT THIS OUT
+
+print(f"Host: {env('MARIADB_HOST')}")
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -84,8 +90,8 @@ DATABASES = {
         "NAME": env("MARIADB_DATABASE"),
         "USER": env("MARIADB_USER"),  # Temporarily use root
         "PASSWORD": env("MARIADB_PASSWORD"),
-        "HOST": env("MARIADB_HOST"),
-        "PORT": env("MARIADB_PORT")
+        "HOST": env("MARIADB_HOST", default="127.0.0.1"),
+        "PORT": env("MARIADB_PORT", default="5000")
     }
 }
 

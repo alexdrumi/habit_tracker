@@ -22,14 +22,14 @@ clean:
 	@echo "Cleanup complete! Persistent volumes are preserved."
 
 #total cleanup: Removes containers, images, volumes, and networks
-total:
-	@echo "Stopping and removing all Docker containers..."
-	@docker stop $$(docker ps -aq) || true
-	@docker rm $$(docker ps -aq) || true
-	@echo "Removing all Docker images..."
-	@docker rmi -f $$(docker images -aq) || true
-	@echo "Removing all Docker volumes..."
-	@docker volume rm $$(docker volume ls -q) || true
-	@echo "Removing all unused Docker networks..."
-	@docker network prune -f || true
-	@echo "Complete cleanup done! All volumes, containers, images, and networks have been removed."
+# total:
+# 	@echo "Stopping and removing all Docker containers..."
+# 	@docker stop $$(docker ps -aq) || true
+# 	@docker rm $$(docker ps -aq) || true
+# 	@echo "Removing all Docker images..."
+# 	@docker rmi -f $$(docker images -aq) || true
+# 	@echo "Removing all Docker volumes..."
+# 	@docker volume rm $$(docker volume ls -q) || true
+# 	@echo "Removing all unused Docker networks..."
+# 	@docker network prune -f || true
+# 	@echo "Complete cleanup done! All volumes, containers, images, and networks have been removed."
