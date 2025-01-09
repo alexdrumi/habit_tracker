@@ -14,6 +14,7 @@ services:
       - "5000:3306"
     volumes:
       - database_prod:/var/lib/mysql
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql->could write a grant all privileges on habit and test habit to bmajor in prod
     healthcheck:
       #select 1 checks if the db is operational, client is mariadb not mysql
       test: ["CMD-SHELL", "mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e 'SELECT 1' || exit 1"]

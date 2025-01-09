@@ -5,3 +5,5 @@ psycopg2-binary==2.9.10
 python-decouple==3.8
 sqlparse==0.5.3
 mysqlclient==2.2.6
+pytest==7.4.0
+pytest-django==4.5.2

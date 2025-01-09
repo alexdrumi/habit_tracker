@@ -13,10 +13,20 @@ INSERT INTO app_users_roles(user_role) VALUES
 ('bot');
 '''
 class AppUsersRoles(models.Model):
+
+	'''
+	Validation logic next to the ForeignKey in AppUsers
+	'''
+	VALID_ROLES = ['user', 'admin', 'bot']
 	user_role = models.CharField(max_length=10, primary_key=True) #no specific enum in django tho
 
 	class Meta:
 		db_table = "app_users_role" #the explicit name of the table
+	
+	def save(self, *args, **kwargs):
+		if self.user_role not in self.VALID_ROLES:
+			raise ValueError(f"Invalid role: {self.user_role}, user_role must be one of {self.VALID_ROLES}.")
+		super().save(*args, **kwargs)
 	
 	def __str__(self):
 		return self.user_role
@@ -37,10 +47,10 @@ CREATE TABLE app_users {
 # Create your models here.
 class AppUsers(models.Model):
 	user_id = models.AutoField(primary_key=True)
-	user_name = models.CharField(max_length=100, blank=False, unique=True)
+	user_name = models.CharField(max_length=100, blank=False, null=False, unique=True)
 	user_role = models.ForeignKey(
 		AppUsersRoles,
-		on_delete=models.CASCADE, #delete app_users if the role is deleted
+		on_delete=models.PROTECT, #dont delete the models in case the role is gone
 		related_name="users" #not sure what this does just yet
 	)
 	user_age = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(110)])
@@ -49,6 +59,11 @@ class AppUsers(models.Model):
 
 	class Meta:
 		db_table = "app_users"
+
+	def save(self, *args, **kwargs):
+		if not self.user_name.strip():  # Check for empty or whitespace-only names
+			raise ValueError("User name cannot be empty or whitespace.")
+		super().save(*args, **kwargs)
 
 	def __str__(self):
 		return f"{self.user_name} (ID={self.user_id})" #prob we should go about ids?
