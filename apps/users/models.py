@@ -68,7 +68,7 @@ class AppUsers(models.Model):
 
 	def save(self, *args, **kwargs):
 		if not self.user_name.strip():  #check for empty or whitespace only names
-			raise ValueError("User name cannot be empty or whitespace.")
+			raise ValueError("User name can not be empty or whitespace.")
 		super().save(*args, **kwargs)
 
 	def __str__(self):
