@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.habits',
     'apps.kvi_types',
-    'apps.goals'
+    'apps.goals',
+    'apps.progresses'
 ]
 
 MIDDLEWARE = [
