@@ -14,7 +14,6 @@ def setup_roles():
 	return roles
 
 
-
 @pytest.mark.django_db
 def test_create_valid_user_role(setup_roles):
 	'''Test for creating a valid user'''

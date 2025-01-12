@@ -3,6 +3,9 @@ from django.db.utils import DataError
 from apps.habits.models import Habits
 from apps.users.models import AppUsers, AppUsersRoles
 
+
+#we could eventually rewrite the test suites with factory: https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
+
 @pytest.fixture
 def setup_roles():
 	'''Fixtures are how we prepare for a certain test, here setup the AppUsersRoles'''

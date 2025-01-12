@@ -3,6 +3,8 @@ from apps.habits.models import Habits
 from apps.kvi_types.models import KviTypes
 from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint
+from django.core.exceptions import ValidationError
+from math import isinf, isnan
 
 # Create your models here.
 '''
@@ -31,7 +33,7 @@ class Goals(models.Model):
 		on_delete=models.PROTECT, #cant delete
 		related_name='goals'
 	)
-	target_kvi_value = models.FloatField(validators=MinValueValidator(0.0)) #cant be neg, this is for: 'walking' goal have 1.0 multiplier, and my goal is 5.0, i would need 5 'periodicity_value' amount of successful habit completion to comlpete my goal
+	target_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)]) #cant be neg, this is for: 'walking' goal have 1.0 multiplier, and my goal is 5.0, i would need 5 'periodicity_value' amount of successful habit completion to comlpete my goal
 	current_kvi_value = models.FloatField(default=0.0)
 	goal_description = models.CharField(max_length=80, blank=True)
 	created_at = models.TimeField(auto_now_add=True)
@@ -47,7 +49,11 @@ class Goals(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.goal_name.strip(): #check for empty name or whitespaces etc
 			raise ValueError("Goal name can not be empty or whitespace.")
-		
+		if isinf(self.target_kvi_value) or isnan(self.target_kvi_value):  #mysql would throw tantrum here
+			raise ValueError("Invalid KVI value.")
+		if self.target_kvi_value < 0.0: #technically this would be validation error but for now its fine, simple
+			raise ValueError("Invalid KVI value.")
+
 		#shall we also check  target_kvi_value to be limited?
 		super().save(*args, **kwargs)
 
