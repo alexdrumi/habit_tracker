@@ -36,8 +36,8 @@ def test_create_valid_goal(setup_habit, setup_kvi_type):
 	[
 		(-1.0, "Invalid KVI value.", True),
 		(-0.01, "Invalid KVI value.", True),
-		(1e309, "Invalid KVI value.", True),  # Overflow to `inf`
-		(-1e309, "Invalid KVI value.", True),  # Overflow to `-inf`
+		(1e309, "Invalid KVI value.", True),
+		(-1e309, "Invalid KVI value.", True),
 	]
 )
 def test_create_too_high_kvi_value(setup_habit, setup_kvi_type, target_kvi_val, expected_message, error_raised):
