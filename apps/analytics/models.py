@@ -4,10 +4,11 @@ from apps.habits.models import Habits
 # Create your models here.
 class Analytics(models.Model):
 	analytics_id = models.AutoField(primary_key=True)
-	habit_id = models.ForeignKey(
+	habit_id = models.OneToOneField(
 		Habits,
-		on_delete=models.PROTECT, #dont delete analytics just cuz habit is deleted
-		related_name='habit_analytics'
+		on_delete=models.CASCADE, #dont delete analytics just cuz habit is deleted
+		related_name='habit_analytics',
+		unique=True,
 	)
 	times_completed = models.IntegerField(default=0)
 	streak_length = models.IntegerField(default=0)
