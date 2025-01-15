@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'apps.habits',
     'apps.kvi_types',
     'apps.goals',
-    'apps.progresses'
+    'apps.progresses',
+    'apps.analytics'
 ]
 
 MIDDLEWARE = [
