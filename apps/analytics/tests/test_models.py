@@ -14,7 +14,6 @@ from django.db import IntegrityError
 # 	last_completed_at = models.DateField(blank=True, null=True)
 # 	created_at = models.TimeField(auto_now_add=True)
 
-
 @pytest.mark.django_db
 def test_create_valid_analytics(setup_habit):
 	'''Test for creating valid analytics.'''

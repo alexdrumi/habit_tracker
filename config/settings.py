@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
-import environ
+from apps.utils.env_manager import EnvManager
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,11 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 #get the env variables for database
-env = environ.Env()
-environ.Env.read_env(env_file=str(BASE_DIR / '.env'))  # Specify the .env path explicitly
+# env = environ.Env()
+# environ.Env.read_env(env_file=str(BASE_DIR / '.env'))  # Specify the .env path explicitly
 # environ.Env.read_env() #FOR PRODUCTION COMMENT THIS OUT
 
-print(f"Host: {env('MARIADB_HOST')}")
+# print(f"Host: {env('MARIADB_HOST')}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     'apps.kvi_types',
     'apps.goals',
     'apps.progresses',
-    'apps.analytics'
+    'apps.analytics',
+    'apps.utils',
+    'apps.database'
 ]
 
 MIDDLEWARE = [
@@ -89,16 +91,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+config = EnvManager() #singleton to store env details
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": env("MARIADB_DATABASE"),
-        "USER": env("MARIADB_USER"),  # Temporarily use root
-        "PASSWORD": env("MARIADB_PASSWORD"),
-        "HOST": env("MARIADB_HOST", default="127.0.0.1"),
-        "PORT": env("MARIADB_PORT", default="5000")
+        "ENGINE": config.get_config("ENGINE"),
+        "NAME": config.get_config("NAME"),
+        "USER": config.get_config("USER"),
+        "PASSWORD": config.get_config("PASSWORD"),
+        "HOST": config.get_config("HOST"),
+        "PORT": config.get_config("PORT")
     }
+
+    # "default": {
+    #     "ENGINE": "django.db.backends.mysql",
+    #     "NAME": env("MARIADB_DATABASE"),
+    #     "USER": env("MARIADB_USER"),  # Temporarily use root
+    #     "PASSWORD": env("MARIADB_PASSWORD"),
+    #     "HOST": env("MARIADB_HOST", default="127.0.0.1"),
+    #     "PORT": env("MARIADB_PORT", default="5000")
+#     }
 }
 
 
