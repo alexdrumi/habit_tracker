@@ -30,17 +30,17 @@ class EnvManager(metaclass=SingletonMeta):
 		
 		if not os.path.exists(location):
 			print(f"Error: The .env file was not found at {location}")
+			raise RuntimeError('Error: The .env file was nof found at {location}.')
 		else:
 			print(f"{location} is where the .env file is located")
 		
-		# Load the environment variables
 		environ.Env.read_env(env_file=location)
 		
 		print(f'{location} IS WHERE THE ENV FILE IS LOCATED\n\n\n')
 		return {
 			"ENGINE": "django.db.backends.mysql",
 			"NAME": env("MARIADB_DATABASE"), 
-			"USER": env("MARIADB_USER"),  # Temporarily use root
+			"USER": env("MARIADB_USER"), 
 			"PASSWORD": env("MARIADB_PASSWORD"),
 			"HOST": env("MARIADB_HOST", default="127.0.0.1"),
 			"PORT": env("MARIADB_PORT", default="5000")

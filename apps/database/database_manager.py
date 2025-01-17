@@ -56,4 +56,18 @@ class MariadbConnection(metaclass=SingletonMeta):
 			port=config.get_config("PORT"),
 			charset="utf8mb4",
 			collation="utf8mb4_unicode_ci"
-	)
+		)
+
+		cursor = self._connection.cursor()
+		# query = ("SELECT DATABASE();")
+		# cursor.execute(query)
+		# results = cursor.fetchall()
+		# for db in results:
+		# 	print(db)
+	
+	
+		
+
+
+
+
