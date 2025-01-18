@@ -1,10 +1,18 @@
 from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
+import logging
+
+class UserNotFoundError(Exception):
+	"""Custom exception raised when a user is not found."""
+	pass
+
+class RoleCreationError(Exception):
+	"""Custom raised when a role cannot be created."""
+	pass
 
 class UserRepository:
 	def __init__(self):
 		self._db = MariadbConnection()
-
 
 	def create_a_role(self, user_role):
 		'''
@@ -17,28 +25,22 @@ class UserRepository:
 			int: The id of existing or newly created role. To be used as a foreign key in app_users.
 		'''
 		try:
-			cursor = self._db._connection.cursor()
-			#check if role already there
-			query = "SELECT user_role from app_users_role WHERE user_role = %s"
-			cursor.execute(query, (user_role,))
-			result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
-			if result:
-				cursor.close()
-				return result[0]
+			with  self._db._connection.cursor() as cursor:
+				query = "SELECT user_role from app_users_role WHERE user_role = %s"
+				cursor.execute(query, (user_role,))
+				result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
+				if result:
+					raise RoleCreationError(f"Role '{user_role}' already exists in the database.")
 
-			#if not found, create a new one
-			query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
-			cursor.execute(query, (user_role,))
-			self._db._connection.commit()
-			return cursor.lastrowid #id we need to creating users
-
+				query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
+				cursor.execute(query, (user_role,))
+				self._db._connection.commit()
+				return cursor.lastrowid #id we need to creating users
 		except Exception as error:
 			#could log but print for now
-			print(f"Error while creating a role: {error}")
 			self._db._connection.rollback()
 			raise
-		finally:
-			cursor.close()
+
 
 
 	def create_a_user(self, user_name, user_age, user_gender, user_role):
@@ -52,22 +54,20 @@ class UserRepository:
 			int: The id of existing or newly created role. To be used as a foreign key in app_users.
 		'''
 		try:
-			cursor = self._db._connection.cursor()
-			user_role_id = self.create_a_role(user_role)
-			query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
-			cursor.execute(query, (user_name, user_age, user_gender, user_role_id,))
-			self._db._connection.commit()
-			return {
-				'user_id': cursor.lastrowid,
-				'user_name': user_name,
-				'user_role': user_role
-			} #dict with potentially needed info
+			with self._db._connection.cursor() as cursor:
+				user_role_id = self.create_a_role(user_role)
+				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
+				cursor.execute(query, (user_name, user_age, user_gender, user_role_id,))
+				self._db._connection.commit()
+				return {
+					'user_id': cursor.lastrowid,
+					'user_name': user_name,
+					'user_role': user_role
+				}
 		except Exception as error:
-			print(f"Error while creating a user: {error}")
 			self._db._connection.rollback()
 			raise
-		finally:
-			cursor.close()
+
 
 
 	def delete_a_user(self, user_id):
@@ -81,20 +81,20 @@ class UserRepository:
 			int: Number of rows effected by deletion.
 		'''
 		try:
-			cursor = self._db._connection.cursor()
-			query = "DELETE FROM app_users WHERE user_id = %s"
-			cursor.execute(query, (user_id,))
-			self._db._connection.commit()
-			return cursor.rowcount #nr of rows effected (ideally 1)
+			with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
+				query = "DELETE FROM app_users WHERE user_id = %s"
+				cursor.execute(query, (user_id,))
+				self._db._connection.commit()
+				if cursor.rowcount == 0:
+					raise UserNotFoundError(f"User with user_name {user_id} is not found.")
+				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
 		except Exception as error:
-			print(f"Error while deleting a user: {error}")
 			self._db._connection.rollback()
 			raise
-		finally:
-			cursor.close()
+		
 
 
-	#TODO, UPDATE BASED ON USER ID NOT NAME
+	#TODO, make this less repetitive, there must be a pretty pythonic way for the if blocks
 	def update_a_user(self, user_name, user_age=None, user_gender=None, user_role=None):
 		'''
 		Update a user from the app_users table.
@@ -106,7 +106,6 @@ class UserRepository:
 			int: Number of rows effected by update.
 		'''
 		try:
-			cursor = self._db._connection.cursor()
 			updated_cols = []
 			updated_vals = []
 			if user_name is not None:
@@ -128,21 +127,39 @@ class UserRepository:
 				updated_vals.append(role_id)
 			
 			if not updated_cols:
-				# if there is nothing to update
 				return 0
 			set_commands = ', '.join(updated_cols) 
 			query = f"UPDATE app_users SET {set_commands} WHERE user_name = %s"
-			updated_vals.append(user_name) #once more for the username
-			cursor.execute(query, updated_vals)
-			self._db._connection.commit()
-			return cursor.rowcount #nr of rows effected (ideally 1)
-		
+			updated_vals.append(user_name) #once more for the where clause
+			
+			with self._db._connection.cursor() as cursor:
+				cursor.execute(query, updated_vals)
+				self._db._connection.commit()
+				
+				if cursor.rowcount == 0:
+					raise UserNotFoundError(f"User with user_name {user_name} is not found.")
+				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 		except Exception as error:
-			print(f"Error while updating a user: {error}")
 			self._db._connection.rollback()
 			raise
-		finally:
-			cursor.close()
 
 
-	# def get_user_by_id(self, user_name):
+
+	def get_user_id(self, user_name):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query =  f"SELECT user_id from app_users WHERE user_name = %s"
+				cursor.execute(query, (user_name,))
+				result = cursor.fetchone()
+				if result:
+					user_id_idx = 0
+					return result[user_id_idx]
+				else: #select only handles read only query, no need for rollback, no changes in the database
+					raise UserNotFoundError(f"User with user_name: {user_name} is not found.")
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
+
+
+
+
