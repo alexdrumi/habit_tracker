@@ -1,6 +1,5 @@
 from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
-import logging
 
 class UserNotFoundError(Exception):
 	"""Custom exception raised when a user is not found."""
@@ -48,10 +47,10 @@ class UserRepository:
 		Create a user in the app_users table.
 
 		Args:
-			user_role (str, int, str, str): The name, age, gender and role of the user.
+			(str, int, str, str): The name, age, gender and role of the user.
 		
 		Returns:
-			int: The id of existing or newly created role. To be used as a foreign key in app_users.
+			int, str, str: The id, user_name, user_role of the created_user.
 		'''
 		try:
 			with self._db._connection.cursor() as cursor:
@@ -100,7 +99,7 @@ class UserRepository:
 		Update a user from the app_users table.
 
 		Args:
-			user_role (str, int, str, str): The new name, new age, new gender and new role of the user.
+			(str, int, str, str): The new name, new age, new gender and new role of the user.
 		
 		Returns:
 			int: Number of rows effected by update.
@@ -146,6 +145,15 @@ class UserRepository:
 
 
 	def get_user_id(self, user_name):
+		'''
+		Get the user_id based on a user_name.
+
+		Args:
+			user_name (str): The name of the user.
+		
+		Returns:
+			int: The ID of the user.
+		'''
 		try:
 			with self._db._connection.cursor() as cursor:
 				query =  f"SELECT user_id from app_users WHERE user_name = %s"

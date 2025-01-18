@@ -11,7 +11,6 @@ CREATE TABLE habits {
 	periodicity_type 
 }
 '''
-
 # Table habits {
 #   habit_id int [primary key]
 #   habit_name varchar
@@ -61,7 +60,6 @@ class Habits(models.Model):
 
 		if not self.habit_periodicity_value:
 			self.habit_periodicity_value = habit_periodicity_value_mapping[self.habit_periodicity_type]
-		#do we need any validation?
 		if (self.habit_periodicity_value <= 0 or self.habit_periodicity_value > 30):
 			raise ValueError("Periodicity value must be between 0 and 30.")
 		
