@@ -1,5 +1,7 @@
 from django.db import models
 from apps.users.models import AppUsers
+from django.db.models import UniqueConstraint
+
 # Create your models here.
 
 '''
@@ -29,7 +31,7 @@ class ValidPeriodicityTypes(models.TextChoices):
 
 class Habits(models.Model):
 	habit_id = models.AutoField(primary_key=True)
-	habit_name = models.CharField(max_length=40, blank=False, null=False) #could more habit be created w the same name? maybe if for different users  
+	habit_name = models.CharField(max_length=40, blank=False, null=False, unique=True) #could more habit be created w the same name? maybe if for different users  
 	habit_user = models.ForeignKey(
 		AppUsers,
 		on_delete=models.CASCADE, #delete the habit if the user is deleted
@@ -47,6 +49,9 @@ class Habits(models.Model):
 
 	class Meta:
 		db_table = "habits"
+		constraints = [
+			UniqueConstraint(fields=["habit_name", "habit_user"], name="unique_habit_per_user")
+		]
 
 	def save(self, *args, **kwargs):
 		if not self.habit_name.strip(): #check for empty name or whitespaces etc

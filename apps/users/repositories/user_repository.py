@@ -29,8 +29,8 @@ class UserRepository:
 				cursor.execute(query, (user_role,))
 				result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
 				if result:
-					raise RoleCreationError(f"Role '{user_role}' already exists in the database.")
-
+					return result[0]
+					# raise RoleCreationError(f"Role '{user_role}' already exists in the database.")
 				query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
 				cursor.execute(query, (user_role,))
 				self._db._connection.commit()
@@ -56,7 +56,7 @@ class UserRepository:
 			with self._db._connection.cursor() as cursor:
 				user_role_id = self.create_a_role(user_role)
 				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
-				cursor.execute(query, (user_name, user_age, user_gender, user_role_id,))
+				cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
 				self._db._connection.commit()
 				return {
 					'user_id': cursor.lastrowid,

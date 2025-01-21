@@ -1,6 +1,8 @@
 from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
 from apps.users.repositories.user_repository import UserNotFoundError
+# from django.db import IntegrityError
+from mysql.connector.errors import IntegrityError
 
 class HabitNotFoundError(Exception):
 	"""Custom exception raised when a user is not found."""
@@ -44,6 +46,10 @@ class HabitRepository:
 					'habit_periodicity_value': habit_periodicity_value,
 					'habit_user_id': result_user[0],
 				}
+		except IntegrityError as ierror:
+			if "Duplicate entry" in str(ierror):
+				raise IntegrityError(f"Duplicate habit '{habit_name}' for user '{habit_user}'.") from ierror
+			raise
 		except Exception as error:
 			self._db._connection.rollback()
 			raise
