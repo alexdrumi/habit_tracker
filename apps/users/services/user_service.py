@@ -50,3 +50,14 @@ class UserService:
 		except Exception as error:
 			logging.error(f"UserService Exception get_user_id: {error}")
 			raise
+	
+	def validate_user(self, user_name):
+		try:
+			validated_user_id = self._repository.validate_user(user_name)
+			return validated_user_id
+		except UserNotFoundError as error:
+			logging.error(f"UserService UserNotFoundError validate_user: {error}")
+			raise
+		except Exception as error:
+			logging.error(f"UserService Exception validate_user: {error}")
+			raise

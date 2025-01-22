@@ -1,6 +1,7 @@
 from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
-from apps.users.repositories.user_repository import UserNotFoundError
+from apps.users.repositories.user_repository import UserRepository, UserNotFoundError
+from apps.users.services.user_service import UserService
 # from django.db import IntegrityError
 from mysql.connector.errors import IntegrityError
 
@@ -12,8 +13,14 @@ class HabitNotFoundError(Exception):
 # 	"""Custom raised when a role cannot be created."""
 # 	pass
 class HabitRepository:
-	def __init__(self):
-		self._db = MariadbConnection()
+	#dependency injection, loose coupling
+	#can extend functionalities without modifying existing code
+	#habitrepo only depends on abstract layers such as userservice
+	def __init__(self, database: MariadbConnection, user_repository: UserRepository):
+		self._db = database
+		self._user_repository = user_repository
+
+
 
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
 		'''
@@ -27,16 +34,9 @@ class HabitRepository:
 		'''
 		try:
 			with self._db._connection.cursor() as cursor:
-				#check whether there is a habit user with that habit user entity (user id?)
-				query_user = f"SELECT user_id from app_users WHERE user_name = %s"
-				cursor.execute(query_user, (habit_user,))
-				result_user = cursor.fetchone()
-				if not result_user:
-					raise UserNotFoundError(f"User with user_name {habit_user} is not found.")
-
-				print(result_user)
+				validated_user_id = self._user_repository.validate_user(habit_user)
 				query = "INSERT INTO habits(habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id, created_at) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
-				cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, result_user[0]))
+				cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, validated_user_id))
 				self._db._connection.commit()
 				return {
 					'habit_id': cursor.lastrowid,
@@ -44,7 +44,7 @@ class HabitRepository:
 					'habit_streak': habit_streak,
 					'habit_periodicity_type': habit_periodicity_type,
 					'habit_periodicity_value': habit_periodicity_value,
-					'habit_user_id': result_user[0],
+					'habit_user_id': validated_user_id,
 				}
 		except IntegrityError as ierror:
 			if "Duplicate entry" in str(ierror):
@@ -55,6 +55,37 @@ class HabitRepository:
 			raise
 
 
+
+	def get_habit_id(self, user_name, habit_name):
+		try:
+			with self._db._connection.cursor() as cursor:
+				user_id = self._user_repository.get_user_id(user_name=user_name)
+				
+				query = f"SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
+				cursor.execute(query, (user_id, habit_name,))
+				habit_id = cursor.fetchone()
+				
+				if not habit_id:
+					raise HabitNotFoundError(f"Habit of {user_name} with name {habit_name} is not found.")
+				return habit_id[0] #id
+		except Exception as error:
+			raise
+
+
+	def delete_a_habit(self, habit_id):
+		try:
+			#habit id is found by this time since get_habit_id will be called in service. in case habit doesnt exist this will never be triggered.
+			with self._db._connection.cursor() as cursor:
+				query = f"DELETE FROM habits WHERE habit_id = %s"
+				cursor.execute(query, (habit_id,))
+				self._db._connection.commit()
+				
+				if cursor.rowcount == 0:
+					raise HabitNotFoundError(f"Habit of with id {habit_id} is not found.")
+				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+		except Exception as error:
+				self._db._connection.rollback()
+				raise
 
 	# def delete_a_user(self, user_id):
 	# 	'''

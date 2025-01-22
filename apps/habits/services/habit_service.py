@@ -1,13 +1,11 @@
-from apps.habits.repositories.habit_repository import HabitRepository
-# from django.db import IntegrityError
+from apps.habits.repositories.habit_repository import HabitRepository, HabitNotFoundError
 from mysql.connector.errors import IntegrityError
-
 from apps.users.repositories.user_repository import UserNotFoundError
 import logging
 
 class HabitService:
-	def __init__(self):
-		self._repository = HabitRepository()
+	def __init__(self, repository: HabitRepository):
+		self._repository = repository
 
 
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
@@ -17,14 +15,42 @@ class HabitService:
 			
 			return habit_entity
 		except IntegrityError as ierror:
-			# Log the specific integrity error
+			#log integrity error
 			logging.error(f"Duplicate habit creation error: {ierror}")
 			raise
 		except UserNotFoundError as uerror:
-			# Log the specific user not found error
+			#log user not found error
 			logging.error(f"User not found: {uerror}")
 			raise
 		except Exception as error:
-			# Log unexpected errors
+			#everything else
+			logging.error(f"Unexpected error in create_a_habit: {error}")
+			raise
+
+
+	def get_habit_id(self, user_name, habit_name):
+		try:
+			habit_id = self._repository.get_habit_id(user_name, habit_name)
+			return habit_id
+		except HabitNotFoundError as herror:
+			#log user not found error
+			logging.error(f"Habit not found for user '{user_name}' and habit '{habit_name}': {herror}")
+			raise
+		except Exception as error:
+			#everything else
+			logging.error(f"Unexpected error in create_a_habit: {error}")
+			raise
+
+
+	def delete_a_habit(self, user_name, habit_name):
+		try:
+			habit_id = self.get_habit_id(user_name, habit_name)
+			deleted_count = self._repository.delete_a_habit(habit_id)
+			return deleted_count
+		except HabitNotFoundError as herror:
+			logging.error(f"Habit not found for user '{user_name}' and habit '{habit_name}': {herror}")
+			raise
+		except Exception as error:
+			#everything else
 			logging.error(f"Unexpected error in create_a_habit: {error}")
 			raise

@@ -10,8 +10,30 @@ class RoleCreationError(Exception):
 	pass
 
 class UserRepository:
-	def __init__(self):
-		self._db = MariadbConnection()
+	def __init__(self, database: MariadbConnection):
+		self._db = database
+
+
+
+	def validate_user(self, user_name):
+		with self._db._connection.cursor() as cursor:		
+			query_user = f"SELECT user_id from app_users WHERE user_name = %s"
+			cursor.execute(query_user, (user_name,))
+			result_user = cursor.fetchone()
+			if not result_user:
+				raise UserNotFoundError(f"User with user_name {user_name} is not found.")
+			return result_user[0] #id
+	
+	
+	#we can check this later also for user role validation
+	# def validate_role(self, user_role):
+	# 	with  self._db._connection.cursor() as cursor:
+	# 		query = "SELECT user_role from app_users_role WHERE user_role = %s"
+	# 		cursor.execute(query, (user_role,))
+	# 		result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
+	# 		if result:
+	# 			return result[0]
+
 
 	def create_a_role(self, user_role):
 		'''
