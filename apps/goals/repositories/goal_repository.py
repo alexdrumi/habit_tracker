@@ -6,7 +6,7 @@ from apps.users.services.user_service import UserService
 from mysql.connector.errors import IntegrityError
 
 class HabitNotFoundError(Exception):
-	"""Custom exception raised when a habit is not found."""
+	"""Custom exception raised when a user is not found."""
 	pass
 
 # class HabitCreationError(Exception):

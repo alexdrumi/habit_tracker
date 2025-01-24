@@ -68,11 +68,9 @@ class HabitService:
 			habit_id = self._repository.get_habit_id(user_name, habit_name)
 			return habit_id
 		except HabitNotFoundError as herror:
-			#log user not found error
 			logging.error(f"Habit not found for user '{user_name}' and habit '{habit_name}': {herror}")
 			raise
 		except Exception as error:
-			#everything else
 			logging.error(f"Unexpected error in create_a_habit: {error}")
 			raise
 
