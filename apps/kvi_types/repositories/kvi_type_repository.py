@@ -16,9 +16,9 @@ class KviTypeRepository:
 	#dependency injection, loose coupling
 	#can extend functionalities without modifying existing code
 	#habitrepo only depends on abstract layers such as userservice
-	def __init__(self, database: MariadbConnection):
+	def __init__(self, database: MariadbConnection, user_repository: UserRepository):
 		self._db = database
-		# self._user_repository = user_repository
+		self._user_repository = user_repository
 
 	''''
 	kvi_type_name = models.CharField(max_length=20, blank=False, null=False)
@@ -28,7 +28,7 @@ class KviTypeRepository:
 		)
 	'''
 
-	def create_a_kvi_type(self, kvi_type_name, kvi_description, kvi_multiplier):
+	def create_a_kvi_type(self, kvi_type_name, kvi_description, kvi_multiplier, user_id):
 		'''
 		Create a kvi_type in the kvi_type table.
 
@@ -40,14 +40,15 @@ class KviTypeRepository:
 		'''
 		try:
 			with self._db._connection.cursor() as cursor:
-				query = "INSERT INTO kvi_types(kvi_type_name, kvi_description, kvi_multiplier) VALUES (%s, %s, %s);"
-				cursor.execute(query, (kvi_type_name, kvi_description, kvi_multiplier))
+				query = "INSERT INTO kvi_types(kvi_type_name, kvi_description, kvi_multiplier) VALUES (%s, %s, %s, %s);"
+				cursor.execute(query, (kvi_type_name, kvi_description, kvi_multiplier, user_id))
 				self._db._connection.commit()
 				return {
 					'kvi_type_id': cursor.lastrowid,
 					'kvi_type_name': kvi_type_name,
 					'kvi_description': kvi_description,
 					'kvi_multiplier':kvi_multiplier,
+					'user_id': user_id
 				}
 		except ValueError as error:
 			self._db._connection.rollback()
@@ -56,7 +57,25 @@ class KviTypeRepository:
 			self._db._connection.rollback()
 			raise
 
+	def get_kvi_type_id(self, kvi_type_name, kvi_type_user_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = f"SELECT user_id FROM kvi_types WHERE (user_id = %s AND kvi_type_name = %s)"
+				cursor.execute(query, (kvi_type_user_id, kvi_type_name))
+				result = cursor.fetchone()
+				if result:
+					kvi_type_id_idx = 0
+					return result[kvi_type_id_idx]
+				else:
+					raise KviTypesNotFoundError(f"Kvi type with name: {kvi_type_name} and kvi type user id: {kvi_type_user_id} is not found.")
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
 
+
+
+
+	# def update_kvi_type(self, )
 
 		# 		query = "INSERT INTO habits(habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id, created_at) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
 		# 		cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, validated_user_id))

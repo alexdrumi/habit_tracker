@@ -52,7 +52,7 @@ class HabitService:
 	def update_habit_periodicity_value(self, user_name, habit_name, value):
 		try:
 			habit_id = self.get_habit_id(user_name, habit_name)
-			#we could eventually check how big is the streak value?
+			#we could eventually check how big is the streak valnue?
 			
 			updated_habit_rows = self._repository.update_habit_field(habit_id, 'habit_periodicity_value', value)
 			return updated_habit_rows
