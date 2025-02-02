@@ -26,6 +26,21 @@ class KviTypeRepository:
 			validators=[MinValueValidator(0.0), MaxValueValidator(10.0)]
 		)
 	'''
+	def validate_a_kvi_type(self, kvi_type_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT kvi_type_id FROM kvi_types WHERE kvi_type_id = %s"
+				cursor.execute(query, (kvi_type_id,))
+				current_value = cursor.fetchone()
+				
+				if not current_value:
+					raise KviTypesNotFoundError(f"Kvi type with id of: {kvi_type_id} is not found.")
+				# if current_value[0] == kvi_type_id:
+				return current_value[0] #no rows updated but also no error found
+		except Exception as error:
+			self._db._connection.rollback()  # Required if using manual transactions
+			raise
+
 
 	def create_a_kvi_type(self, kvi_type_name, kvi_description, kvi_multiplier, user_id):
 		'''

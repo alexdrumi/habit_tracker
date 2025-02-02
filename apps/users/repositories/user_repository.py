@@ -14,7 +14,7 @@ class UserRepository:
 		self._db = database
 
 
-
+	#TODO BETTER VALIDATION WITH TRY EXCEPT BLOCK
 	def validate_user(self, user_name):
 		with self._db._connection.cursor() as cursor:		
 			query_user = f"SELECT user_id from app_users WHERE user_name = %s"

@@ -5,12 +5,13 @@ import logging
 
 
 class KviTypeService:
-	def __init__(self,  repository: KviTypeRepository):
+	def __init__(self, repository: KviTypeRepository, user_repository: UserRepository):
 		self._repository = repository
+		self._user_repository = user_repository
 
 
 
-	def validate_kvi(self, action, kvi_type_id=None, kvi_type_name=None, kvi_multiplier=None, user_name=None):
+	def _validate_kvi(self, action, kvi_type_id=None, kvi_type_name=None, kvi_multiplier=None, user_name=None):
 			if action not in ["create", "update", "delete"]:
 				raise ValueError(f"Invalid action '{action}'. Allowed: create, update, delete.")
 
@@ -31,7 +32,7 @@ class KviTypeService:
 	def create_a_kvi_type(self, kvi_type_name, kvi_description, kvi_multiplier, user_name):
 		try:
 			#validate
-			self.validate_kvi("create", kvi_type_name, kvi_multiplier, user_name)
+			self._validate_kvi("create", kvi_type_name, kvi_multiplier, user_name)
 
 			#get user id
 			user_id = self._repository._user_repository.get_user_id(user_name)
@@ -55,7 +56,7 @@ class KviTypeService:
 	def update_a_kvi_type(self, kvi_multiplier, kvi_type_name=None, kvi_type_user_id=None, kvi_type_id=None):
 			try:
 				#validate
-				self.validate_kvi("update", kvi_type_id=kvi_type_id, kvi_multiplier=kvi_multiplier)
+				self._validate_kvi("update", kvi_type_id=kvi_type_id, kvi_multiplier=kvi_multiplier)
 				
 				#update
 				updated_rows = self._repository.update_kvi_type(kvi_type_id, kvi_multiplier)
@@ -86,7 +87,7 @@ class KviTypeService:
 def delete_a_kvi_type(self, kvi_type_id):
 	try:
 		#validate
-		self.validate_kvi("delete", kvi_type_id=kvi_type_id)
+		self._validate_kvi("delete", kvi_type_id=kvi_type_id)
 
 		#delete
 		self._repository.delete_a_kvi_type(kvi_type_id)

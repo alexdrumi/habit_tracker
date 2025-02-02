@@ -21,6 +21,19 @@ class HabitRepository:
 		self._user_repository = user_repository
 
 
+	def validate_a_habit(self, habit_id):
+			try:
+				with self._db._connection.cursor() as cursor:
+					query = "SELECT habit_id FROM habits WHERE habit_id = %s"
+					cursor.execute(query, (habit_id,))
+					current_value = cursor.fetchone()
+					
+					if not current_value:
+						raise HabitNotFoundError(f"Habit of with id of: {habit_id} is not found.")
+					return current_value[0] #no rows updated but also no error found
+			except Exception as error:
+				self._db._connection.rollback()  # Required if using manual transactions
+				raise
 
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
 		'''
