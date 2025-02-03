@@ -1,15 +1,16 @@
 from apps.goals.repositories.goal_repository import GoalNotFoundError, GoalRepository
-from apps.habits.repositories.habit_repository import HabitNotFoundError, HabitRepository
-from apps.kvi_types.repositories.kvi_type_repository import KviTypesNotFoundError, KviTypeRepository
+# from apps.habits.repositories.habit_repository import HabitNotFoundError, HabitRepository
+# from apps.kvi_types.repositories.kvi_type_repository import KviTypesNotFoundError, KviTypeRepository
+from apps.habits.services.habit_service import HabitNotFoundError, HabitService
+from apps.kvi_types.services.kvi_type_service import KviTypesNotFoundError, KviTypeService
 from mysql.connector.errors import IntegrityError
 import logging
 
 class GoalService:
-	def __init__(self, repository: GoalRepository, habit_repository: HabitRepository, kvi_repository: KviTypeRepository):
+	def __init__(self, repository: GoalRepository, habit_service: HabitService, kvi_service: KviTypeService):
 		self._repository = repository
-		self._habit_repository = habit_repository
-		self._kvi_repository = kvi_repository
-
+		self._habit_service = habit_service
+		self._kvi_service = kvi_service
 
 
 	def _validate_goal(self, action, goal_id=None, goal_name=None, habit_id_id=None, kvi_type_id_id=None, target_kvi_value=None, current_kvi_value=None):
@@ -34,11 +35,24 @@ class GoalService:
 				raise ValueError("current_kvi_value must be between 0.0 and float max.")
 
 
+
+	def get_goal_id(self, goal_name, habit_id):
+		try:
+			goal_id = self._repository.get_goal_id(goal_name=goal_name, habit_id=habit_id)
+		except GoalNotFoundError as gerror:
+			logging.error(f"Goal with ID '{goal_id}' not found: {gerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update a goal: {error}")
+			raise
+
+
+
 	def create_a_goal(self, goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description):
 		try:
 			#get validated habit and kvi ids
-			validated_kvi_id = self._kvi_repository.validate_a_kvi_type(kvi_type_id)
-			validated_habit_id = self._habit_repository.validate_a_habit(habit_id)
+			validated_kvi_id = self._kvi_service._repository.validate_a_kvi_type(kvi_type_id)
+			validated_habit_id = self._habit_service._repository.validate_a_habit(habit_id)
 
 			#validate
 			self._validate_goal("create", goal_id=None, goal_name=goal_name, habit_id_id=validated_habit_id, kvi_type_id_id=validated_kvi_id, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)

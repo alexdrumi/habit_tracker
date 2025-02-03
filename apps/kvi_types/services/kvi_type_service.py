@@ -1,13 +1,15 @@
 from apps.kvi_types.repositories.kvi_type_repository import KviTypeRepository, KviTypesNotFoundError
 from apps.users.repositories.user_repository import UserRepository, UserNotFoundError
+from apps.users.services.user_service import UserService, UserNotFoundError
+
 from mysql.connector.errors import IntegrityError
 import logging
 
 
 class KviTypeService:
-	def __init__(self, repository: KviTypeRepository, user_repository: UserRepository):
+	def __init__(self, repository: KviTypeRepository, user_service: UserService):
 		self._repository = repository
-		self._user_repository = user_repository
+		self._user_service = user_service
 
 
 
@@ -35,7 +37,7 @@ class KviTypeService:
 			self._validate_kvi("create", kvi_type_name, kvi_multiplier, user_name)
 
 			#get user id
-			user_id = self._repository._user_repository.get_user_id(user_name)
+			user_id = self._user_service.get_user_id(user_name)
 			
 			#create kvi typer
 			kvi_type_entity = self._repository.create_a_kvi_type(kvi_type_name, kvi_description, kvi_multiplier, user_id)
@@ -84,17 +86,17 @@ class KviTypeService:
 			raise
 	
 
-def delete_a_kvi_type(self, kvi_type_id):
-	try:
-		#validate
-		self._validate_kvi("delete", kvi_type_id=kvi_type_id)
+	def delete_a_kvi_type(self, kvi_type_id):
+		try:
+			#validate
+			self._validate_kvi("delete", kvi_type_id=kvi_type_id)
 
-		#delete
-		self._repository.delete_a_kvi_type(kvi_type_id)
+			#delete
+			self._repository.delete_a_kvi_type(kvi_type_id)
 
-	except KviTypesNotFoundError as kerror:
-		logging.error(f"KVI type with ID '{kvi_type_id}' not found: {kerror}")
-		raise
-	except Exception as error:
-		logging.error(f"Unexpected error in delete_a_kvi_type: {error}")
-		raise
+		except KviTypesNotFoundError as kerror:
+			logging.error(f"KVI type with ID '{kvi_type_id}' not found: {kerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in delete_a_kvi_type: {error}")
+			raise

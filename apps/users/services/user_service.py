@@ -4,8 +4,8 @@ from apps.users.repositories.user_repository import RoleCreationError
 import logging
 
 class UserService:
-	def __init__(self):
-		self._repository = UserRepository()
+	def __init__(self, repository: UserRepository): #inject user repo here
+		self._repository = repository
 
 	def create_a_user(self, user_name, user_age, user_gender, user_role):
 		try:

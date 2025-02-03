@@ -1,5 +1,6 @@
 from django.db import models
 from apps.habits.models import Habits
+from django.db.models import UniqueConstraint
 
 # Create your models here.
 class Analytics(models.Model):
@@ -17,7 +18,10 @@ class Analytics(models.Model):
 	
 	class Meta:
 		db_table = "analytics"
-	
+		constraints = [
+			UniqueConstraint(fields=["habit_id", "analytics_id"], name="unique_analytics_per_habit")
+		]
+
 	def save(self, *args, **kwargs):
 		if self.times_completed < 0 or self.times_completed > 365:
 			raise ValueError("Habit is completed invalid amount of times.")

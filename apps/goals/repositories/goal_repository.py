@@ -101,7 +101,6 @@ class GoalRepository:
 				updated_fields.append('current_kvi_value = %s')
 				updated_values.append(current_kvi_value)
 
-			
 			if not updated_fields:
 				return 0
 
@@ -109,9 +108,6 @@ class GoalRepository:
 			updated_values.append(goal_id)
 
 			query = "UPDATE goals SET " + set_commands + " WHERE goal_id = %s;"
-			
-			print(query)
-
 			with self._db._connection.cursor() as cursor:
 				cursor.execute(query, updated_values)
 				self._db._connection.commit()

@@ -16,9 +16,8 @@ class KviTypeRepository:
 	#dependency injection, loose coupling
 	#can extend functionalities without modifying existing code
 	#habitrepo only depends on abstract layers such as userservice
-	def __init__(self, database: MariadbConnection, user_repository: UserRepository):
+	def __init__(self, database: MariadbConnection):
 		self._db = database
-		self._user_repository = user_repository
 	''''
 	kvi_type_name = models.CharField(max_length=20, blank=False, null=False)
 		kvi_description = models.CharField(max_length=40, blank=True, null=True)
