@@ -7,7 +7,9 @@ class HabitService:
 	def __init__(self, repository: HabitRepository):
 		self._repository = repository
 
+	#validate habit?
 
+	
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
 		try:
 			habit_entity = self._repository.create_a_habit(habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user)			

@@ -15,7 +15,7 @@ class AnalyticsRepository:
 
 	def create_analytics(self, times_completed, streak_length, habit_id, last_completed_at=None):
 		'''
-		Create analytics for a certain habit.
+		Create analytics for a certain analytics.
 		'''
 		try:
 			#validation of habit will come from the service layer
@@ -39,6 +39,73 @@ class AnalyticsRepository:
 		except Exception as error:
 			self._db._connection.rollback()
 			raise
-	def get_analytics_id()
-		
-	def update_analytics(self, streak_length,)
+
+
+	def get_analytics_id(self, habit_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT analytics_id FROM analytics WHERE habit_id_id = %s;"
+				cursor.execute(query, (habit_id,))
+				result = cursor.fetchone()
+				if result:
+					analytics_id_idx = 0
+					return result[analytics_id_idx]
+				else:
+					raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
+
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
+	
+
+	def update_analytics(self, analytics_id, times_completed=None, streak_length=None, last_completed_at=None):
+		try:
+			print("INSIDE UPDATE ANALYTICS REPO")
+			updated_fields = []
+			updated_values = []
+
+			if times_completed is not None:
+				updated_fields.append("times_completed = %s")
+				updated_values.append(times_completed)
+			
+			if streak_length is not None:
+				updated_fields.append("streak_length = %s")
+				updated_values.append(streak_length)
+
+			if last_completed_at is not None:
+				updated_fields.append("last_completed_at = %s")
+				updated_values.append(last_completed_at)
+			
+			if not updated_fields:
+				return 0
+			
+			set_commands = ', '.join(updated_fields)
+			updated_values.append(analytics_id)
+
+			query = "UPDATE analytics SET " + set_commands + " WHERE analytics_id = %s;"
+			with self._db._connection.cursor() as cursor:
+				cursor.execute(query, updated_values)
+				self._db._connection.commit()
+
+				if cursor.rowcount == 0: #shouldnt be the case by now
+					raise AnalyticsNotFoundError(f"Analytics for habit with analytiacs {analytics_id} is not found.")
+
+				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+		except Exception as error:
+			self._db._connection.rollback()
+			raise
+
+
+	def delete_analytics(self, analytics_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "DELETE FROM analytics WHERE analytics_id = %s"
+				result = cursor.execute(query, (analytics_id,))
+				self._db._connection.commit()
+				if cursor.rowcount == 0:
+					raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
+				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+				
+		except Exception as error:
+				self._db._connection.rollback()
+				raise

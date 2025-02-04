@@ -112,7 +112,7 @@ class GoalRepository:
 				cursor.execute(query, updated_values)
 				self._db._connection.commit()
 
-				if cursor.rowcount == 0:
+				if cursor.rowcount == 0: #this should be checked by now tbh
 					raise GoalNotFoundError(f"Goal with goal_id {goal_id} is not found.")
 				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 		except Exception as error:
