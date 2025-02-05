@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from apps.utils.env_manager import EnvManager
-
+import sys
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -42,48 +42,48 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'apps.users',
-    'apps.habits',
-    'apps.kvi_types',
-    'apps.goals',
-    'apps.progresses',
-    'apps.analytics',
-    'apps.utils',
-    'apps.database'
+	'django.contrib.admin',
+	'django.contrib.auth',
+	'django.contrib.contenttypes',
+	'django.contrib.sessions',
+	'django.contrib.messages',
+	'django.contrib.staticfiles',
+	'apps.users',
+	'apps.habits',
+	'apps.kvi_types',
+	'apps.goals',
+	'apps.progresses',
+	'apps.analytics',
+	'apps.utils',
+	'apps.database'
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django.middleware.security.SecurityMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.middleware.common.CommonMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
+	{
+		'BACKEND': 'django.template.backends.django.DjangoTemplates',
+		'DIRS': [],
+		'APP_DIRS': True,
+		'OPTIONS': {
+			'context_processors': [
+				'django.template.context_processors.debug',
+				'django.template.context_processors.request',
+				'django.contrib.auth.context_processors.auth',
+				'django.contrib.messages.context_processors.messages',
+			],
+		},
+	},
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -93,42 +93,50 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 config = EnvManager() #singleton to store env details
 DATABASES = {
-    "default": {
-        "ENGINE": config.get_config("ENGINE"),
-        "NAME": config.get_config("NAME"),
-        "USER": config.get_config("USER"),
-        "PASSWORD": config.get_config("PASSWORD"),
-        "HOST": config.get_config("HOST"),
-        "PORT": config.get_config("PORT")
-    }
-
-    # "default": {
-    #     "ENGINE": "django.db.backends.mysql",
-    #     "NAME": env("MARIADB_DATABASE"),
-    #     "USER": env("MARIADB_USER"),  # Temporarily use root
-    #     "PASSWORD": env("MARIADB_PASSWORD"),
-    #     "HOST": env("MARIADB_HOST", default="127.0.0.1"),
-    #     "PORT": env("MARIADB_PORT", default="5000")
-#     }
+	"default": {
+		"ENGINE": config.get_config("ENGINE"),
+		"NAME": config.get_config("NAME"),
+		"USER": config.get_config("USER"),
+		"PASSWORD": config.get_config("PASSWORD"),
+		"HOST": config.get_config("HOST"),
+		"PORT": config.get_config("PORT")
+	}
 }
+
+# https://www.geeksforgeeks.org/how-to-run-django-s-test-using-in-memory-database/
+if 'test' in sys.argv:
+	DATABASES['default'] = {
+		"ENGINE": config.get_config("ENGINE"),
+		'NAME': ':memory:', #in memory database for pytest
+	}
+	
+	# "default": {
+	#     "ENGINE": "django.db.backends.mysql",
+	#     "NAME": env("MARIADB_DATABASE"),
+	#     "USER": env("MARIADB_USER"),  # Temporarily use root
+	#     "PASSWORD": env("MARIADB_PASSWORD"),
+	#     "HOST": env("MARIADB_HOST", default="127.0.0.1"),
+	#     "PORT": env("MARIADB_PORT", default="5000")
+#     }
+
 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+	{
+		'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+	},
 ]
 
 
