@@ -1,40 +1,78 @@
 from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
+from mysql.connector.errors import IntegrityError
 
-class UserNotFoundError(Exception):
-	"""Custom exception raised when a user is not found."""
-	pass
 
-class RoleCreationError(Exception):
-	"""Custom raised when a role cannot be created."""
-	pass
+class UserRepositoryError(Exception):
+	'''Baseclass for exceptions for repository errors.'''
+	def __init__(self, message="An unexpected error occured in user repository."):
+		super().__init__(message)
+
+class UserNotFoundError(UserRepositoryError):
+	'''Exception raised when user is not found.'''
+	def __init__(self, user_name_or_id):
+		message = f"User is not found with user name/id: {user_name_or_id}"
+		super().__init__(message)
+
+class RoleCreationError(UserRepositoryError):
+	'''Exception raised when role creation failes.'''
+	def __init__(self, message= "Failed to create a role."):
+		super().__init__(message)
+
+class AlreadyExistError(UserRepositoryError):
+	'''Exception raised when user creation failes, e.g.: duplicate input.'''
+	def __init__(self, user_name_or_id):
+		message = f"User or user role already found with user name/id:  {user_name_or_id}"
+		super().__init__(message)
+
+def handle_user_repository_errors(f):
+	'''A decorator to make exceptions of database errors cleaner.'''
+	def exception_wrapper(self, *args, **kwargs):
+		try: #all functions, create, delete etc wil be wrapped in this try block, not sure how to pass already exist error username or id
+			return f(self, *args, **kwargs)
+		except IntegrityError as ierror:
+			self._db._connection.rollback()
+			raise AlreadyExistError(user_name_or_id='somekey') from ierror
+		except UserRepositoryError as urerror:
+			raise urerror
+		except Exception as error:
+			self._db._connection.rollback()
+			raise UserRepositoryError
+
+	return exception_wrapper		
+		
+
 
 class UserRepository:
 	def __init__(self, database: MariadbConnection):
 		self._db = database
 
 
-	#TODO BETTER VALIDATION WITH TRY EXCEPT BLOCK
+	@handle_user_repository_errors
 	def validate_user(self, user_name):
-		with self._db._connection.cursor() as cursor:		
-			query_user = f"SELECT user_id from app_users WHERE user_name = %s"
+		'''
+		Validates whether a user exists in the database.
+
+		Args:
+			user_name (str): The username to be checked.
+
+		Returns:
+			int: THe user ID if the user exists.
+		'''
+		with self._db._connection.cursor() as cursor:
+			query_user = "SELECT user_id from app_users WHERE user_name = %s;"
 			cursor.execute(query_user, (user_name,))
 			result_user = cursor.fetchone()
+
 			if not result_user:
-				raise UserNotFoundError(f"User with user_name {user_name} is not found.")
-			return result_user[0] #id
-	
-	
-	#we can check this later also for user role validation
-	# def validate_role(self, user_role):
-	# 	with  self._db._connection.cursor() as cursor:
-	# 		query = "SELECT user_role from app_users_role WHERE user_role = %s"
-	# 		cursor.execute(query, (user_role,))
-	# 		result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
-	# 		if result:
-	# 			return result[0]
+				raise UserNotFoundError(user_name)
+			
+			user_id_idx = 0
+			return result_user[user_id_idx]
 
 
+
+	@handle_user_repository_errors
 	def create_a_role(self, user_role):
 		'''
 		Create a user role in the app_users_roles table. ID will be used as a foreign key in app_user.
@@ -45,25 +83,32 @@ class UserRepository:
 		Returns:
 			int: The id of existing or newly created role. To be used as a foreign key in app_users.
 		'''
-		try:
-			with  self._db._connection.cursor() as cursor:
-				query = "SELECT user_role from app_users_role WHERE user_role = %s"
-				cursor.execute(query, (user_role,))
-				result = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
-				if result:
-					return result[0]
-					# raise RoleCreationError(f"Role '{user_role}' already exists in the database.")
+		with  self._db._connection.cursor() as cursor:
+			query = "SELECT user_role from app_users_role WHERE user_role = %s"
+			cursor.execute(query, (user_role,))
+			role = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
+			
+			if role:
+				role_id_idx = 0
+				return role[role_id_idx]
+			
+			try:
+				#if role doesnt exist
 				query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
 				cursor.execute(query, (user_role,))
+
+				if cursor.rowcount == 0:
+					raise RoleCreationError()
+
 				self._db._connection.commit()
 				return cursor.lastrowid #id we need to creating users
-		except Exception as error:
-			#could log but print for now
-			self._db._connection.rollback()
-			raise
 
+			except IntegrityError as ierror:
+				self._db._connection.rollback()
+				raise AlreadyExistError(user_role) from ierror
+		
 
-
+	@handle_user_repository_errors
 	def create_a_user(self, user_name, user_age, user_gender, user_role):
 		'''
 		Create a user in the app_users table.
@@ -72,11 +117,11 @@ class UserRepository:
 			(str, int, str, str): The name, age, gender and role of the user.
 		
 		Returns:
-			int, str, str: The id, user_name, user_role of the created_user.
+			a dict (int, str, str): The id, user_name, user_role of the created_user.
 		'''
-		try:
-			with self._db._connection.cursor() as cursor:
-				user_role_id = self.create_a_role(user_role)
+		with self._db._connection.cursor() as cursor:
+			user_role_id = self.create_a_role(user_role)
+			try:
 				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
 				cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
 				self._db._connection.commit()
@@ -85,12 +130,13 @@ class UserRepository:
 					'user_name': user_name,
 					'user_role': user_role
 				}
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
+	
+			except IntegrityError as ierror:
+				self._db._connection.rollback()
+				raise AlreadyExistError(user_name) from ierror
 
 
-
+	@handle_user_repository_errors
 	def delete_a_user(self, user_id):
 		'''
 		Delete a user from the app_users table.
@@ -101,21 +147,18 @@ class UserRepository:
 		Returns:
 			int: Number of rows effected by deletion.
 		'''
-		try:
-			with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
-				query = "DELETE FROM app_users WHERE user_id = %s"
-				cursor.execute(query, (user_id,))
-				self._db._connection.commit()
-				if cursor.rowcount == 0:
-					raise UserNotFoundError(f"User with user_name {user_id} is not found.")
-				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
-		
+		with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
+			query = "DELETE FROM app_users WHERE user_id = %s"
+			cursor.execute(query, (user_id,))
+			self._db._connection.commit()
+
+			if cursor.rowcount == 0:
+				raise UserNotFoundError(user_id)
+
+			return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
 
 
-	#TODO, make this less repetitive, there must be a pretty pythonic way for the if blocks
+	@handle_user_repository_errors
 	def update_a_user(self, user_name, user_age=None, user_gender=None, user_role=None):
 		'''
 		Update a user from the app_users table.
@@ -126,46 +169,45 @@ class UserRepository:
 		Returns:
 			int: Number of rows effected by update.
 		'''
-		try:
-			updated_cols = []
-			updated_vals = []
-			if user_name is not None:
-				updated_cols.append("user_name = %s")
-				updated_vals.append(user_name)
+		#will eventually correct this with dict and list comprehension prob
+		updated_cols = []
+		updated_vals = []
+		if user_name is not None:
+			updated_cols.append("user_name = %s")
+			updated_vals.append(user_name)
 
-			if user_age is not None:
-				updated_cols.append("user_age = %s")
-				updated_vals.append(user_age)
+		if user_age is not None:
+			updated_cols.append("user_age = %s")
+			updated_vals.append(user_age)
 
-			if user_gender is not None:
-				updated_cols.append("user_gender = %s")
-				updated_vals.append(user_gender)
+		if user_gender is not None:
+			updated_cols.append("user_gender = %s")
+			updated_vals.append(user_gender)
 
-			if user_role is not None:
-				#if you need a role_id, you can call self.create_a_role(user_role) to create it
-				role_id = self.create_a_role(user_role)
-				updated_cols.append("user_role_id = %s")
-				updated_vals.append(role_id)
+		if user_role is not None:
+			#if you need a role_id, you can call self.create_a_role(user_role) to create it
+			role_id = self.create_a_role(user_role)
+			updated_cols.append("user_role_id = %s")
+			updated_vals.append(role_id)
+		
+		if not updated_cols:
+			return 0
+
+		set_commands = ', '.join(updated_cols) 
+		query = f"UPDATE app_users SET {set_commands} WHERE user_name = %s"
+		updated_vals.append(user_name) #once more for the where clause
+		
+		with self._db._connection.cursor() as cursor:
+			cursor.execute(query, updated_vals)
+			self._db._connection.commit()
 			
-			if not updated_cols:
-				return 0
-			set_commands = ', '.join(updated_cols) 
-			query = f"UPDATE app_users SET {set_commands} WHERE user_name = %s"
-			updated_vals.append(user_name) #once more for the where clause
-			
-			with self._db._connection.cursor() as cursor:
-				cursor.execute(query, updated_vals)
-				self._db._connection.commit()
-				
-				if cursor.rowcount == 0:
-					raise UserNotFoundError(f"User with user_name {user_name} is not found.")
-				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
+			if cursor.rowcount == 0:
+				raise UserNotFoundError(user_name)
+			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+		
 
 
-
+	@handle_user_repository_errors
 	def get_user_id(self, user_name):
 		'''
 		Get the user_id based on a user_name.
@@ -176,19 +218,16 @@ class UserRepository:
 		Returns:
 			int: The ID of the user.
 		'''
-		try:
-			with self._db._connection.cursor() as cursor:
-				query =  f"SELECT user_id from app_users WHERE user_name = %s"
-				cursor.execute(query, (user_name,))
-				result = cursor.fetchone()
-				if result:
-					user_id_idx = 0
-					return result[user_id_idx]
-				else: #select only handles read only query, no need for rollback, no changes in the database
-					raise UserNotFoundError(f"User with user_name: {user_name} is not found.")
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
+		with self._db._connection.cursor() as cursor:
+			query =  f"SELECT user_id from app_users WHERE user_name = %s"
+			cursor.execute(query, (user_name,))
+			result = cursor.fetchone()
+			if result:
+				user_id_idx = 0
+				return result[user_id_idx]
+			else:
+				raise UserNotFoundError(user_name)
+
 
 
 
