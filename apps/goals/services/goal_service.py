@@ -35,6 +35,16 @@ class GoalService:
 				raise ValueError("current_kvi_value must be between 0.0 and float max.")
 
 
+	def validate_goal_id(self, goal_id):
+		try:
+			validated_goal_id = self._repository.validate_a_goal(goal_id)
+		except GoalNotFoundError as gerror:
+			logging.error(f"Goal with ID '{goal_id}' not found: {gerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update a goal: {error}")
+			raise	
+
 
 	def get_goal_id(self, goal_name, habit_id):
 		try:
