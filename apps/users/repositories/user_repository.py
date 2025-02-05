@@ -32,12 +32,12 @@ def handle_user_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			raise AlreadyExistError(user_name_or_id='somekey') from ierror
+			raise AlreadyExistError(user_name_or_id=args[0]) from ierror #id is args[0]
 		except UserRepositoryError as urerror:
 			raise urerror
 		except Exception as error:
 			self._db._connection.rollback()
-			raise UserRepositoryError
+			raise error #anything else here? should b just error
 
 	return exception_wrapper		
 		
@@ -104,8 +104,7 @@ class UserRepository:
 				return cursor.lastrowid #id we need to creating users
 
 			except IntegrityError as ierror:
-				self._db._connection.rollback()
-				raise AlreadyExistError(user_role) from ierror
+				raise
 		
 
 	@handle_user_repository_errors
@@ -132,9 +131,7 @@ class UserRepository:
 				}
 	
 			except IntegrityError as ierror:
-				self._db._connection.rollback()
-				raise AlreadyExistError(user_name) from ierror
-
+				raise
 
 	@handle_user_repository_errors
 	def delete_a_user(self, user_id):
