@@ -1,4 +1,3 @@
-from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
 from mysql.connector.errors import IntegrityError
 
@@ -21,8 +20,8 @@ class RoleCreationError(UserRepositoryError):
 
 class AlreadyExistError(UserRepositoryError):
 	'''Exception raised when user creation failes, e.g.: duplicate input.'''
-	def __init__(self, user_name_or_id):
-		message = f"User or user role already found with user name/id:  {user_name_or_id}"
+	def __init__(self, user_name):
+		message = f"User already found with user name:  {user_name}. Create user with another name."
 		super().__init__(message)
 
 def handle_user_repository_errors(f):
@@ -32,7 +31,7 @@ def handle_user_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			raise AlreadyExistError(user_name_or_id=args[0]) from ierror #id is args[0]
+			raise AlreadyExistError(user_name=args[0]) from ierror #id is args[0]
 		except UserRepositoryError as urerror:
 			raise urerror
 		except Exception as error:
@@ -92,23 +91,24 @@ class UserRepository:
 				role_id_idx = 0
 				return role[role_id_idx]
 			
-			try:
+			# try:
 				#if role doesnt exist
-				query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
-				cursor.execute(query, (user_role,))
+			query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
+			cursor.execute(query, (user_role,))
 
-				if cursor.rowcount == 0:
-					raise RoleCreationError()
+			if cursor.rowcount == 0:
+				raise RoleCreationError()
 
-				self._db._connection.commit()
-				return cursor.lastrowid #id we need to creating users
+			self._db._connection.commit()
+			return cursor.lastrowid #id we need to creating users
 
-			except IntegrityError as ierror:
-				raise
+			#double roles should be ok?
+			# except IntegrityError as ierror:
+			# 	raise
 		
 
 	@handle_user_repository_errors
-	def create_a_user(self, user_name, user_age, user_gender, user_role):
+	def create_a_user(self, user_name, user_password, user_age, user_gender, user_role):
 		'''
 		Create a user in the app_users table.
 
@@ -121,8 +121,8 @@ class UserRepository:
 		with self._db._connection.cursor() as cursor:
 			user_role_id = self.create_a_role(user_role)
 			try:
-				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
-				cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
+				query = "INSERT INTO app_users(user_name, user_password, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
+				cursor.execute(query, (user_name, user_password, user_age, user_gender, user_role_id))
 				self._db._connection.commit()
 				return {
 					'user_id': cursor.lastrowid,

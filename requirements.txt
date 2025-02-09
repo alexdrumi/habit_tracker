@@ -14,3 +14,4 @@ pytest==7.4.0
 pytest-django==4.5.2
 python-decouple==3.8
 sqlparse==0.5.3
+click==8.1.8

@@ -59,6 +59,8 @@ class AppUsers(models.Model):
 		on_delete=models.PROTECT, #dont delete the models in case the role is gone
 		related_name="users" #not sure what this does just yet
 	)
+	#min max validator works with ORMS but for now I leave it here. I just wanna practice raw SQL calls
+	user_password = models.CharField(validators=[MinValueValidator(1), MaxValueValidator(110)])
 	user_age = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(110)])
 	user_gender = models.CharField(max_length=20, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -69,6 +71,12 @@ class AppUsers(models.Model):
 	def save(self, *args, **kwargs):
 		if not self.user_name.strip():  #check for empty or whitespace only names
 			raise ValueError("User name can not be empty or whitespace.")
+		if not self.user_password.strip():
+			raise ValueError("Password can not be empty or whitespace.")
+		if len(self.user_password) < 5 or len(self.user_password) > 25:
+				raise ValueError("Passwords have to be between 5 and 25 characters long.")
+
+
 		super().save(*args, **kwargs)
 
 	def __str__(self):
