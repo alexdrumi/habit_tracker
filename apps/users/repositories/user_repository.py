@@ -191,6 +191,8 @@ class UserRepository:
 			return 0
 
 		set_commands = ', '.join(updated_cols) 
+		
+		#WE SHOULD FIND A WAY WITHOUT STRING FORMATTING (F'') BECAUSE SQL INJECTIONS CAN THROW THIS OFF.
 		query = f"UPDATE app_users SET {set_commands} WHERE user_name = %s"
 		updated_vals.append(user_name) #once more for the where clause
 		
@@ -216,7 +218,7 @@ class UserRepository:
 			int: The ID of the user.
 		'''
 		with self._db._connection.cursor() as cursor:
-			query =  f"SELECT user_id from app_users WHERE user_name = %s"
+			query =  "SELECT user_id from app_users WHERE user_name = %s"
 			cursor.execute(query, (user_name,))
 			result = cursor.fetchone()
 			if result:
@@ -225,7 +227,25 @@ class UserRepository:
 			else:
 				raise UserNotFoundError(user_name)
 
+	@handle_user_repository_errors
+	def query_all_user_data(self):
+		'''
+		Requests all user data. 
 
+		Args:
+			None
+		
+		Returns:
+			dict(list): every user data with their user_id and related habit_id, goal_id
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT user_id, user_name FROM app_users;"
+			cursor.execute(query)
+			result = cursor.fetchall()
 
-
+			if result:
+				return result
+			else:
+				return []
+			
 

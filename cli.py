@@ -30,7 +30,7 @@ def signal_handler(sig, frame):
 def display_menu():
 	click.echo("Main menu:")
 	click.echo("1, Create a new user")
-	click.echo("2, Log in with existing user")
+	click.echo("2, Delete a user")
 
 def option_1_create_user():
 	click.echo("You selected option 1 - create a user. ")
@@ -40,8 +40,20 @@ def option_1_create_user():
 	user_age =  click.prompt("Enter user age:")
 	user_gender = click.prompt("Enter user gender:")
 	user_role = click.prompt("Enter user role:")
+
 	return (user_name, user_password, user_age, user_gender, user_role)
 
+
+def option_2_delete_user(all_users: dict):
+	if len(all_users) == 0:
+		print("No users are found yet. Be the first one to create one!")
+
+	for user in all_users:
+		print(f"user_id: {user[0]}, user_name: {user[1]}")
+
+	user_id =  click.prompt("Enter user id:")
+
+	return user_id
 
 
 def handle__exceptions(f):
@@ -75,7 +87,22 @@ def main():
 			user_input = option_1_create_user()
 			user = user_service.create_a_user(user_input[0], user_input[1], user_input[2], user_input[3], user_input[4])
 			print(user)
-		
+
+		if choice == 2:
+			click.echo("You selected option 2 - delete a user. ")
+			click.pause()
+			all_users = user_service.query_all_user_data()
+			user_id = option_2_delete_user(all_users)
+			print(user_id)
+			deleted_user = user_service.delete_user(int(user_input))
+			if deleted_user:
+				print(f"user with id {user_id} is deleted.")
+			else:
+				print(f"user with id {user_id} is not found.")
+
+		#get a list of all users with their related ids and habit ids?
+
+
 		# if choice == 2:
 		# 	user_input = option_1_create_user()
 		# 	user = user_service.create_a_user(user_input[0], user_input[1], user_input[2], user_input[3], user_input[4])

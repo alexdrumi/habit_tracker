@@ -86,3 +86,7 @@ class UserService:
 
 		validated_user_id = self._repository.validate_user(user_name)
 		return validated_user_id
+
+	def query_all_user_data(self) -> dict: #maybe list of dicts?
+		all_users = self._repository.query_all_user_data()
+		return all_users
