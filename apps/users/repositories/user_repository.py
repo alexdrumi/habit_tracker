@@ -227,6 +227,8 @@ class UserRepository:
 			else:
 				raise UserNotFoundError(user_name)
 
+
+
 	@handle_user_repository_errors
 	def query_all_user_data(self):
 		'''
@@ -240,6 +242,32 @@ class UserRepository:
 		'''
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT user_id, user_name FROM app_users;"
+			cursor.execute(query)
+			result = cursor.fetchall()
+
+			if result:
+				return result
+			else:
+				return []
+	
+
+	#user id, user name, habit_id, habit_name, habit_action
+	#oders->habits
+	#customers->users
+	#SELECT app_users.user_name, app_users.user_id, habits.habit_id, habits.habit_name, habits.habit_action FROM habits INNER JOIN app_users ON habits.habit_user_id=app_users.user_id;
+	@handle_user_repository_errors
+	def query_user_and_related_habits(self): #INNER JOIN
+		'''
+		Requests all users who have associated habits data. 
+
+		Args:
+			None
+		
+		Returns:
+			dict(list): every user data with their user_name, user_id, habit_id, habit_name, habit_action
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT app_users.user_name, app_users.user_id, habits.habit_id, habits.habit_name, habits.habit_action FROM habits INNER JOIN app_users ON habits.habit_user_id=app_users.user_id;"
 			cursor.execute(query)
 			result = cursor.fetchall()
 

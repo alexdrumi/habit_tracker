@@ -87,6 +87,12 @@ class UserService:
 		validated_user_id = self._repository.validate_user(user_name)
 		return validated_user_id
 
+	@handle_log_service_exceptions
 	def query_all_user_data(self) -> dict: #maybe list of dicts?
 		all_users = self._repository.query_all_user_data()
 		return all_users
+
+	@handle_log_service_exceptions
+	def quary_user_and_related_habits(self) -> dict:
+		inner_joined_user_and_related_habits = self._repository.query_user_and_related_habits()
+		return inner_joined_user_and_related_habits
