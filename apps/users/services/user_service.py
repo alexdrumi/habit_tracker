@@ -80,11 +80,19 @@ class UserService:
 		return user_id
 
 	@handle_log_service_exceptions
-	def validate_user(self, user_name:str) ->int:
+	def validate_user_by_name(self, user_name:str) ->int:
 		if not (isinstance(user_name, str)) or not user_name.strip():
 			raise ValueError("Invalid user name.")
 
-		validated_user_id = self._repository.validate_user(user_name)
+		validated_user_id = self._repository.validate_user_by_name(user_name)
+		return validated_user_id
+	
+	@handle_log_service_exceptions
+	def validate_user_by_id(self, user_id:int) ->int:
+		if not (isinstance(user_id, int)):
+			raise ValueError("Invalid user id.")
+
+		validated_user_id = self._repository.validate_user_by_id(user_id)
 		return validated_user_id
 
 	@handle_log_service_exceptions

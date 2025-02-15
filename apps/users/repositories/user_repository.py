@@ -48,9 +48,9 @@ class UserRepository:
 
 
 	@handle_user_repository_errors
-	def validate_user(self, user_name):
+	def validate_user_by_name(self, user_name):
 		'''
-		Validates whether a user exists in the database.
+		Validates whether a user with user_name exists in the database.
 
 		Args:
 			user_name (str): The username to be checked.
@@ -69,6 +69,27 @@ class UserRepository:
 			user_id_idx = 0
 			return result_user[user_id_idx]
 
+	@handle_user_repository_errors
+	def validate_user_by_id(self, user_id):
+		'''
+		Validates whether a user with user_id exists in the database.
+
+		Args:
+			user_id (int): The user id to be checked.
+
+		Returns:
+			int: The user ID if the user exists.
+		'''
+		with self._db._connection.cursor() as cursor:
+			query_user = "SELECT user_id from app_users WHERE user_id = %s;"
+			cursor.execute(query_user, (user_id,))
+			result_user = cursor.fetchone()
+
+			if not result_user:
+				raise UserNotFoundError(user_id)
+			
+			user_id_idx = 0
+			return result_user[user_id_idx]
 
 
 	@handle_user_repository_errors
@@ -78,7 +99,7 @@ class UserRepository:
 
 		Args:
 			user_role (str): The name of the user role (admin, user, bot).
-		
+
 		Returns:
 			int: The id of existing or newly created role. To be used as a foreign key in app_users.
 		'''

@@ -35,7 +35,8 @@ class HabitRepository:
 				self._db._connection.rollback()  # Required if using manual transactions
 				raise
 
-	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
+
+	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id):
 		'''
 		Create a habit in the habits table.
 
@@ -47,21 +48,21 @@ class HabitRepository:
 		'''
 		try:
 			with self._db._connection.cursor() as cursor:
-				validated_user_id = self._user_repository.validate_user(habit_user)
+				# validated_user_id = self._user_repository.validate_user(habit_user)
 				query = "INSERT INTO habits(habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id, created_at) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
-				cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, validated_user_id))
+				cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id))
 				self._db._connection.commit()
 				return {
 					'habit_id': cursor.lastrowid,
 					'habit_action': habit_action,
 					'habit_streak': habit_streak,
 					'habit_periodicity_type': habit_periodicity_type,
-					'habit_periodicity_value': habit_periodicity_value,
-					'habit_user_id': validated_user_id,
+					# 'habit_periodicity_value': habit_periodicity_value,
+					'habit_user_id': habit_user_id,
 				}
 		except IntegrityError as ierror:
 			if "Duplicate entry" in str(ierror):
-				raise IntegrityError(f"Duplicate habit '{habit_name}' for user '{habit_user}'.") from ierror
+				raise IntegrityError(f"Duplicate habit '{habit_name}' for user with id: '{habit_user_id}'.") from ierror
 			raise
 		except Exception as error:
 			self._db._connection.rollback()
@@ -93,21 +94,22 @@ class HabitRepository:
 
 
 
-	def get_habit_id(self, user_name, habit_name):
+	def get_habit_id(self, user_id, habit_name):
 		try:
 			with self._db._connection.cursor() as cursor:
-				user_id = self._user_repository.get_user_id(user_name=user_name)
+				user_id = self._user_repository.get_user_id(user_name=user_id)
 				
 				query = f"SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
 				cursor.execute(query, (user_id, habit_name,))
 				habit_id = cursor.fetchone()
 				
 				if not habit_id:
-					raise HabitNotFoundError(f"Habit of {user_name} with name {habit_name} is not found.")
+					raise HabitNotFoundError(f"Habit of {user_id} with name {habit_name} is not found.")
 				return habit_id[0] #id
 		except Exception as error:
 			raise
 
+			
 
 
 	def delete_a_habit(self, habit_id):
