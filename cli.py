@@ -110,6 +110,7 @@ def option_5_create_a_habit():
 		else:
 			return (habit_name, habit_action, int(user_id), habit_periodicity_type)
 
+
 def option_6_list_habits(all_habits):
 	click.pause()
 	print_habits(all_habits)

@@ -20,20 +20,6 @@ class HabitService:
 	def __init__(self, repository: HabitRepository):
 		self._repository = repository
 
-	def map_periodicity_value(self, habit_periodicity_type):
-		capitalized_periodicity_type = habit_periodicity_type.strip().upper()
-		periodicity_mapping = {
-			"DAILY": 1,
-			"WEEKLY": 7,
-			"MONTHLY": 30
-		}
-
-		if capitalized_periodicity_type not in periodicity_mapping:
-			return None
-
-		return periodicity_mapping[capitalized_periodicity_type]
-
-
 
 	def _validate_habit_input(self, habit_name: str, habit_action: str, habit_periodicity_type: str, habit_user_id: int, habit_streak=None, habit_periodicity_value=None, is_update=False):
 		"""Validates habit input before passing it to the habit repository."""
@@ -58,6 +44,21 @@ class HabitService:
 		if habit_periodicity_value is not None:
 			if not isinstance(habit_periodicity_value, int) or not (1 <= habit_periodicity_value <= 30):
 				raise ValueError("Invalid periodicity value. It must be an integer between 1 and 30.")
+
+
+
+	@handle_log_service_exceptions
+	def map_periodicity_value(self, habit_periodicity_type):
+		capitalized_periodicity_type = habit_periodicity_type.strip().upper()
+		periodicity_mapping = {
+			"DAILY": 1,
+			"WEEKLY": 7,
+			"MONTHLY": 30
+		}
+		if capitalized_periodicity_type not in periodicity_mapping:
+			return None
+
+		return periodicity_mapping[capitalized_periodicity_type]
 
 
 
@@ -131,11 +132,11 @@ class HabitService:
 		return habit_id
 
 	@handle_log_service_exceptions
-	def validate_habit_id(self, habit_id):
+	def validate_a_habit(self, habit_id):
 		if not isinstance(habit_id, int): #how does overflow work in raw sql? orm would prevent but here?
 			raise ValueError(f"Invalid habit id: {habit_id}.")
 
-		validated_habit_id = self._repository.validate_habit_id(habit_id)
+		validated_habit_id = self._repository.validate_a_habit(habit_id)
 		return validated_habit_id
 	
 	#FIX VALUE ERRORS, NOW I JUST COPIED MY PREV
@@ -147,7 +148,7 @@ class HabitService:
 
 	@handle_log_service_exceptions
 	def delete_a_habit_id(self, habit_id):
-		validated_habit_id = self.validate_habit_id(habit_id)
+		validated_habit_id = self.validate_a_habit(habit_id)
 		deleted_count = self._repository.delete_a_habit(validated_habit_id)
 		return deleted_count
 
