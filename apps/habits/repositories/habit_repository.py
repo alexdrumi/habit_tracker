@@ -31,7 +31,7 @@ class HabitRepository:
 					if not current_value:
 						raise HabitNotFoundError(f"Habit of with id of: {habit_id} is not found.")
 					return current_value[0] #no rows updated but also no error found
-			except Exception as error:
+			except Exception as error: #only when data was modified or erronous
 				self._db._connection.rollback()  # Required if using manual transactions
 				raise
 
@@ -92,14 +92,27 @@ class HabitRepository:
 			self._db._connection.rollback()
 			raise
 
+	def validate_habit_id(self, habit_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT habit_id FROM habits WHERE habit_id = %s"
+				cursor.execute(query, (habit_id, ))
+				habit_id = cursor.fetchone()
 
+				if not habit_id:
+					raise HabitNotFoundError(f"Habit with id: {habit_id} is not found.")
 
+				return habit_id[0]
+		except Exception as error:
+			raise
+
+	
 	def get_habit_id(self, user_id, habit_name):
 		try:
 			with self._db._connection.cursor() as cursor:
 				user_id = self._user_repository.get_user_id(user_name=user_id)
 				
-				query = f"SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
+				query = "SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
 				cursor.execute(query, (user_id, habit_name,))
 				habit_id = cursor.fetchone()
 				
@@ -110,12 +123,23 @@ class HabitRepository:
 			raise
 
 			
-
-
 	def delete_a_habit(self, habit_id):
 		try:
 			#habit id is found by this time since get_habit_id will be called in service. in case habit doesnt exist this will never be triggered.
+			#disable autocommit for thisone
+			self._db._connection.autocommit = False
+			#ifautocommit is enabled, each delete statement in the function would be immediately committed to the database before  the next statement.
 			with self._db._connection.cursor() as cursor:
+
+				#delete the related analytics first, cascade only works with ORMS
+				analytics_query = "DELETE FROM analytics WHERE habit_id_id = %s"
+				cursor.execute(analytics_query, (habit_id,))
+
+				#delete also goals
+				goals_query = "DELETE FROM goals WHERE habit_id_id = %s"
+				cursor.execute(goals_query, (habit_id,))
+
+
 				query = f"DELETE FROM habits WHERE habit_id = %s"
 				cursor.execute(query, (habit_id,))
 				self._db._connection.commit()
@@ -126,6 +150,20 @@ class HabitRepository:
 		except Exception as error:
 				self._db._connection.rollback()
 				raise
+		finally:
+			self._db._connection.autocommit = True #allow autocommit again
 	
 
-
+	def get_all_habits(self):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
+				cursor.execute(query)
+				current_value = cursor.fetchall()
+					
+				if not current_value:
+					raise HabitNotFoundError(f"Habits are not found, yet to create one.")
+				return current_value #no rows updated but also no error found
+		except Exception as error:
+			self._db._connection.rollback()  # Required if using manual transactions
+			raise

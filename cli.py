@@ -20,7 +20,7 @@ django.setup()
 from apps.database.database_manager import MariadbConnection
 from apps.users.repositories.user_repository import UserRepository, UserRepositoryError, UserNotFoundError
 from apps.users.services.user_service import UserService
-from apps.habits.repositories.habit_repository import HabitRepository
+from apps.habits.repositories.habit_repository import HabitRepository, HabitNotFoundError
 from apps.habits.services.habit_service import HabitService
 
 def signal_handler(sig, frame):
@@ -29,22 +29,28 @@ def signal_handler(sig, frame):
 
 
 def display_menu():
-	click.echo("Main menu:")
+	click.echo("\nMain menu:")
 	click.echo("1, Create a new user")
 	click.echo("2, Delete a user")
 	click.echo("3, Get all user info")
 	click.echo("4, Get users with already existing habits")
-	click.echo("5, Create a habit for a certain user.")
+	click.echo("5, Create a habit for a certain user")
+	click.echo("6, List all habits")
+	click.echo("7, Delete a certain habit")
 
 
 def print_users(all_users):
 	for user in all_users:
 		print(f"user_id: {user[0]}, user_name: {user[1]}")
 
+def print_habits(habits):
+	for habit in habits:
+		print(f"\nhabit_id: {habit[0]}, habit_user_id: {habit[3]}, habit_name: {habit[1]}, habit_action: {habit[2]}, ")
+	# habit_id, habit_name, habit_action, habit_user_id
 
 def print_users_and_habits(users_and_habits):
 	for data in users_and_habits:
-		print(f"user_name: {data[0]}, user_id: {data[1]}, habit_id: {data[2]}, habit_name: {data[3]}")
+		print(f"\nuser_name: {data[0]}, user_id: {data[1]}, habit_id: {data[2]}, habit_name: {data[3]}")
 
 
 def option_1_create_user():
@@ -94,15 +100,29 @@ def option_4_get_users_with_habits(all_users: dict):
 def option_5_create_a_habit():
 	#habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user):
 	click.pause()
-	habit_name =  click.prompt("Enter a habit name:")
-	habit_action = click.prompt("Enter a habit action:")
-	user_id =  click.prompt("Enter the user_id of the user whos habit you want to create")
-	habit_periodicity_type = click.prompt("Enter the periodicity of the habit e.g.: 'DAILY' or 'WEEKLY':")
+	while True:
+		habit_name =  click.prompt("Enter a habit name:", type=str)
+		habit_action = click.prompt("Enter a habit action:", type=str)
+		user_id =  click.prompt("Enter the user_id of the user whos habit you want to create", type=str)
+		habit_periodicity_type = click.prompt("Enter the periodicity of the habit e.g.: 'DAILY' or 'WEEKLY':", type=str)
+		if not user_id.isdigit(): #make sure its an int, otherwise keep prompting
+			click.echo("Invalid input. Please enter a valid user ID, an integer.")
+		else:
+			return (habit_name, habit_action, int(user_id), habit_periodicity_type)
 
-	#MAYBE WE COULD DO A VALIDATION HERE, EVERY TIME THERE IS A PROMPT? INSTEAD OF OUTSIDE. JUST
-	#TRIGGER THE CLICK AGAIN FOR VALID INPUT
+def option_6_list_habits(all_habits):
+	click.pause()
+	print_habits(all_habits)
+	# habit_id, habit_name, habit_action, habit_user_id
 
-	return (habit_name, habit_action, user_id, habit_periodicity_type)
+def option_7_delete_a_habit():
+	while True:
+		user_input = click.prompt("Enter the habit ID to delete", type=str) #take a string always
+
+		if user_input.isdigit(): #make sure its an int, otherwise keep prompting
+			return int(user_input)
+		else:
+			click.echo("Invalid input. Please enter a valid habit ID, an integer.")
 
 
 def handle__exceptions(f):
@@ -114,9 +134,11 @@ def handle__exceptions(f):
 			except UserRepositoryError as rerror:
 				click.echo(f"Invalid input: {rerror}. Will prompt you again.")
 			except Exception as error:
-				click.echo(f"Invalid input: {rerror}. Will prompt you again.")
+				click.echo(f"Invalid input: {error}. Will prompt you again.")
 			except ValueError as error:
-				click.echo(f"Invalid input: {rerror}. Will prompt you again.")
+				click.echo(f"Invalid input: {error}. Will prompt you again.")
+			except HabitNotFoundError as error:
+					click.echo(f"Invalid input: {error}. Will prompt you again.")
 	return exception_wrapper
 
 
@@ -161,7 +183,7 @@ def main():
 			click.pause()
 		
 		if choice == 5:
-			click.echo("You selected option 5 - create a habit for a certain user.")
+			click.echo("You selected option 5 - create a habit for a certain user.\n")
 			habit_input = option_5_create_a_habit()
 
 			#CHECK IF HABIT INPUT 2 IS INT
@@ -169,11 +191,25 @@ def main():
 			print(validated_user_id)
 			habit = habit_service.create_a_habit(habit_name=habit_input[0], habit_action=habit_input[1], habit_periodicity_type=habit_input[3], habit_user_id=validated_user_id)
 			print(habit)
+			click.pause()
+
 			#habit_name, habit_action, user_id, habit_periodicity_type)
 
+		if choice == 6:
+			click.echo("You selected option 6 - list all habits.")
+			all_habits = habit_service.get_all_habits()
+			print_habits(all_habits)
+			click.pause()
 
-
-
+		if choice == 7:
+			click.echo("You selected option 7 - delete a habit.")
+			# all_habits = habit_service.get_all_habits()
+			# print_habits(all_habits)
+			selected_habit_id = option_7_delete_a_habit()
+			print(f"{selected_habit_id} is the selected id with type: {type(selected_habit_id)}")
+			deleted_amount = habit_service.delete_a_habit_id(selected_habit_id)
+			print(deleted_amount)
+			click.pause()
 
 		#get a list of all users with their related ids and habit ids?
 

@@ -21,17 +21,17 @@ class HabitService:
 		self._repository = repository
 
 	def map_periodicity_value(self, habit_periodicity_type):
-		capitalized_type = habit_periodicity_type.strip().upper()
+		capitalized_periodicity_type = habit_periodicity_type.strip().upper()
 		periodicity_mapping = {
 			"DAILY": 1,
 			"WEEKLY": 7,
 			"MONTHLY": 30
 		}
 
-		if capitalized_type not in periodicity_mapping:
+		if capitalized_periodicity_type not in periodicity_mapping:
 			return None
 
-		return periodicity_mapping[capitalized_type]
+		return periodicity_mapping[capitalized_periodicity_type]
 
 
 
@@ -78,8 +78,7 @@ class HabitService:
 			habit_streak=0
 		)
 
-		#UnboundLocalError?
-
+		#UnboundLocalError?=
 		habit_entity = self._repository.create_a_habit(
 			habit_name=habit_name, 
 			habit_action=habit_action, 
@@ -131,10 +130,28 @@ class HabitService:
 		habit_id = self._repository.get_habit_id(user_id, habit_name)
 		return habit_id
 
+	@handle_log_service_exceptions
+	def validate_habit_id(self, habit_id):
+		if not isinstance(habit_id, int): #how does overflow work in raw sql? orm would prevent but here?
+			raise ValueError(f"Invalid habit id: {habit_id}.")
 
+		validated_habit_id = self._repository.validate_habit_id(habit_id)
+		return validated_habit_id
+	
 	#FIX VALUE ERRORS, NOW I JUST COPIED MY PREV
 	@handle_log_service_exceptions
 	def delete_a_habit(self, user_name, habit_name):
 		habit_id = self.get_habit_id(user_name, habit_name)
 		deleted_count = self._repository.delete_a_habit(habit_id)
 		return deleted_count
+
+	@handle_log_service_exceptions
+	def delete_a_habit_id(self, habit_id):
+		validated_habit_id = self.validate_habit_id(habit_id)
+		deleted_count = self._repository.delete_a_habit(validated_habit_id)
+		return deleted_count
+
+	@handle_log_service_exceptions
+	def get_all_habits(self):
+		list_of_habits = self._repository.get_all_habits()
+		return list_of_habits
