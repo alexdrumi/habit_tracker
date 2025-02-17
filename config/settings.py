@@ -55,7 +55,8 @@ INSTALLED_APPS = [
 	'apps.progresses',
 	'apps.analytics',
 	'apps.utils',
-	'apps.database'
+	'apps.database',
+	'apps.core'
 ]
 
 MIDDLEWARE = [

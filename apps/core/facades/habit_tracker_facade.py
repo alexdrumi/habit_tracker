@@ -1,0 +1,30 @@
+from abc import ABC, abstractmethod
+
+class HabitTrackerFacade(ABC):
+	@abstractmethod
+	def create_user(self, user_name: str, user_password: str, user_age: int, user_gender: str, user_role: str) ->dict:
+		pass
+	
+	@abstractmethod
+	def delete_user(self, user_id: int) -> int:
+		pass
+	
+	@abstractmethod
+	def query_all_user_data(self) -> dict:
+		pass
+	
+	@abstractmethod
+	def query_user_and_related_habits(self) -> dict:
+		pass
+
+	@abstractmethod
+	def create_a_habit(self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
+		pass #this will be multistep from the orchestrator
+
+	@abstractmethod
+	def get_all_habits(self):
+		pass
+
+	@abstractmethod
+	def delete_a_habit_by_id(self, habit_id):
+		pass

@@ -111,7 +111,7 @@ class HabitService:
 		return updated_habit_rows
 
 
-		#FIX VALUE ERRORS, NOW I JUST COPIED MY PREV
+	#FIX VALUE ERRORS, NOW I JUST COPIED MY PREV
 	@handle_log_service_exceptions
 	def update_habit_periodicity_value(self, user_name, habit_name, updated_value):
 		if not isinstance(updated_value, int) or not (1 <= updated_value <= 30):
@@ -147,7 +147,7 @@ class HabitService:
 		return deleted_count
 
 	@handle_log_service_exceptions
-	def delete_a_habit_id(self, habit_id):
+	def delete_a_habit_by_id(self, habit_id):
 		validated_habit_id = self.validate_a_habit(habit_id)
 		deleted_count = self._repository.delete_a_habit(validated_habit_id)
 		return deleted_count

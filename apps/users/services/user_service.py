@@ -47,10 +47,10 @@ class UserService:
 				raise ValueError(f"Invalid user role: {user_role}, expected one of the followings: 'admin', 'user', 'bot'.")
 
 	@handle_log_service_exceptions
-	def create_a_user(self, user_name: str, user_password: str, user_age: int, user_gender: str, user_role: str) ->dict:
+	def create_a_user(self, user_name: str, user_age: int, user_gender: str, user_role: str) ->dict:
 		self._validate_user_input(user_name, int(user_age), user_gender, user_role)
 		
-		user_entity = self._repository.create_a_user(user_name, user_password, user_age, user_gender, user_role)
+		user_entity = self._repository.create_a_user(user_name, int(user_age), user_gender, user_role)
 		return user_entity
 
 

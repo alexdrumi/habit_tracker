@@ -129,7 +129,7 @@ class UserRepository:
 		
 
 	@handle_user_repository_errors
-	def create_a_user(self, user_name, user_password, user_age, user_gender, user_role):
+	def create_a_user(self, user_name, user_age, user_gender, user_role):
 		'''
 		Create a user in the app_users table.
 
@@ -142,8 +142,8 @@ class UserRepository:
 		with self._db._connection.cursor() as cursor:
 			user_role_id = self.create_a_role(user_role)
 			try:
-				query = "INSERT INTO app_users(user_name, user_password, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
-				cursor.execute(query, (user_name, user_password, user_age, user_gender, user_role_id))
+				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
+				cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
 				self._db._connection.commit()
 				return {
 					'user_id': cursor.lastrowid,
