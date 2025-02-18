@@ -60,7 +60,6 @@ class AppUsers(models.Model):
 		related_name="users" #not sure what this does just yet
 	)
 	#min max validator works with ORMS but for now I leave it here. I just wanna practice raw SQL calls
-	user_password = models.CharField(validators=[MinValueValidator(1), MaxValueValidator(110)])
 	user_age = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(110)])
 	user_gender = models.CharField(max_length=20, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)

@@ -1,13 +1,15 @@
-from apps.habits.repositories.habit_repository import HabitRepository, HabitNotFoundError
+from apps.habits.repositories.habit_repository import HabitRepository, HabitNotFoundError, HabitRepositoryError, HabitAlreadyExistError
 from mysql.connector.errors import IntegrityError
 from apps.users.repositories.user_repository import UserNotFoundError
 import logging
+
+
 
 def handle_log_service_exceptions(f):
 	def exception_wrapper(*args, **kwargs):
 		try:
 			return f(*args, **kwargs)
-		except (IntegrityError, UserNotFoundError) as specific_error:
+		except (HabitAlreadyExistError, HabitRepositoryError) as specific_error:
 			logging.error(f"Service error in {f.__name__}: {specific_error}")
 			raise specific_error
 		except Exception as error:
@@ -20,7 +22,7 @@ class HabitService:
 	def __init__(self, repository: HabitRepository):
 		self._repository = repository
 
-
+	
 	def _validate_habit_input(self, habit_name: str, habit_action: str, habit_periodicity_type: str, habit_user_id: int, habit_streak=None, habit_periodicity_value=None, is_update=False):
 		"""Validates habit input before passing it to the habit repository."""
 

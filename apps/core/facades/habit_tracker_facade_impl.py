@@ -10,9 +10,10 @@ from apps.analytics.services.analytics_service import AnalyticsService
 class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
 
-	def __init__(self, user_service: UserService, habit_service: HabitService):
+	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService):
 		self._user_service = user_service
 		self._habit_service = habit_service
+		self._goal_service = goal_service
 		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade
 
 	def create_user(self, user_name: str, user_age: int, user_gender: str, user_role: str) ->dict:
@@ -35,3 +36,12 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 
 	def delete_a_habit_by_id(self, habit_id):
 		return self._habit_service.delete_a_habit_by_id(habit_id)
+	
+	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
+		return self._goal_service.create_a_goal( goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description)
+	
+	def delete_a_goal(self, goal_id):
+		return self._goal_service.delete_a_goal(goal_id)
+
+	def query_goals_and_related_habits(self):
+		return self._goal_service.query_goals_and_related_habits()

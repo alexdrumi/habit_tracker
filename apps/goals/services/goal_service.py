@@ -1,4 +1,4 @@
-from apps.goals.repositories.goal_repository import GoalNotFoundError, GoalRepository
+from apps.goals.repositories.goal_repository import GoalNotFoundError, GoalRepository, GoalAlreadyExistError, GoalRepositoryError
 # from apps.habits.repositories.habit_repository import HabitNotFoundError, HabitRepository
 # from apps.kvi_types.repositories.kvi_type_repository import KviTypesNotFoundError, KviTypeRepository
 from apps.habits.services.habit_service import HabitNotFoundError, HabitService
@@ -6,22 +6,43 @@ from apps.kvi_types.services.kvi_type_service import KviTypesNotFoundError, KviT
 from mysql.connector.errors import IntegrityError
 import logging
 
+
+
+
+def handle_log_service_exceptions(f):
+	"""Decorator to clean up and handle errors in goal services methods."""
+	def exception_wrapper(*args, **kwargs):
+		try:
+			return f(*args, **kwargs)
+		except (GoalAlreadyExistError, GoalRepositoryError, GoalNotFoundError) as specific_error:
+			logging.error(f"Service error in {f.__name__}: {specific_error}")
+			raise specific_error
+		except HabitNotFoundError as herror:
+			logging.error(f"Service error in {f.__name__}: {herror}")
+			raise herror
+		except Exception as error:
+			logging.error(f"Unexpected error in {f.__name__}: {error}")
+			raise error
+	return exception_wrapper
+
+
+
 class GoalService:
-	def __init__(self, repository: GoalRepository, habit_service: HabitService, kvi_service: KviTypeService):
+	def __init__(self, repository: GoalRepository, habit_service: HabitService): #, kvi_service: KviTypeService
 		self._repository = repository
 		self._habit_service = habit_service
-		self._kvi_service = kvi_service
+		# self._kvi_service = kvi_service
 
 
-	def _validate_goal(self, action, goal_id=None, goal_name=None, habit_id_id=None, kvi_type_id_id=None, target_kvi_value=None, current_kvi_value=None):
+	def _validate_goal(self, action, goal_id=None, goal_name=None, habit_id_id=None, target_kvi_value=None, current_kvi_value=None):
 		if action not in ["create", "update", "delete"]:
 			raise ValueError(f"Invalid action '{action}'. Allowed: create, update, delete.")
 
 		if action in ["update", "delete"] and not goal_id:
 			raise ValueError("goal_id is required for updating or deleting a goal.")
 
-		if action == "create" and not (kvi_type_id_id and habit_id_id):
-			raise ValueError("kvi_type_id_id and habit_id_id is required for creating a goal.")
+		# if action == "create" and not (kvi_type_id_id and habit_id_id):
+		# 	raise ValueError("kvi_type_id_id and habit_id_id is required for creating a goal.")
 
 		if action == "create" and not goal_name:
 			raise ValueError("user_goal_name is required for creating a goal type.")
@@ -57,32 +78,45 @@ class GoalService:
 			raise
 
 
+	@handle_log_service_exceptions
+	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
+		
+		#validate habit
+		validated_habit_id = self._habit_service._repository.validate_a_habit(habit_id)
 
-	def create_a_goal(self, goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description):
-		try:
-			#get validated habit and kvi ids
-			validated_kvi_id = self._kvi_service._repository.validate_a_kvi_type(kvi_type_id)
-			validated_habit_id = self._habit_service._repository.validate_a_habit(habit_id)
+		#validate goal input
+		self._validate_goal("create", goal_id=None, goal_name=goal_name, habit_id_id=validated_habit_id, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)
 
-			#validate
-			self._validate_goal("create", goal_id=None, goal_name=goal_name, habit_id_id=validated_habit_id, kvi_type_id_id=validated_kvi_id, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)
-
-			#create new goal
-			goal_entity = self._repository.create_a_goal(goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description)
-			return goal_entity
-
-		except HabitNotFoundError as herror:
-			logging.error(f"Habit of with id of: {habit_id} is not found.")
-			raise
-		except KviTypesNotFoundError as kerror:
-			logging.error(f"Kvi type with id of: {kvi_type_id} is not found.")
-			raise
-		except IntegrityError as ierror:
-			logging.error(f"Duplicate goal type error: {ierror}")
-			raise
+		#create new goal
+		goal_entity = self._repository.create_a_goal(goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description)
+		return goal_entity
 
 
 
+	@handle_log_service_exceptions
+	def delete_a_goal(self, goal_id):
+		#validate id
+		validated_goal_id = self._repository.validate_a_goal(goal_id)
+
+		#delete the goal
+		deleted_count = self._repository.delete_a_goal(validated_goal_id)
+		return deleted_count
+
+
+	@handle_log_service_exceptions
+	def query_goals_and_related_habits(self):
+		inner_joined_goals_and_related_habits = self._repository.query_goals_and_related_habits()
+		return inner_joined_goals_and_related_habits
+
+	
+	@handle_log_service_exceptions
+	def delete_a_goal(self, goal_id):
+		validated_goal_id = self._repository.validate_a_goal(goal_id)
+		deleted_count = self._repository.delete_a_goal(validated_goal_id)
+		return deleted_count
+	
+
+	#NOT SURE WHETHER WE NEED THIS AT THE MOMENT
 	def update_a_goal(self, goal_id, goal_name=None, target_kvi_value=None, current_kvi_value=None):
 			try:
 				#validate
@@ -98,17 +132,3 @@ class GoalService:
 			except Exception as error:
 				logging.error(f"Unexpected error in update a goal: {error}")
 				raise
-
-
-	def delete_a_goal(self, goal_id):
-		try:
-			validated_goal_id = self._repository.validate_a_goal(goal_id)
-			deleted_count = self._repository.delete_a_goal(validated_goal_id)
-			return deleted_count
-		except GoalNotFoundError as gerror:
-			logging.error(f"Goal with ID '{goal_id}' not found: {gerror}")
-			raise
-		except Exception as error:
-			#everything else
-			logging.error(f"Unexpected error in create_a_habit: {error}")
-			raise

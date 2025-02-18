@@ -28,16 +28,16 @@ class Goals(models.Model):
 		related_name='goals'
 		# default=1 #maybe needed for test later?
 	)
-	kvi_type_id = models.ForeignKey(
-		KviTypes,
-		on_delete=models.PROTECT, #cant delete
-		related_name='goals'
-	)
+	# kvi_type_id = models.ForeignKey(
+	# 	KviTypes,
+	# 	on_delete=models.PROTECT, #cant delete
+	# 	related_name='goals'
+	# )
 	target_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)]) #cant be neg, this is for: 'walking' goal have 1.0 multiplier, and my goal is 5.0, i would need 5 'periodicity_value' amount of successful habit completion to comlpete my goal
 	current_kvi_value = models.FloatField(default=0.0)
 	goal_description = models.CharField(max_length=80, blank=True)
-	created_at = models.TimeField(auto_now_add=True)
-	deleted_at = models.TimeField(blank=True, null=True) #empty for now, maybe used for statistics later.
+	created_at = models.DateTimeField(auto_now_add=True)
+	deleted_at = models.DateTimeField(blank=True, null=True) #empty for now, maybe used for statistics later.
 
 	class Meta:
 		db_table = "goals"

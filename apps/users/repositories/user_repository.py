@@ -165,15 +165,26 @@ class UserRepository:
 		Returns:
 			int: Number of rows effected by deletion.
 		'''
-		with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
-			query = "DELETE FROM app_users WHERE user_id = %s"
-			cursor.execute(query, (user_id,))
-			self._db._connection.commit()
+		try:
+			self._db._connection.autocommit = False
+			with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
+				#delete the related habit first
+				query_habit = "DELETE FROM habits WHERE habit_user_id = %s";
+				cursor.execute(query_habit, (user_id,))
 
-			if cursor.rowcount == 0:
-				raise UserNotFoundError(user_id)
+				#then the user
+				query = "DELETE FROM app_users WHERE user_id = %s"
+				cursor.execute(query, (user_id,))
+				self._db._connection.commit()
 
-			return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+				if cursor.rowcount == 0:
+					raise UserNotFoundError(user_id)
+				self._db._connection.commit() #if all deletions passed, commit
+				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+		finally:
+			self._db._connection.autocommit = True #allow autocommit again
+
+
 
 
 	@handle_user_repository_errors

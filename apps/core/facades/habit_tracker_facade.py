@@ -28,3 +28,15 @@ class HabitTrackerFacade(ABC):
 	@abstractmethod
 	def delete_a_habit_by_id(self, habit_id):
 		pass
+
+	@abstractmethod
+	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
+		pass
+
+	@abstractmethod
+	def delete_a_goal(self, goal_id):
+		pass
+
+	@abstractmethod
+	def query_goals_and_related_habits(self):
+		pass

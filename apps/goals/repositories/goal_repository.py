@@ -13,57 +13,87 @@ class GoalNotFoundError(Exception):
 	"""Custom exception raised when a user is not found."""
 	pass
 
-class GoalRepository:
-	def __init__(self, database: MariadbConnection, habit_repository: HabitRepository, kvi_repository: KviTypeRepository):
-		self._db = database
-		self._habit_repository = habit_repository
-		self._kvi_repository = kvi_repository
+
+#baseclass
+class GoalRepositoryError(Exception):
+	def __init__(self, message="An unexpected error occurred in goal repository."):
+		super().__init__(message)
 
 
-	def validate_a_goal(self, goal_id):
+class GoalNotFoundError(GoalRepositoryError):
+	"""Raised when a goal is not found."""
+	def __init__(self, goal_id):
+		message = f"Goal not found with ID: {goal_id}"
+		super().__init__(message)
+
+
+class GoalAlreadyExistError(GoalRepositoryError):
+	"""Raised when creating goal fails due to a already existing entry."""
+	def __init__(self, goal_name, goal_user_id):
+		message = f"Goal '{goal_name}' already exists for user with id: {goal_user_id}"
+		super().__init__(message)
+
+def handle_goal_repository_errors(f):
+	"""Decorator to clean up and handle errors in goal repository methods."""
+	def exception_wrapper(self, *args, **kwargs):
 		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT goal_id FROM goals WHERE goal_id = %s;"
-				cursor.execute(query, (goal_id,))
-				current_value = cursor.fetchone()
-
-				if not current_value:
-					raise GoalNotFoundError(f"Goal with id of: {goal_id} is not found.")
-				return current_value[0] #no rows updated but also no error found
-		except Exception as error:
-			self._db._connection.rollback()  # Required if using manual transactions
-			raise		
-
-
-	def create_a_goal(self, goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description):
-		'''
-		Create a goal in the goals table.
-		'''
-		try:
-			with self._db._connection.cursor() as cursor:
-				#probably validation should happen in the service later
-				# validated_kvi = self._kvi_repository.validate_a_kvi_type(kvi_type_id)
-				# validated_habit = self._habit_repository.validate_a_habit(habit_id)
-
-				query = "INSERT INTO goals(goal_name, habit_id_id, kvi_type_id_id, target_kvi_value, current_kvi_value, goal_description, created_at) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
-				cursor.execute(query, (goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description))
-				self._db._connection.commit()
-				return {
-					'goal_id': cursor.lastrowid,
-					'goal_name': goal_name,
-					'target_kvi_value': target_kvi_value,
-					'current_kvi_value': current_kvi_value,
-					'goal_description': goal_description,
-					'habit_id_id': habit_id,
-					'kvi_type_id_id': kvi_type_id,
-				}
+			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
-			if "Duplicate entry" in str(ierror):
-				raise IntegrityError(f"Duplicate goal '{goal_name}' for habit with id '{habit_id}'.") from ierror
-			raise
+			self._db._connection.rollback()
+			#in create_a_habit the first argument is habit_name and last is habit_user_id?
+			raise GoalAlreadyExistError(goal_name=args[0], goal_user_id=args[-1]) from ierror
+		except GoalRepositoryError as herror:
+			raise herror
 		except Exception as error:
 			self._db._connection.rollback()
-			raise
+			raise error
+	return exception_wrapper
+
+
+
+class GoalRepository:
+	def __init__(self, database: MariadbConnection, habit_repository: HabitRepository): #, kvi_repository: KviTypeRepository
+		self._db = database
+		self._habit_repository = habit_repository
+		# self._kvi_repository = kvi_repository
+
+
+	@handle_goal_repository_errors
+	def validate_a_goal(self, goal_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_id FROM goals WHERE goal_id = %s;"
+			cursor.execute(query, (goal_id,))
+			current_value = cursor.fetchone()
+
+			if not current_value:
+				raise GoalNotFoundError(goal_id)
+			return current_value[0] #no rows updated but also no error found
+	
+
+	@handle_goal_repository_errors
+	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
+		'''
+		Create a goal in the goals table.
+
+		Args:
+			(str, int, int, int, str): The name, habit_id, target_kvi_value, current_kvi_value type, goal_description of the goal."
+		
+		Returns:
+			Dict: Entire goal entity.
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "INSERT INTO goals(goal_name, habit_id_id, target_kvi_value, current_kvi_value, goal_description, created_at) VALUES (%s, %s, %s, %s, %s,  NOW());"
+			cursor.execute(query, (goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description))
+			self._db._connection.commit()
+			return {
+				'goal_id': cursor.lastrowid,
+				'goal_name': goal_name,
+				'target_kvi_value': target_kvi_value,
+				'current_kvi_value': current_kvi_value,
+				'goal_description': goal_description,
+				'habit_id_id': habit_id,
+				# 'kvi_type_id_id': kvi_type_id,
+			}
 
 
 	def get_goal_id(self, goal_name, habit_id):
@@ -119,8 +149,17 @@ class GoalRepository:
 			self._db._connection.rollback()
 			raise
 
-
+	@handle_goal_repository_errors
 	def delete_a_goal(self, goal_id):
+		'''
+		Create a goal in the goals table.
+
+		Args:
+			(str, int, int, int, str): The name, habit_id, target_kvi_value, current_kvi_value type, goal_description of the goal."
+		
+		Returns:
+			Dict: Entire goal entity.
+		'''
 		try:
 			#validate goal in the service layer
 			with self._db._connection.cursor() as cursor:
@@ -135,5 +174,24 @@ class GoalRepository:
 				self._db._connection.rollback()
 				raise
 	
+	@handle_goal_repository_errors
+	def query_goals_and_related_habits(self):
+		'''
+		Requests all goals with their associated habits.
 
+		Args:
+			None
+		
+		Returns:
+			dict(list): every goal data with goal_name, goal_id, habit_name, habit_id
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON goals.habit_id_id = habits.habit_id;"
+			cursor.execute(query)
 
+			result = cursor.fetchall()
+
+			if result:
+				return result
+			else:
+				return []
