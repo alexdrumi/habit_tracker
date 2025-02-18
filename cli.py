@@ -51,6 +51,9 @@ class CLI:
 		for data in goals_and_habits:
 			print(f"\ngoal_name: {data[0]}, goal_id: {data[1]}, habit_name: {data[3]}, habit_id: {data[2]}")
 
+	def print_goals_of_habit(self, goals):
+		for goal in goals:
+			print(goal)
 
 
 	def display_menu(self):
@@ -65,6 +68,7 @@ class CLI:
 		click.echo("8, Create a certain goal for a habit")
 		click.echo("9, List goals with associated habits")
 		click.echo("10, Delete goal")
+		click.echo("11, Complete a habit/goal")
 
 
 	def option_1_create_user(self):
@@ -186,6 +190,41 @@ class CLI:
 		self._facade.delete_a_goal(int(goal_id))
 
 
+	def option_11_complete_habit(self):
+		click.echo("You selected option 11 - Complete a habit")
+		click.pause()
+
+
+		self.option_9_list_all_goals_with_habits()
+		#we need habit id
+		while True:
+			habit_id = click.prompt("Enter a habit ID.", type=str)
+			if not habit_id.isdigit():
+				print("Invalid input for habit_id")
+			else:
+				break
+
+		goals_of_habit = self._facade.query_goals_of_a_habit(habit_id=habit_id)
+		self.print_goals_of_habit(goals_of_habit)
+		#we will get the goal id based on that
+		while True:
+			goal_id = click.prompt("Enter a goal ID.", type=str)
+			if not goal_id.isdigit():
+				print("Invalid input for goal_id")
+			else:
+				break
+		
+		self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
+		#we pass this to the facade after light input validation
+		#we will update the goals current kvi val with current += 1
+
+		#this is essentially a completed habit for 'a certain interval' 
+		#thus we will have to restart the last completed part
+
+		#for that we will also need a progresses blueprint everytime we call this
+
+
+
 	def run(self):
 		signal.signal(signal.SIGINT, signal_handler)
 
@@ -223,6 +262,8 @@ class CLI:
 			if choice == 10:
 				self.option_10_delete_goal()
 
+			if choice == 11:
+				self.option_11_complete_habit()
 
 def main():
 	database = MariadbConnection()

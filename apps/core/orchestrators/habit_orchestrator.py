@@ -34,3 +34,29 @@ class HabitOrchestrator:
 		#create the habit with using essentially one of the methods of the facade
 		new_habit = self._habit_facade.create_a_habit(habit_name=habit_name, habit_action=habit_action, habit_periodicity_type=habit_periodicity_type, habit_user_id=user_id)
 		return new_habit
+
+	def complete_a_habit(self, habit_id, goal_id):
+		#we check whether habit exists
+		validated_habit_id = self._habit_facade.validate_a_habit(habit_id=habit_id)
+
+		#check whether the goal exists
+		validated_goal_id = self._habit_facade.validate_a_goal(goal_id=goal_id)
+
+		#select one goal id which we will want to tick
+
+		#we will update the goals current kvi val with current += 1
+
+		#get current kvi value of the goal?
+		current_kvi_value = self._habit_facade.get_current_kvi(goal_id=goal_id)
+		print(current_kvi_value)
+		print(f"{type(current_kvi_value)}")
+		new_kvi_value = float(current_kvi_value) + 1.0
+		# print
+		self._habit_facade.update_goal_current_kvi_value(goal_id=validated_goal_id, current_kvi_value=new_kvi_value)
+		print(f"{self._habit_facade.get_current_kvi(goal_id=goal_id)}")
+
+
+		#this is essentially a completed habit for 'a certain interval' 
+		#thus we will have to restart the last completed part
+
+		#for that we will also need a progresses blueprint everytime we call this

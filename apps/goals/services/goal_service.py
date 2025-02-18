@@ -55,16 +55,17 @@ class GoalService:
 			if not (current_kvi_value >= 0.0 and current_kvi_value <= float('inf')):
 				raise ValueError("current_kvi_value must be between 0.0 and float max.")
 
-
+	@handle_log_service_exceptions
 	def validate_goal_id(self, goal_id):
-		try:
-			validated_goal_id = self._repository.validate_a_goal(goal_id)
-		except GoalNotFoundError as gerror:
-			logging.error(f"Goal with ID '{goal_id}' not found: {gerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update a goal: {error}")
-			raise	
+		#maybe some more extensive validation?
+		validated_goal_id = self._repository.validate_a_goal(goal_id)
+		return validated_goal_id
+	
+	@handle_log_service_exceptions
+	def get_current_kvi(self, goal_id):
+		#maybe some more extensive validation?
+		current_goal_kvi = self._repository.get_current_kvi(goal_id=goal_id)
+		return current_goal_kvi
 
 
 	def get_goal_id(self, goal_name, habit_id):
@@ -116,19 +117,18 @@ class GoalService:
 		return deleted_count
 	
 
-	#NOT SURE WHETHER WE NEED THIS AT THE MOMENT
+	#NOT SURE WHETHER WE NEED THIS AT THE MOMENT, we will use only to update the current kvi value, later this might be more extensive
+	@handle_log_service_exceptions
 	def update_a_goal(self, goal_id, goal_name=None, target_kvi_value=None, current_kvi_value=None):
-			try:
-				#validate
-				self._validate_goal("update", goal_id=goal_id, goal_name=goal_name, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)
-				
-				#update
-				updated_rows = self._repository.update_goal_field(goal_id, goal_name, target_kvi_value, current_kvi_value)
-				return updated_rows
-	
-			except GoalNotFoundError as gerror:
-				logging.error(f"Goal with ID '{goal_id}' not found: {gerror}")
-				raise
-			except Exception as error:
-				logging.error(f"Unexpected error in update a goal: {error}")
-				raise
+			#validate
+			self._validate_goal("update", goal_id=goal_id, goal_name=goal_name, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)
+			
+			#update
+			updated_rows = self._repository.update_goal_field(goal_id, goal_name, target_kvi_value, current_kvi_value)
+			return updated_rows
+
+
+	@handle_log_service_exceptions
+	def query_goals_of_a_habit(self, habit_id):
+		goals = self._repository.query_goals_of_a_habit(habit_id)
+		return goals

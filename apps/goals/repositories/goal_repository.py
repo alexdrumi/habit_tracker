@@ -112,10 +112,24 @@ class GoalRepository:
 			self._db._connection.rollback()
 			raise
 
+	@handle_goal_repository_errors
+	def get_current_kvi(self, goal_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT current_kvi_value FROM goals WHERE goal_id = %s"
+			cursor.execute(query, (goal_id,))
+			result = cursor.fetchone() #later it might be more goals, for now will be one
+
+			if result:
+				return result[0]
+			else:
+				raise GoalNotFoundError(goal_id)
 
 
+	@handle_goal_repository_errors
 	def update_goal_field(self, goal_id, goal_name=None, target_kvi_value=None, current_kvi_value=None):
 		try:
+
+			#WE GOTTA DO SOME INPUT VALIDATION OUTSIDE
 			updated_fields = []
 			updated_values = []
 
@@ -188,6 +202,29 @@ class GoalRepository:
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON goals.habit_id_id = habits.habit_id;"
 			cursor.execute(query)
+
+			result = cursor.fetchall()
+
+			if result:
+				return result
+			else:
+				return []
+
+
+	@handle_goal_repository_errors
+	def query_goals_of_a_habit(self, habit_id):
+		'''
+		Requests all goals of one specific habit. Initially this will be only one goal per habit, eventually can have more goals.
+
+		Args:
+			None
+		
+		Returns:
+			dict(list): every goal data with goal_name, goal_id, habit_name, habit_id
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON %s = goals.habit_id_id;"
+			cursor.execute(query, (habit_id, ))
 
 			result = cursor.fetchall()
 
