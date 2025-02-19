@@ -78,6 +78,11 @@ class GoalService:
 			logging.error(f"Unexpected error in update a goal: {error}")
 			raise
 
+	@handle_log_service_exceptions
+	def get_goal_entity_by_id(self, goal_id, habit_id):
+		goal_entity = self._repository.get_goal_entity_by_id(goal_id=goal_id, habit_id=habit_id)
+		return goal_entity
+
 
 	@handle_log_service_exceptions
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):

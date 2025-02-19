@@ -23,7 +23,7 @@ class Progresses(models.Model):
 	progress_description = models.CharField(max_length=30, blank=True, null=True)
 	current_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
 	distance_from_goal_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
-	occurence_date = models.DateField(auto_now_add=True)
+	occurence_date = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
 		db_table = "progresses"

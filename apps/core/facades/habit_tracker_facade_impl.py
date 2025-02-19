@@ -4,6 +4,7 @@ from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 from apps.users.services.user_service import UserService
 from apps.habits.services.habit_service import HabitService
 from apps.goals.services.goal_service import GoalService
+from apps.progresses.services.progress_service import ProgressesService
 from apps.analytics.services.analytics_service import AnalyticsService
 
 
@@ -15,10 +16,11 @@ from apps.analytics.services.analytics_service import AnalyticsService
 class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
 
-	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService):
+	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService):
 		self._user_service = user_service
 		self._habit_service = habit_service
 		self._goal_service = goal_service
+		self._progress_service = progress_service
 		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade
 
 	"""USER RELATED METHODS"""
@@ -74,4 +76,10 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	def validate_a_goal(self, goal_id):
 		return self._goal_service.validate_goal_id(goal_id=goal_id)
 	
+	def get_goal_entity_by_id(self, goal_id, habit_id):
+		return self._goal_service.get_goal_entity_by_id(goal_id=goal_id, habit_id=habit_id)
+
 	#def complete a habit for the orchestrator
+	"""PROGRESS RELATED METHODS"""
+	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, progress_description=None):
+		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description)

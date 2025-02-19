@@ -4,38 +4,73 @@ from apps.goals.repositories.goal_repository import GoalRepository
 from apps.database.database_manager import MariadbConnection
 from mysql.connector.errors import IntegrityError
 
-class ProgressesNotFoundError(Exception):
-	"""Custom exception raised when analytics is not found."""
-	pass
+#baseclass
+class ProgressesRepositoryError(Exception):
+	def __init__(self, message="An unexpected error occurred in progress repository."):
+		super().__init__(message)
+
+
+class ProgressNotFoundError(ProgressesRepositoryError):
+	"""Raised when a progress is not found."""
+	def __init__(self, progress_id):
+		message = f"Progress not found with ID: {progress_id}"
+		super().__init__(message)
+
+
+class ProgressAlreadyExistError(ProgressesRepositoryError):
+	"""Raised when creating progress fails due to a already existing entry."""
+	def __init__(self, progress_name, progress_id):
+		message = f"Goal '{progress_name}' already exists for user with id: {progress_id}"
+		super().__init__(message)
+
+def handle_goal_repository_errors(f):
+	"""Decorator to clean up and handle errors in progress repository methods."""
+	def exception_wrapper(self, *args, **kwargs):
+		try:
+			return f(self, *args, **kwargs)
+		except IntegrityError as ierror:
+			self._db._connection.rollback()
+			#in create_a_habit the first argument is habit_name and last is habit_user_id?
+			raise ProgressAlreadyExistError(progress_name=args[0], progress_id=args[-1]) from ierror
+		except ProgressesRepositoryError as herror:
+			raise herror
+		except Exception as error:
+			self._db._connection.rollback()
+			raise error
+	return exception_wrapper
+
+
 
 
 class ProgressesRepository:
 	def __init__(self, database: MariadbConnection, goal_repository: GoalRepository):
 		self._db = database
 		self._goal_repository = goal_repository
-	
 
-	def create_progress(self, goal_id, progress_description=None):
+
+
+	@handle_goal_repository_errors
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, progress_description=None):
 		'''
-		Create progress snapshot for a certain goals.
+		Create a progress in the progresses table.
+
+		Args:
+			int, (str): The goal_id of the goal which made the progress. Optionally a progress description."
+		
+		Returns:
+			Dict: Progress id and goal id.
 		'''
-		try:
-			#validation of habit will come from the service layer
-			with self._db._connection.cursor() as cursor:		 
-				query = "INSERT INTO progresses(goal_id_id, progress_description) VALUES (%s, %s);"
-				cursor.execute(query, (goal_id, progress_description,))
-				self._db._connection.commit()
-				return {
-					'progress_id': cursor.lastrowid,
-					'goal_id': goal_id,
-				}
-		except IntegrityError as ierror:
-			if "Duplicate entry" in str(ierror):
-				raise IntegrityError(f"Duplicate progress for goal with id '{goal_id}'.") from ierror
-			raise
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
+		with self._db._connection.cursor() as cursor:		 
+			query = "INSERT INTO progresses(current_kvi_value, goal_id_id, distance_from_goal_kvi_value, occurence_date) VALUES (%s, %s, %s, NOW());"
+			cursor.execute(query, (current_kvi_value, goal_id, distance_from_target_kvi_value,))
+			self._db._connection.commit()
+			return {
+				'progress_id': cursor.lastrowid,
+				'goal_id': goal_id,
+				'current_kvi_value': current_kvi_value,
+				'distance_from_target_kvi_value': distance_from_target_kvi_value,
+			}
+	
 
 
 	def get_progress_id(self, goal_id):

@@ -1,6 +1,27 @@
-from apps.progresses.repositories.progress_repository import ProgressesRepository, ProgressesNotFoundError
+from apps.progresses.repositories.progress_repository import ProgressesRepository, ProgressAlreadyExistError, ProgressesRepositoryError, ProgressNotFoundError
 from apps.goals.services.goal_service import GoalService, GoalNotFoundError
 import logging
+
+
+
+def handle_log_service_exceptions(f):
+	"""Decorator to clean up and handle errors in progress services methods."""
+	def exception_wrapper(*args, **kwargs):
+		try:
+			return f(*args, **kwargs)
+		except (ProgressAlreadyExistError, ProgressNotFoundError, GoalNotFoundError) as specific_error:
+			logging.error(f"Service error in {f.__name__}: {specific_error}")
+			raise specific_error
+		except ProgressesRepositoryError as herror:
+			logging.error(f"Service error in {f.__name__}: {herror}")
+			raise herror
+		except Exception as error:
+			logging.error(f"Unexpected error in {f.__name__}: {error}")
+			raise error
+	return exception_wrapper
+
+
+
 
 class ProgressesService:
 	def __init__(self, repository: ProgressesRepository, goal_service: GoalService):
@@ -8,20 +29,11 @@ class ProgressesService:
 		self._goal_service = goal_service
 
 
-	def create_progress(self, goal_id, progress_description=None):
-		try:
-			#validate goal id etc here
-			validated_goal_id = self._goal_service.validate_goal_id(goal_id)
-			#create the progress
-			progress_entity = self._repository.create_progress(validated_goal_id, progress_description)
-			return progress_entity
-
-		except GoalNotFoundError as gerror:
-			logging.error(f"Goal not found error originates in create progress service.: {gerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected exception originates in create progress service: {error}")
-			raise
+	@handle_log_service_exceptions
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, progress_description=None):
+		validated_goal_id = self._goal_service.validate_goal_id(goal_id) #we call this now from orchestrator, but maybe later we use it also as a single call, better to validate here as well
+		progress_entity = self._repository.create_progress(validated_goal_id, current_kvi_value, distance_from_target_kvi_value, progress_description)
+		return progress_entity
 
 
 	def get_progress_id(self, goal_id):
@@ -29,7 +41,7 @@ class ProgressesService:
 			progress_id = self._repository.get_progress_id(goal_id)
 			return progress_id
 
-		except ProgressesNotFoundError as perror:
+		except ProgressNotFoundError as perror:
 			logging.error(f"Progress with goal ID '{goal_id}' not found: {perror}")
 			raise
 		except Exception as error:
@@ -43,7 +55,7 @@ class ProgressesService:
 			progress_entity = self._repository.get_progress(progress_id)
 			return progress_entity
 
-		except ProgressesNotFoundError as perror:
+		except ProgressNotFoundError as perror:
 			logging.error(f"Progress with goal ID '{goal_id}' not found in get progress: {perror}")
 			raise
 		except Exception as error:
@@ -58,7 +70,7 @@ class ProgressesService:
 			deleted_rows = self._repository.delete_progress(progress_id)
 			return deleted_rows
 
-		except ProgressesNotFoundError as perror:
+		except ProgressNotFoundError as perror:
 			logging.error(f"Progress with goal ID '{goal_id}' not found in delete progress: {perror}")
 			raise
 		except Exception as error:

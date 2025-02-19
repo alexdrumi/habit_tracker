@@ -25,6 +25,8 @@ from apps.habits.services.habit_service import HabitService
 from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.goals.repositories.goal_repository import GoalRepository, GoalRepositoryError, GoalNotFoundError, GoalAlreadyExistError
 from apps.goals.services.goal_service import GoalService
+from apps.progresses.repositories.progress_repository import ProgressesRepository
+from apps.progresses.services.progress_service import ProgressesService
 
 def signal_handler(sig, frame):
 	print('You pressed Ctrl+C, doei!')
@@ -273,8 +275,10 @@ def main():
 	habit_service = HabitService(habit_repository)
 	goal_repository = GoalRepository(database, habit_repository)
 	goal_service = GoalService(goal_repository, habit_service)
+	progress_repository = ProgressesRepository(database, goal_repository)
+	progress_service = ProgressesService(progress_repository, goal_service)
 
-	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service)
+	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service)
 	cli = CLI(habit_tracker_facade=habit_tracker_facade)
 	cli.run()
 

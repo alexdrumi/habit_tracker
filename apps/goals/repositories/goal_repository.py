@@ -113,6 +113,18 @@ class GoalRepository:
 			raise
 
 	@handle_goal_repository_errors
+	def get_goal_entity_by_id(self, goal_id, habit_id):
+		#we will validate the habit in the service layer so by this time it exists
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
+			cursor.execute(query, (goal_id, habit_id))
+			result = cursor.fetchall()
+			if result:
+				return result
+			else:
+				raise GoalNotFoundError(goal_id)
+
+	@handle_goal_repository_errors
 	def get_current_kvi(self, goal_id):
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT current_kvi_value FROM goals WHERE goal_id = %s"

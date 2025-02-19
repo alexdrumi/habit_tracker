@@ -158,7 +158,6 @@ class HabitRepository:
 				raise HabitNotFoundError(habit_id) #doesnt this throw none or so?
 			return habit_id[0] #id
 
-
 	@handle_habit_repository_errors		
 	def delete_a_habit(self, habit_id):
 		'''
