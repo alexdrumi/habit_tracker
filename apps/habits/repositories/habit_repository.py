@@ -219,3 +219,24 @@ class HabitRepository:
 			
 			return habits #no rows updated but also no error found
 	
+	@handle_habit_repository_errors
+	def get_habit_by_id(self, habit_id):
+		'''
+		Gets all information about a specific habit in the database. Acts like an in memory object for facade.
+
+		Args:
+			int: habit_id
+		
+		Returns:
+			dict: habit_id, habit_name, habit_streak, habit_periodicity_type
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
+			cursor.execute(query)
+			habits = cursor.fetchall()
+				
+			if not habits:
+				dummy_id_holder = -1
+				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
+			
+			return habits #no rows updated but also no error found

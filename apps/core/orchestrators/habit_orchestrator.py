@@ -46,6 +46,9 @@ class HabitOrchestrator:
 		goal_entity = self._habit_facade.get_goal_entity_by_id(validated_goal_id, validated_habit_id)
 		current_kvi_value = goal_entity[0][2]
 		target_kvi_value = goal_entity[0][1]
+		print(f"{goal_entity} is the goal entity\n\n\n")
+		# [(1, 3, 8.0, 6.0)] is the goal entit
+		#goalid, habitid, targetkvi, currentkvi
 		new_kvi_value = float(current_kvi_value) + 1.0
 		self._habit_facade.update_goal_current_kvi_value(goal_id=validated_goal_id, current_kvi_value=new_kvi_value)
 

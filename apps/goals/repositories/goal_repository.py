@@ -116,11 +116,19 @@ class GoalRepository:
 	def get_goal_entity_by_id(self, goal_id, habit_id):
 		#we will validate the habit in the service layer so by this time it exists
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT goal_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
+			query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
 			cursor.execute(query, (goal_id, habit_id))
 			result = cursor.fetchall()
 			if result:
 				return result
+				# return {
+				# 'goal_id': cursor.lastrowid,
+				# 'goal_name': goal_name,
+				# 'target_kvi_value': target_kvi_value,
+				# 'current_kvi_value': current_kvi_value,
+				# 'goal_description': goal_description,
+				# 'habit_id_id': habit_id,
+				# }
 			else:
 				raise GoalNotFoundError(goal_id)
 
