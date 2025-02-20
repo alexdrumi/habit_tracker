@@ -1,30 +1,29 @@
 from apps.progresses.repositories.progress_repository import ProgressesRepository
+from apps.progresses.services.progress_service import ProgressesService
 from apps.goals.domain.goal_subject import GoalSubject
 
 class ProgressObserver:
-	def __init__(self, progress_repo: ProgressesRepository):
-		self._progress_repo = progress_repo
+	def __init__(self, progress_service: ProgressesService):
+		self._progress_service = progress_service
 
-	def update(self, goal_subject: GoalSubject): #
+	def update(self, goal_subject: GoalSubject):
 		"""
-		Shoukld be updated when the goals current kvi val changes
+		Should be updated when the goals current kvi value changes.
 		Creates a progress entry in the database.
 
-		Args
-
-		return
+		Args:
+			goal_subject (Goalsubject): The goal object containing the updated values.
 		"""
-		goal_data = goal_subject.goal_data
-		goal_id = goal_data['goal_id']
-		current_val = goal_data['current_kvi_value']
-		target_val = goal_data['target_kvi_value']
+		goal_id = goal_subject._goal_data['goal_id']
+		current_val = goal_subject._goal_data['current_kvi']
+		target_val = goal_subject._goal_data['target_kvi']
 
 		distance_from_goal = target_val - current_val
 
-		#SHALL WE GO THROUGH THE SERVICE? AS THESE DO NOT HAVE ANY VALIDATION LOGIC HERE
-		self.progress_repo.create_progress(
+		#should we handle this via the service? No validation logic is applied here.
+		self._progress_service.create_progress(
 			goal_id=goal_id,
 			current_kvi_value=current_val,
 			distance_from_target_kvi_value=distance_from_goal,
-			progress_description="Auto-generated progress entry"
+			progress_description="some autogen entry"
 		)

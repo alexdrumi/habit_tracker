@@ -118,17 +118,15 @@ class GoalRepository:
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
 			cursor.execute(query, (goal_id, habit_id))
-			result = cursor.fetchall()
+			result = cursor.fetchone()
 			if result:
-				return result
-				# return {
-				# 'goal_id': cursor.lastrowid,
-				# 'goal_name': goal_name,
-				# 'target_kvi_value': target_kvi_value,
-				# 'current_kvi_value': current_kvi_value,
-				# 'goal_description': goal_description,
-				# 'habit_id_id': habit_id,
-				# }
+				return {
+					'goal_id': result[0],
+					'habit_id': result[1],
+					'target_kvi': result[2],
+					'current_kvi': result[3]
+				}
+
 			else:
 				raise GoalNotFoundError(goal_id)
 
