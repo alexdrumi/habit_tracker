@@ -14,13 +14,8 @@ from apps.goals.domain.goal_subject import GoalSubject
 def build_goal_subject(goal_id, habit_id, goal_service: GoalService, progress_service: ProgressesRepository):
 	#creates a Goalsubject, attaches observer (s) and returns it.
 
-	#goal data pulled by id, for now via repo but I prob will change it to facade for input checks via service
-	# goal_data = goal_repo.repoget_goal_entity_by_id(validated_goal_id, validated_habit_id)
-	# goal_entity = self._habit_facade.get_goal_entity_by_id(validated_goal_id, validated_habit_id)
-
 	#get goal data (dict) from goal repo
 	goal_data = goal_service.get_goal_entity_by_id(goal_id, habit_id) #this will need validation thus should go through facade or service
-
 
 	goal_subject = GoalSubject(goal_service=goal_service, goal_data=goal_data)
 

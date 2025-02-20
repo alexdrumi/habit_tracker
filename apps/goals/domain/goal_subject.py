@@ -12,14 +12,14 @@ class GoalSubject:
 		"""
 		self._goal_service = goal_service
 		self._goal_data = goal_data
-		self._observers = [] #mostly notification observer for now but later can be many others assigned here
+		self._observers = [] #mostly progresses and notification observer for now but later can be many others assigned here
 	
 	def attach(self, observer):
 		self._observers.append(observer)
 	
 	def notify(self):
 		for observer in self._observers: #will trigger all observers (notification, progress observer for blueprint)
-			observer.update(goal_subject=self) #this will be a notification method
+			observer.update(progress_data=self._goal_data)#this will be a notification method,forgot to specify goal_subject=self, before...
 	
 	def increment_kvi(self, increment=1.0):
 		target_kvi_value = self._goal_data['target_kvi']
@@ -32,9 +32,5 @@ class GoalSubject:
 		self._goal_data['current_kvi'] = new_kvi_value
 		self._goal_data[self._goal_data['target_kvi']] = target_kvi_value - new_kvi_value
 
-		# #create the blueprint with the updated values
-		# distance_from_goal_kvi_value = target_kvi_value - new_kvi_value
-		# progress_entity = self._habit_facade.create_a_progress(validated_goal_id, current_kvi_value=new_kvi_value, distance_from_kvi_value=distance_from_goal_kvi_value, progress_description=None)
-		
 		#notify other observerrs?
-		self.notify() #creates a progress blueprint
+		self.notify() #creates a progress blueprint, notifies user

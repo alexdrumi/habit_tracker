@@ -2,11 +2,13 @@ from apps.progresses.repositories.progress_repository import ProgressesRepositor
 from apps.progresses.services.progress_service import ProgressesService
 from apps.goals.domain.goal_subject import GoalSubject
 
+
 class ProgressObserver:
 	def __init__(self, progress_service: ProgressesService):
 		self._progress_service = progress_service
 
-	def update(self, goal_subject: GoalSubject):
+
+	def update(self, progress_data: dict): #we can just pass a dict to update methods in general.
 		"""
 		Should be updated when the goals current kvi value changes.
 		Creates a progress entry in the database.
@@ -14,9 +16,9 @@ class ProgressObserver:
 		Args:
 			goal_subject (Goalsubject): The goal object containing the updated values.
 		"""
-		goal_id = goal_subject._goal_data['goal_id']
-		current_val = goal_subject._goal_data['current_kvi']
-		target_val = goal_subject._goal_data['target_kvi']
+		goal_id = progress_data['goal_id']
+		current_val = progress_data['current_kvi']
+		target_val = progress_data['target_kvi']
 
 		distance_from_goal = target_val - current_val
 

@@ -12,8 +12,8 @@ class ProgressesRepositoryError(Exception):
 
 class ProgressNotFoundError(ProgressesRepositoryError):
 	"""Raised when a progress is not found."""
-	def __init__(self, progress_id):
-		message = f"Progress not found with ID: {progress_id}"
+	def __init__(self, goal_id_or_progress_id):
+		message = f"Progress not found with goal/progress ID: {goal_id_or_progress_id}" #for now..
 		super().__init__(message)
 
 
@@ -72,50 +72,40 @@ class ProgressesRepository:
 			}
 	
 
-
+	@handle_goal_repository_errors
 	def get_progress_id(self, goal_id):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT progress_id FROM progresses WHERE goal_id_id = %s"
-				cursor.execute(query, (goal_id,))
-				result = cursor.fetchone()
-				if result:
-					progress_id_idx = 0
-					return result[progress_id_idx]
-				else:
-					raise ProgressesNotFoundError(f"Progress with of with goal_id {goal_id} is not found.")
-		except Exception as error:
-			raise
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT progress_id FROM progresses WHERE goal_id_id = %s"
+			cursor.execute(query, (goal_id,))
+			result = cursor.fetchone()
+			if result:
+				progress_id_idx = 0
+				return result[progress_id_idx]
+			else:
+					raise ProgressNotFoundError(goal_id)
+
 
 	#https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursordict.html
+	@handle_goal_repository_errors
 	def get_progress(self, progress_id):
-		try:
-			with self._db._connection.cursor(dictionary=True) as cursor:
-				query = "SELECT * FROM progresses WHERE progress_id = %s;"
-				cursor.execute(query, (progress_id,))
-				progress_entry = cursor.fetchone()
+		with self._db._connection.cursor(dictionary=True) as cursor:
+			query = "SELECT * FROM progresses WHERE progress_id = %s;"
+			cursor.execute(query, (progress_id,))
+			progress_entry = cursor.fetchone()
 
-				if not progress_entry:
-					raise ProgressesNotFoundError(f"Progress with id {progress_id} not found.")
+			if not progress_entry:
+				raise ProgressNotFoundError(progress_id)
 
-				return progress_entry
-	
-		except Exception as error:
-			raise
+			return progress_entry
 
 
-
+	@handle_goal_repository_errors
 	def delete_progress(self, progress_id):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "DELETE FROM progresses WHERE progress_id = %s;"
-				cursor.execute(query, (progress_id,))
-				self._db._connection.commit()
+		with self._db._connection.cursor() as cursor:
+			query = "DELETE FROM progresses WHERE progress_id = %s;"
+			cursor.execute(query, (progress_id,))
+			self._db._connection.commit()
 
-				if cursor.rowcount == 0:
-					raise ProgressesNotFoundError(f"Progress with id {progress_id} is not found.")
-				return cursor.rowcount
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
-
+			if cursor.rowcount == 0:
+				raise ProgressNotFoundError(progress_id)
+			return cursor.rowcount
