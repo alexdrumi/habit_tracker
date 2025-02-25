@@ -53,6 +53,9 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	def complete_a_habit(self, habit_id, goal_id):
 		return self._habit_orchestrator.complete_a_habit(habit_id=habit_id, goal_id=goal_id)
 
+	def get_habit_strategy(self, habit_id):
+		return self._habit_service.get_periodicity_type(habit_id)
+
 
 	"""GOAL RELATED METHODS"""
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):

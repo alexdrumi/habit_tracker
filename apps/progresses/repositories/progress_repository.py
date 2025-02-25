@@ -75,7 +75,7 @@ class ProgressesRepository:
 	@handle_goal_repository_errors
 	def get_progress_id(self, goal_id):
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT progress_id FROM progresses WHERE goal_id_id = %s"
+			query = "SELECT progress_id FROM progresses WHERE goal_id_id = %s" #how to sort this based on occurence date?
 			cursor.execute(query, (goal_id,))
 			result = cursor.fetchone()
 			if result:
@@ -84,6 +84,20 @@ class ProgressesRepository:
 			else:
 					raise ProgressNotFoundError(goal_id)
 
+	@handle_goal_repository_errors
+	def get_last_progress_entry(self, goal_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT * FROM progresses WHERE goal_id_id = %s ORDER BY occurence_date;"
+			cursor.execute(query, (goal_id,))
+			result = cursor.fetchall()
+
+			if result:
+				# print(f'FROM PROGRESS REPO {result} IS THE LAST PROGRESS OR SO')
+				# print(result[0])
+				return result[-1]
+			else:
+				return None
+		
 
 	#https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursordict.html
 	@handle_goal_repository_errors

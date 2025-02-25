@@ -61,6 +61,17 @@ class ProgressesService:
 		except Exception as error:
 			logging.exception("Unexpected error in get progress") #apparently, this is better for tracing, https://docs.python.org/3/library/logging.html
 			raise
+	
+	def get_last_progress_entry(self, goal_id):
+		try:
+			last_progress_entry = self._repository.get_last_progress_entry(goal_id)
+			return last_progress_entry
+		except ProgressNotFoundError as perror:
+			logging.error(f"Progress with goal ID '{goal_id}' not found in get progress: {perror}")
+			raise
+		except Exception as error:
+			logging.exception("Unexpected error in get progress") #apparently, this is better for tracing, https://docs.python.org/3/library/logging.html
+			raise
 
 
 	def delete_progress(self, goal_id, progress_id=None):

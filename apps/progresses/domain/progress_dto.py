@@ -6,3 +6,6 @@ class ProgressHistoryDTO:
 		self._last_updated_time = last_updated_time
 		self._total_completed_times = total_completed_times
 		self._distance_from_goal = distance_from_goal_kvi
+	
+	def to_dict(self):
+		return self.__dict__

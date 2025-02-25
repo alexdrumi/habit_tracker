@@ -1,16 +1,18 @@
 from apps.goals.repositories.goal_repository import GoalRepository
 from apps.goals.services.goal_service import GoalService
-
+from apps.progresses.services.progress_service import ProgressesService
 #errors?
 
 #when we build this object in a factory pattern, we will attach the observer and notification to it
 class GoalSubject:
-	def __init__(self, goal_service: GoalService, goal_data: dict):
+	def __init__(self, goal_service: GoalService, progress_service: ProgressesService, goal_data: dict):
 		"""
 		goal_data dict: eg. {'goal_id':3, 'target_kvi_value':7.0, 'current_kvi_value':2.0, maybe habit_id_id ?}
 		goal_repo: an instance of GoalRepository so we can call raw sql to persist changes
 		"""
 		self._goal_service = goal_service
+		self._progress_service = progress_service
+
 		self._goal_data = goal_data
 		self._observers = [] #mostly progresses and notification observer for now but later can be many others assigned here
 	
@@ -32,5 +34,15 @@ class GoalSubject:
 		self._goal_data['current_kvi'] = new_kvi_value
 		self._goal_data[self._goal_data['target_kvi']] = target_kvi_value - new_kvi_value
 
+		# occurence_date = self._progress_service.get_progress(self._goal_data['goal_id'])
+		# print(f'{occurence_date} IS THE OCCURENCE DATE )progress entity inside the increment kvi')
+		# print(f"{self._goal_data['goal_id']} are self._goal_data['goal_id']\n\n")
+		last_progress = self._progress_service.get_last_progress_entry(goal_id=self._goal_data['goal_id'])
+		self._goal_data['last_occurence'] = last_progress[3]
+		print(f"{self._goal_data['last_occurence']} is the goal last occurence now")
+
+		# print(f"{last_progress} is the last progress entry\n\n")
+		# print(f"{last_progress[3]} is the datetime we need")
+		# self._goal_data
 		#notify other observerrs?
 		self.notify() #creates a progress blueprint, notifies user

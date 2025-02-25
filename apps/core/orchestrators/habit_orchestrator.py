@@ -38,10 +38,14 @@ class HabitOrchestrator:
 		#check whether the goal exists
 		validated_goal_id = self._habit_facade.validate_a_goal(goal_id=goal_id)
 
+		#get the periodicity type for notification observer
+		habit_periodicity_type = self._habit_facade.get_habit_strategy(validated_habit_id)
+
 		#build the subject (this wil be the subject of any kind of observers)
 		goal_subject = build_goal_subject(
 			habit_id=validated_habit_id,
 			goal_id=validated_goal_id,
+			habit_periodicity_type = habit_periodicity_type,
 			goal_service=self._habit_facade._goal_service,
 			progress_service=self._habit_facade._progress_service
 			)

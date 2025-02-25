@@ -22,6 +22,12 @@ class HabitAlreadyExistError(HabitRepositoryError):
 		message = f"Habit '{habit_name}' already exists for user with id: {habit_user_id}"
 		super().__init__(message)
 
+class HabitPeriodicityTypeError(HabitRepositoryError):
+	"""Raised when a habit periodicity type is not found."""
+	def __init__(self, habit_id):
+		message = f"Habit periodicity type for habit with ID: {habit_id} is not found."
+		super().__init__(message)
+
 def handle_habit_repository_errors(f):
 	"""Decorator to clean up and handle errors in habit repository methods."""
 	def exception_wrapper(self, *args, **kwargs):
@@ -134,6 +140,18 @@ class HabitRepository:
 			self._db._connection.commit() #modifies data thus have to commit
 			return cursor.rowcount
 
+	@handle_habit_repository_errors
+	def get_periodicity_type(self, habit_id):
+		with self._db._connection.cursor() as cursor:
+			query =  "SELECT habit_periodicity_type FROM habits WHERE habit_id = %s"
+			cursor.execute(query, (habit_id,))
+
+			habit_periodicity_type = cursor.fetchone()
+
+			if habit_periodicity_type:
+				return habit_periodicity_type
+			else:
+				raise HabitPeriodicityTypeError(habit_id=habit_id)
 
 
 	@handle_habit_repository_errors

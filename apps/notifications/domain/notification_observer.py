@@ -1,7 +1,8 @@
-from apps.notifications.domain.notification_strategy import NotificationStrategy
+# from apps.notifications.domain.notification_strategy import NotificationStrategy
 from apps.goals.domain.goal_subject import GoalSubject
 from apps.progresses.domain.progress_dto import ProgressHistoryDTO
 from apps.notifications.domain.daily_notification import DailyNotificationStrategy
+from apps.notifications.domain.weekly_notification import WeeklyNotificationStrategy
 
 class NotificationObserver:
 	def __init__(self, notification_stragety: str): #notification_service
@@ -31,25 +32,29 @@ class NotificationObserver:
 
 	def update(self, progress_data: dict): #shouldnt we just pass around data instead of this object? too heavy
 		"""
-		Should be updated when the goals current kvi value changes.
-		Creates a progress entry in the database.
-
-		Args:
+		Depending on the chosen strategy, we send a message
 			goal_subject (Goalsubject): The goal object containing the updated values.
 		"""
-		goal_id = progress_data['goal_id']
-		current_val = progress_data['current_kvi']
-		target_val = progress_data['target_kvi']
+		print(progress_data)
 
-		distance_from_goal = target_val - current_val
+		goal_id = progress_data['goal_id']
+
+		#pull thhe 
+		# current_val = progress_data['current_kvi']
+		# target_val = progress_data['target_kvi']
+
+		# distance_from_goal = target_val - current_val
 
 		strategy_mapping = {
-			"DAILY": DailyNotificationStrategy
+			"daily": DailyNotificationStrategy,
+			"weekly": WeeklyNotificationStrategy
 		}
 
+		print(progress_data)
+
 		progress_dto = ProgressHistoryDTO(
-			progress_data['occurence_data'][-1], 
-			2,
+			progress_data['last_occurence'], 
+			2, #we should check against target amount and current completed one
 			progress_data['target_kvi'] - progress_data['current_kvi']
 			)
 
@@ -58,6 +63,7 @@ class NotificationObserver:
 		completion_msg = strategy.on_completion_message(progress_data=progress_dto)
 		failure_msg = strategy.on_failure_message(progress_data=progress_dto)
 
+		print("AVAILABLE MESSAGES ARE\n\n")
 		print(deadline_msg, completion_msg, failure_msg)
 		
 		# ProgressHistoryDTO()

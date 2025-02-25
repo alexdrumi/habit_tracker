@@ -133,6 +133,16 @@ class HabitService:
 		habit_id = self._repository.get_habit_id(user_id, habit_name)
 		return habit_id
 
+
+	def get_periodicity_type(self, habit_id):
+		#check for int instance
+		if not isinstance(habit_id, int): #how does overflow work in raw sql? orm would prevent but here?
+			raise ValueError(f"Invalid habit id: {habit_id}.")
+		
+		habit_periodicity_type = self._repository.get_periodicity_type(habit_id)
+		return habit_periodicity_type
+
+
 	@handle_log_service_exceptions
 	def validate_a_habit(self, habit_id):
 		if not isinstance(habit_id, int): #how does overflow work in raw sql? orm would prevent but here?

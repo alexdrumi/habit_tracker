@@ -35,8 +35,13 @@ class HabitTrackerFacade(ABC):
 		pass
 
 	@abstractmethod
+	def get_habit_strategy(self, habit_id):
+		pass
+
+	@abstractmethod
 	def complete_a_habit(self, habit_id, goal_id):
 		pass
+
 	
 	"""GOAL RELATED METHODS"""
 	@abstractmethod
