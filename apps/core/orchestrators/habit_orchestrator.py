@@ -19,12 +19,12 @@ class HabitOrchestrator:
 	#(orchestrator will still call single facade services but with input check, chained logic BUT NO CIRCULAR DEPENDENCY
 	def create_a_habit_with_validation(self, habit_name, habit_action, habit_periodicity_type, user_id):
 		#validate user
-		validated_user_id = self._habit_facade._user_service.validate_user_by_id(user_id)
+		validated_user_id = self._habit_facade._user_service.validate_user_by_id(int(user_id))
 		#check if habit already exist for that user
-		existing_habit = self._habit_facade._habit_service.get_habit_id(user_id=validated_user_id, habit_name=habit_name)
+		# existing_habit = self._habit_facade._habit_service.get_habit_id(user_id=int(validated_user_id), habit_name=habit_name)
 # 
-		if existing_habit:
-			return existing_habit
+		# if existing_habit:
+		# 	return existing_habit
 		
 		#create the habit with using essentially one of the methods of the facade. shall we just go through again the service instead of the facade?
 		new_habit = self._habit_facade.create_a_habit(habit_name=habit_name, habit_action=habit_action, habit_periodicity_type=habit_periodicity_type, habit_user_id=user_id)

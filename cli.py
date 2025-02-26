@@ -112,19 +112,27 @@ class CLI:
 
 	def option_5_create_new_habit(self):
 		click.echo("You selected option 5 - create a habit for a certain user.\n")
-		click.echo("You selected option 4 - Get users with already existing habits")
+		#press 1 if you wanna query user ids?
 		click.pause()
 		while True:
 			habit_name =  click.prompt("Enter a habit name:", type=str)
 			habit_action = click.prompt("Enter a habit action:", type=str)
 			user_id =  click.prompt("Enter the user_id of the user whos habit you want to create", type=str)
-			habit_periodicity_type = click.prompt("Enter the periodicity of the habit e.g.: 'DAILY' or 'WEEKLY':", type=str)
+			habit_periodicity_type = click.prompt("Enter the periodicity of the habit. Enter 1 for 'DAILY', Enter 2 for 'WEEKLY' periodicity type", type=str)
+			habit_goal_name = click.prompt("Enter a name for the goal which you want to achieve with this habit. For instance: 'go to sleep before 10PM for 7 straight days'", type=str)
 			if not user_id.isdigit(): #make sure its an int, otherwise keep prompting
 				click.echo("Invalid input. Please enter a valid user ID, an integer.")
+			if not habit_periodicity_type.isdigit() or habit_periodicity_type not in ['1', '2']:
+				click.echo("Invalid input. Please enter a valid periodicity, an integer, either 1 or 2.")
 			else:
-				break 
-		new_habit = self._facade.create_a_habit(habit_name, habit_action, habit_periodicity_type, user_id)
-		print(f"New habit created:\n{new_habit}")
+				break
+		target_kvi_val = 1.0 if habit_periodicity_type == 1 else 7.0
+		periodicity_type = 'daily' if habit_periodicity_type == 1 else 'weekly'
+
+		new_habit = self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
+		new_goal = self._facade.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=None)
+
+		print(f"New habit created:\n{new_habit}.\nThe associated goal is: {new_goal}")
 
 
 	def option_6_get_all_habits(self):
@@ -151,27 +159,27 @@ class CLI:
 		print(f"Habit with id: {selected_habit_id} is deleted")
 
 
-	def option_8_create_a_goal(self):
-		click.echo("You selected option 8 - create a goal.")
-		click.pause()
+	# def option_8_create_a_goal(self):
+	# 	click.echo("You selected option 8 - create a goal.")
+	# 	click.pause()
 
-		all_habits = self._facade.get_all_habits()
-		self.print_habits(all_habits)
-		click.pause()
+	# 	all_habits = self._facade.get_all_habits()
+	# 	self.print_habits(all_habits)
+	# 	click.pause()
 
-		while True:
-			goal_name = click.prompt("Enter a goal name.", type=str)
-			goal_description = click.prompt("Enter a description for the goal.", type=str)
+	# 	while True:
+	# 		goal_name = click.prompt("Enter a goal name.", type=str)
+	# 		goal_description = click.prompt("Enter a description for the goal.", type=str)
 
-			habit_id = click.prompt("Enter the habit ID to use for a goal", type=str)
-			target_kvi_value= click.prompt("Enter the target value a goal", type=str)
-			if not habit_id.isdigit() or not target_kvi_value.isdigit():
-				print("Invalid input for one of the numeric inputs (habit_id, target_kvi_value, current_kvi_value)")
-			else:
-				break
+	# 		habit_id = click.prompt("Enter the habit ID to use for a goal", type=str)
+	# 		target_kvi_value= click.prompt("Enter the target value a goal", type=str)
+	# 		if not habit_id.isdigit() or not target_kvi_value.isdigit():
+	# 			print("Invalid input for one of the numeric inputs (habit_id, target_kvi_value, current_kvi_value)")
+	# 		else:
+	# 			break
 		
-		goal_entity = self._facade.create_a_goal(goal_name=goal_name, habit_id=int(habit_id), target_kvi_value=float(target_kvi_value), current_kvi_value=0.0, goal_description=goal_description)
-		print(f"Goal is created: {goal_entity}")
+	# 	goal_entity = self._facade.create_a_goal(goal_name=goal_name, habit_id=int(habit_id), target_kvi_value=float(target_kvi_value), current_kvi_value=0.0, goal_description=goal_description)
+	# 	print(f"Goal is created: {goal_entity}")
 
 
 	def option_9_list_all_goals_with_habits(self):

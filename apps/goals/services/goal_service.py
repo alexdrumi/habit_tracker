@@ -7,8 +7,6 @@ from mysql.connector.errors import IntegrityError
 import logging
 
 
-
-
 def handle_log_service_exceptions(f):
 	"""Decorator to clean up and handle errors in goal services methods."""
 	def exception_wrapper(*args, **kwargs):

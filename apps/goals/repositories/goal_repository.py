@@ -83,7 +83,7 @@ class GoalRepository:
 		'''
 		with self._db._connection.cursor() as cursor:
 			query = "INSERT INTO goals(goal_name, habit_id_id, target_kvi_value, current_kvi_value, goal_description, created_at) VALUES (%s, %s, %s, %s, %s,  NOW());"
-			cursor.execute(query, (goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description))
+			cursor.execute(query, (goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description, ))
 			self._db._connection.commit()
 			return {
 				'goal_id': cursor.lastrowid,

@@ -11,6 +11,7 @@ from apps.goals.domain.goal_subject import GoalSubject
 from apps.notifications.domain.notification_observer import NotificationObserver
 from apps.notifications.domain.notification_strategy import NotificationStrategy
 
+
 def build_goal_subject(goal_id, habit_id, habit_periodicity_type, goal_service: GoalService, progress_service: ProgressesService):
 	#creates a Goalsubject, attaches observer (s) and returns it.
 

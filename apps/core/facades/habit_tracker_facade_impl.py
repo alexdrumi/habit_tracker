@@ -38,8 +38,12 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	def query_user_and_related_habits(self) -> dict:
 		return self._user_service.quary_user_and_related_habits()
 
+	def create_a_habit_with_validation(self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
+		return self._habit_orchestrator.create_a_habit_with_validation(habit_name, habit_action, habit_periodicity_type, int(habit_user_id))
+
 	def create_a_habit(self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
-		return self._habit_orchestrator.create_a_habit_with_validation(habit_name, habit_action, habit_periodicity_type, habit_user_id)
+		return self._habit_service.create_a_habit(habit_name, habit_action, habit_periodicity_type, int(habit_user_id))
+
 
 	def get_all_habits(self):
 		return self._habit_service.get_all_habits()
@@ -59,7 +63,8 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 
 	"""GOAL RELATED METHODS"""
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
-		return self._goal_service.create_a_goal( goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description)
+		print(f"INSIDE CREATE A GOAL; goalname {goal_name}, habit_id {habit_id}, target_kvi_value {target_kvi_value}, currentkvi {current_kvi_value}")
+		return self._goal_service.create_a_goal( goal_name, int(habit_id), target_kvi_value, current_kvi_value, goal_description)
 	
 	def delete_a_goal(self, goal_id):
 		return self._goal_service.delete_a_goal(goal_id)

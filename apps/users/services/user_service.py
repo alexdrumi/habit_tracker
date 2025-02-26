@@ -89,6 +89,8 @@ class UserService:
 	
 	@handle_log_service_exceptions
 	def validate_user_by_id(self, user_id:int) ->int:
+
+		print(f'{type(user_id)} is the type of the user id')
 		if not (isinstance(user_id, int)):
 			raise ValueError("Invalid user id.")
 

@@ -32,6 +32,7 @@ class HabitService:
 		if not isinstance(habit_action, str) or not habit_action.strip(): 
 			raise ValueError("Invalid habit action. It must be a non-empty string.")
 		if not isinstance(habit_user_id, int) or habit_user_id <= 0:
+			print(f"the type of userid here in the validation is: { type(habit_user_id)}, and the value is : {habit_user_id}")
 			raise ValueError("Invalid user ID. It must be a positive integer. See list (option 3) for users for available user IDs.")
 
 		#for now monthly is here but i might remove it when submitting, it is for the extended project
@@ -80,6 +81,7 @@ class HabitService:
 			habit_user_id=habit_user_id, #should be validated outside of this
 			habit_streak=0
 		)
+
 
 		#UnboundLocalError?=
 		habit_entity = self._repository.create_a_habit(

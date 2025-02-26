@@ -8,28 +8,6 @@ class NotificationObserver:
 	def __init__(self, notification_stragety: str): #notification_service
 		self._notification_stragety = notification_stragety
 
-
-# class DailyNotificationStrategy(NotificationStrategy):
-# 	def before_deadline_message(self, progress_data: ProgressHistoryDTO):
-# 		now = datetime.now()
-
-
-# 		print(now)
-# 		if progress_data._last_updated_time < now:
-# 			return "WHATEVER, JUST TRYING THIS OUT HERE"
-	
-# 	def on_completion_message(self, progress_data: ProgressHistoryDTO):
-# 		if progress_data._distance_from_goal == 0:
-# 			return "CONGRATS, YOU COMPLETED THIS!"
-
-	
-# 	def on_failure_message(self, progress_data: ProgressHistoryDTO):
-# 		now = datetime.now()
-
-# 		if progress_data._last_updated_time  > now:
-# 			return "Lazy fella, y u dont work?"
-
-
 	def update(self, progress_data: dict): #shouldnt we just pass around data instead of this object? too heavy
 		"""
 		Depending on the chosen strategy, we send a message
@@ -52,6 +30,9 @@ class NotificationObserver:
 
 		print(progress_data)
 
+		#current kvi is the amount of completed times
+		#if we reach target kvi, we have to reset the current kvi
+		
 		progress_dto = ProgressHistoryDTO(
 			progress_data['last_occurence'], 
 			2, #we should check against target amount and current completed one
