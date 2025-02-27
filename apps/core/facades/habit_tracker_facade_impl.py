@@ -80,12 +80,20 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	
 	def query_goals_of_a_habit(self, habit_id):
 		return self._goal_service.query_goals_of_a_habit(habit_id=habit_id)
+		# goal_name, goal_id, habit_id_id, habit_name, habit_periodicity_value
+	
+	#maybe have an orchestrator call which filters the goals after querying goals of a habit
+	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
+		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits(self, habit_id=habit_id, goal_id=goal_id)
+	
+
 
 	def validate_a_goal(self, goal_id):
 		return self._goal_service.validate_goal_id(goal_id=goal_id)
 	
 	def get_goal_entity_by_id(self, goal_id, habit_id):
 		return self._goal_service.get_goal_entity_by_id(goal_id=goal_id, habit_id=habit_id)
+
 
 	#def complete a habit for the orchestrator
 	"""PROGRESS RELATED METHODS"""

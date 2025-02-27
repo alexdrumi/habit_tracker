@@ -38,11 +38,14 @@ class GoalSubject:
 		# print(f'{occurence_date} IS THE OCCURENCE DATE )progress entity inside the increment kvi')
 		# print(f"{self._goal_data['goal_id']} are self._goal_data['goal_id']\n\n")
 		last_progress = self._progress_service.get_last_progress_entry(goal_id=self._goal_data['goal_id'])
-		self._goal_data['last_occurence'] = last_progress[3]
-		print(f"{self._goal_data['last_occurence']} is the goal last occurence now")
+		
+		if last_progress == None:
+			self._goal_data['last_occurence'] = None
+		else:
+			self._goal_data['last_occurence'] = last_progress[3] #can be None
+		# print(f"{self._goal_data['last_occurence']} is the goal last occurence now")
 
-		# print(f"{last_progress} is the last progress entry\n\n")
-		# print(f"{last_progress[3]} is the datetime we need")
-		# self._goal_data
-		#notify other observerrs?
+		#depending on daily or weekly tick, we check when was the last occurence. if it was already ticked for today or the week, no increment is needed.
+
+		
 		self.notify() #creates a progress blueprint, notifies user

@@ -94,7 +94,7 @@ class ProgressesRepository:
 			if result:
 				# print(f'FROM PROGRESS REPO {result} IS THE LAST PROGRESS OR SO')
 				# print(result[0])
-				return result[-1]
+				return result[-1] #last entry
 			else:
 				return None
 		
@@ -108,7 +108,7 @@ class ProgressesRepository:
 			progress_entry = cursor.fetchone()
 
 			if not progress_entry:
-				raise ProgressNotFoundError(progress_id)
+				return None #instead of raising errors, here it is expected that sometimes there wil be no entry
 
 			return progress_entry
 

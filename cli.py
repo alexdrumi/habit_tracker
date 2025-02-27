@@ -120,6 +120,8 @@ class CLI:
 			user_id =  click.prompt("Enter the user_id of the user whos habit you want to create", type=str)
 			habit_periodicity_type = click.prompt("Enter the periodicity of the habit. Enter 1 for 'DAILY', Enter 2 for 'WEEKLY' periodicity type", type=str)
 			habit_goal_name = click.prompt("Enter a name for the goal which you want to achieve with this habit. For instance: 'go to sleep before 10PM for 7 straight days'", type=str)
+			habit_goal_description = click.prompt("How would you describe your goal? what does it try to achieve?", type=str)
+		
 			if not user_id.isdigit(): #make sure its an int, otherwise keep prompting
 				click.echo("Invalid input. Please enter a valid user ID, an integer.")
 			if not habit_periodicity_type.isdigit() or habit_periodicity_type not in ['1', '2']:
@@ -130,7 +132,7 @@ class CLI:
 		periodicity_type = 'daily' if habit_periodicity_type == 1 else 'weekly'
 
 		new_habit = self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
-		new_goal = self._facade.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=None)
+		new_goal = self._facade.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=habit_goal_description)
 
 		print(f"New habit created:\n{new_habit}.\nThe associated goal is: {new_goal}")
 
@@ -213,7 +215,8 @@ class CLI:
 				print("Invalid input for habit_id")
 			else:
 				break
-
+		
+		#we can essentially here filter which habits are available within a given timeframe. Only list the ones which are not ticked yet
 		goals_of_habit = self._facade.query_goals_of_a_habit(habit_id=habit_id)
 		self.print_goals_of_habit(goals_of_habit)
 		#we will get the goal id based on that

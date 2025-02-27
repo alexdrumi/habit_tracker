@@ -241,7 +241,7 @@ class GoalRepository:
 			dict(list): every goal data with goal_name, goal_id, habit_name, habit_id
 		'''
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON %s = goals.habit_id_id;"
+			query = "SELECT goal_name, goal_id, habit_id_id, habit_name, habit_periodicity_value from goals INNER JOIN habits ON %s = goals.habit_id_id;"
 			cursor.execute(query, (habit_id, ))
 
 			result = cursor.fetchall()
@@ -250,3 +250,6 @@ class GoalRepository:
 				return result
 			else:
 				return []
+	
+	@handle_goal_repository_errors
+	def fetch_ready_to_tick_goals_of_habits(self, habit_id,)

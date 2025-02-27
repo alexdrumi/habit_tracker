@@ -135,3 +135,6 @@ class GoalService:
 	def query_goals_of_a_habit(self, habit_id):
 		goals = self._repository.query_goals_of_a_habit(habit_id)
 		return goals
+	
+	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
+		available = self._repository.

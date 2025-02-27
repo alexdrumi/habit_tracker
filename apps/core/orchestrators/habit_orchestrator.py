@@ -53,6 +53,9 @@ class HabitOrchestrator:
 		goal_subject.increment_kvi() #this adds the usual +1 but we can change it later for custom kvi
 
 
+	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
+		#some validaiton here maybe
+		all_available_goals_of_a_given_habit = self._habit_facade.query_goals_of_a_habit(habit_id=habit_id)
 
 
 
