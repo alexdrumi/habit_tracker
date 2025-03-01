@@ -136,5 +136,14 @@ class GoalService:
 		goals = self._repository.query_goals_of_a_habit(habit_id)
 		return goals
 	
-	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
-		available = self._repository.
+	# def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
+	# 	available = self._repository.
+	@handle_log_service_exceptions
+	def query_all_goals(self):
+		all_goals = self._repository.query_all_goals()
+		return all_goals
+	
+	@handle_log_service_exceptions
+	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
+		last_progress = self._repository.get_last_progress_entry_associated_with_goal_id(goal_id=goal_id)
+		return last_progress

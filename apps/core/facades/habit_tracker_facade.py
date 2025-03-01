@@ -67,7 +67,11 @@ class HabitTrackerFacade(ABC):
 	@abstractmethod
 	def get_goal_entity_by_id(self, goal_id, habit_id):
 		pass
-
+	
+	@abstractmethod
+	def fetch_ready_to_tick_goals_of_habits(self):
+		pass
+	
 	"""PROGRESS RELATED METHODS"""
 	def  create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, progress_description=None):
 		pass

@@ -83,8 +83,8 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 		# goal_name, goal_id, habit_id_id, habit_name, habit_periodicity_value
 	
 	#maybe have an orchestrator call which filters the goals after querying goals of a habit
-	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
-		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits(self, habit_id=habit_id, goal_id=goal_id)
+	def fetch_ready_to_tick_goals_of_habits(self):
+		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits()
 	
 
 

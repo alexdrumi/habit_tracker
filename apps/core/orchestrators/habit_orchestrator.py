@@ -53,9 +53,31 @@ class HabitOrchestrator:
 		goal_subject.increment_kvi() #this adds the usual +1 but we can change it later for custom kvi
 
 
-	def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
+	def fetch_ready_to_tick_goals_of_habits(self):
 		#some validaiton here maybe
-		all_available_goals_of_a_given_habit = self._habit_facade.query_goals_of_a_habit(habit_id=habit_id)
+		# all_available_goals_of_a_given_habit = self._habit_facade.query_goals_of_a_habit(habit_id=habit_id)
+		
+		#now call either a service via the habit facade goal service which filters this available goals data
+		#or call straight a service->repo which just gives back a filtered data.
+		all_goals = self._habit_facade._goal_service.query_all_goals()
+
+		#get all potential goal and habit ids with target kvis from goals
+		#SELECT goal_id, habit_id_id, target_kvi_value FROM goals;
+		print(all_goals)
+		last_entries = []
+		for goal in all_goals:
+			last_entries.append(self._habit_facade._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id=int(goal['goal_id'])))
+		# for k, v in all_goals.items():
+		# 	last_entries.append(self._habit_facade._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id=int(v)))
+
+		print(last_entries)
+	
+	#call a query for each goal with  the latest occurence date
+	#SELECT LATEST DATE with occurence
+	# SELECT occurence_date FROM progresses WHERE goal_id_id = 13 ORDER BY occurence_date DESC LIMIT 1;
+
+	#based on the goal target kvi, we filter whether it was a day or a week ago and if we can tick it
+
 
 
 

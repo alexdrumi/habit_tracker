@@ -209,25 +209,29 @@ class CLI:
 
 		self.option_9_list_all_goals_with_habits()
 		#we need habit id
-		while True:
-			habit_id = click.prompt("Enter a habit ID.", type=str)
-			if not habit_id.isdigit():
-				print("Invalid input for habit_id")
-			else:
-				break
+		# while True:
+		# 	habit_id = click.prompt("Enter a habit ID.", type=str)
+		# 	if not habit_id.isdigit():
+		# 		print("Invalid input for habit_id")
+		# 	else:
+		# 		break
 		
-		#we can essentially here filter which habits are available within a given timeframe. Only list the ones which are not ticked yet
-		goals_of_habit = self._facade.query_goals_of_a_habit(habit_id=habit_id)
-		self.print_goals_of_habit(goals_of_habit)
-		#we will get the goal id based on that
-		while True:
-			goal_id = click.prompt("Enter a goal ID.", type=str)
-			if not goal_id.isdigit():
-				print("Invalid input for goal_id")
-			else:
-				break
+		# #we can essentially here filter which habits are available within a given timeframe. Only list the ones which are not ticked yet
+		# goals_of_habit = self._facade.query_goals_of_a_habit(habit_id=habit_id)
+		# self.print_goals_of_habit(goals_of_habit)
+		# #we will get the goal id based on that
+		# while True:
+		# 	goal_id = click.prompt("Enter a goal ID.", type=str)
+		# 	if not goal_id.isdigit():
+		# 		print("Invalid input for goal_id")
+		# 	else:
+		# 		break
 		
-		self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
+		# self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
+
+		self._facade.fetch_ready_to_tick_goals_of_habits()
+
+
 		#we pass this to the facade after light input validation
 		#we will update the goals current kvi val with current += 1
 

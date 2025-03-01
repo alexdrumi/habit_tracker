@@ -251,5 +251,34 @@ class GoalRepository:
 			else:
 				return []
 	
+	# @handle_goal_repository_errors
+	# def fetch_ready_to_tick_goals_of_habits(self, habit_id, )	
+
 	@handle_goal_repository_errors
-	def fetch_ready_to_tick_goals_of_habits(self, habit_id,)
+	def query_all_goals(self):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_id, habit_id_id, target_kvi_value FROM goals;"
+			cursor.execute(query)
+
+			result = cursor.fetchall()
+
+			if result:
+				return [{"goal_id": row[0], "habit_id": row[1], "target_kvi_value": row[2]} for row in result]
+			else:
+				return []
+	
+
+	@handle_goal_repository_errors
+	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT occurence_date FROM progresses WHERE goal_id_id = %s ORDER BY occurence_date DESC LIMIT 1;"
+			cursor.execute(query, (goal_id,))
+
+			result = cursor.fetchone()
+
+			if result:
+				return {"occurence_date": result[0]}
+			else:
+				return []
+	
+		
