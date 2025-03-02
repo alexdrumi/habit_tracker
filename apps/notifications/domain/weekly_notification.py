@@ -37,6 +37,8 @@ class WeeklyNotificationStrategy(NotificationStrategy):
 	def on_failure_message(self, progress_data: ProgressHistoryDTO):
 		now = datetime.now()
 
+		if progress_data._last_updated_time == None:
+			return "NO MESSAGE HERE"
 		if progress_data._last_updated_time > now:
 			return "y tho"
 		return None

@@ -100,7 +100,7 @@ class HabitOrchestrator:
 			elif target_kvi == 7:
 				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
 					print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
-				elif last_tick_week <= current_week: #wouldnt this case it to be tickable every day?
+				elif last_tick_week <  current_week: #wouldnt this case it to be tickable every day?
 					print(f'Goal is ticked last week thus, its tickable now!')
 					tickable_goals_and_habits.append(v)
 				else:
