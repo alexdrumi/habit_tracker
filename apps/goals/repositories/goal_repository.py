@@ -257,16 +257,16 @@ class GoalRepository:
 	@handle_goal_repository_errors
 	def query_all_goals(self):
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT goal_id, habit_id_id, target_kvi_value FROM goals;"
+			query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value, goal_name FROM goals;"
 			cursor.execute(query)
 
 			result = cursor.fetchall()
 
 			if result:
-				return [{"goal_id": row[0], "habit_id": row[1], "target_kvi_value": row[2]} for row in result]
+				return [{"goal_id": row[0], "habit_id": row[1], "target_kvi_value": row[2], "current_kvi_value":row[3], "goal_name": row[4]} for row in result]
 			else:
 				return []
-	
+
 
 	@handle_goal_repository_errors
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):

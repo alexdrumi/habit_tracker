@@ -229,7 +229,8 @@ class CLI:
 		
 		# self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
 
-		self._facade.fetch_ready_to_tick_goals_of_habits()
+		tickable_habits_and_goals = self._facade.fetch_ready_to_tick_goals_of_habits()
+		print(tickable_habits_and_goals)
 
 
 		#we pass this to the facade after light input validation

@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from datetime import datetime, timedelta
 
 if TYPE_CHECKING:
 	from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
@@ -54,32 +55,58 @@ class HabitOrchestrator:
 
 
 	def fetch_ready_to_tick_goals_of_habits(self):
-		#some validaiton here maybe
-		# all_available_goals_of_a_given_habit = self._habit_facade.query_goals_of_a_habit(habit_id=habit_id)
-		
+		#some validaiton here maybe		
 		#now call either a service via the habit facade goal service which filters this available goals data
 		#or call straight a service->repo which just gives back a filtered data.
 		all_goals = self._habit_facade._goal_service.query_all_goals()
 
-		#get all potential goal and habit ids with target kvis from goals
-		#SELECT goal_id, habit_id_id, target_kvi_value FROM goals;
-		print(all_goals)
-		last_entries = []
+		all_goals_with_date = {}
 		for goal in all_goals:
-			last_entries.append(self._habit_facade._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id=int(goal['goal_id'])))
-		# for k, v in all_goals.items():
-		# 	last_entries.append(self._habit_facade._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id=int(v)))
+			#dict key will be goal id
+			all_goals_with_date[goal["goal_id"]] = goal
+			#get last progress associated with that goal_id
+			last_entry = self._habit_facade._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id=int(goal['goal_id']))
+			
+			#assign the occurence date is there was one, otherwise 0
+			if len(last_entry) != 0:
+				all_goals_with_date[goal["goal_id"]]["occurence_date"] = last_entry["occurence_date"]
+			else:
+				all_goals_with_date[goal["goal_id"]]["occurence_date"] = None
 
-		print(last_entries)
-	
-	#call a query for each goal with  the latest occurence date
-	#SELECT LATEST DATE with occurence
-	# SELECT occurence_date FROM progresses WHERE goal_id_id = 13 ORDER BY occurence_date DESC LIMIT 1;
+		now = datetime.now()
+		current_week = now.isocalendar()[1]
+		current_year = now.year
+		tickable_goals_and_habits = []
 
-	#based on the goal target kvi, we filter whether it was a day or a week ago and if we can tick it
+		for k, v in all_goals_with_date.items():
+			last_tick = v['occurence_date']
+			target_kvi = v['target_kvi_value']
 
+			if last_tick is None:
+				print('Tickable, thus we can return goal and habit id.')
+				tickable_goals_and_habits.append(v)
+				continue 
 
+			time_since_last_tick = now - last_tick
+			last_tick_week = last_tick.isocalendar()[1] #week nr of last tick's week
+			last_tick_year = last_tick.year #hypothetically, which year..
+			if target_kvi == 1:
+				if (now.date() - timedelta(days=2)) <= last_tick.date() and last_tick.date() < (now.date() - timedelta(days=1)):
+					print(f'Goal {k} is a daily goal and was last ticked {time_since_last_tick.days} days ago, tickable')
+					tickable_goals_and_habits.append(v)
+				else:
+					print(f'Goal {k} is not tickable')
+			
+			elif target_kvi == 7:
+				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
+					print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
+				elif last_tick_week <= current_week: #wouldnt this case it to be tickable every day?
+					print(f'Goal is ticked last week thus, its tickable now!')
+					tickable_goals_and_habits.append(v)
+				else:
+					print(f'Goal {k} was ticked this week, not yet tickable')
 
+		return tickable_goals_and_habits
 
 
 
