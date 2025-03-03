@@ -6,7 +6,7 @@ from apps.habits.services.habit_service import HabitService
 from apps.goals.services.goal_service import GoalService
 from apps.progresses.services.progress_service import ProgressesService
 from apps.analytics.services.analytics_service import AnalyticsService
-
+from apps.reminders.services.reminder_service import ReminderService
 
 #WE WILL DEFINITELY HAVE TO HAVE SOME ERROR CHECKS HERE
 #AND ALSO IN THE CLI LAYER
@@ -16,11 +16,12 @@ from apps.analytics.services.analytics_service import AnalyticsService
 class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
 
-	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService):
+	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService, reminder_service: ReminderService):
 		self._user_service = user_service
 		self._habit_service = habit_service
 		self._goal_service = goal_service
 		self._progress_service = progress_service
+		self._reminder_service = reminder_service
 		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade
 
 	"""USER RELATED METHODS"""

@@ -268,6 +268,7 @@ class GoalRepository:
 				return []
 
 
+	#this technically could be in the progresses service.
 	@handle_goal_repository_errors
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
 		with self._db._connection.cursor() as cursor:

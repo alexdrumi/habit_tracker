@@ -39,6 +39,14 @@ class NotificationObserver:
 			progress_data['target_kvi'] - progress_data['current_kvi']
 			)
 
+		#if completed, send a completion message
+
+		#if its a daily one, check whether we are 4 hours to midnight
+		#if yes, send a reminder that 'hey, you gotta tick this'
+		
+		#if its a weekly one, check whether we are 1 day before the deadline
+		#if yes, send a reminder that 'hey, you gotta tick this'
+		
 		strategy = strategy_mapping[self._notification_stragety]() #this will return DailyNotificationStrategy
 		deadline_msg = strategy.before_deadline_message(progress_data=progress_dto)
 		completion_msg = strategy.on_completion_message(progress_data=progress_dto)

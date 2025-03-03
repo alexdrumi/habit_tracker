@@ -27,6 +27,7 @@ from apps.goals.repositories.goal_repository import GoalRepository, GoalReposito
 from apps.goals.services.goal_service import GoalService
 from apps.progresses.repositories.progress_repository import ProgressesRepository
 from apps.progresses.services.progress_service import ProgressesService
+from apps.reminders.services.reminder_service import ReminderService
 
 def signal_handler(sig, frame):
 	print('You pressed Ctrl+C, doei!')
@@ -67,7 +68,7 @@ class CLI:
 		click.echo("5, Create a habit for a certain user")
 		click.echo("6, List all habits")
 		click.echo("7, Delete a certain habit")
-		click.echo("8, Create a certain goal for a habit")
+		# click.echo("8, Create a certain goal for a habit")
 		click.echo("9, List goals with associated habits")
 		click.echo("10, Delete goal")
 		click.echo("11, Complete a habit/goal")
@@ -165,6 +166,7 @@ class CLI:
 	# 	click.echo("You selected option 8 - create a goal.")
 	# 	click.pause()
 
+	# 	#for now we should only be able to create one goal thus if the habit has already a goal, dont
 	# 	all_habits = self._facade.get_all_habits()
 	# 	self.print_habits(all_habits)
 	# 	click.pause()
@@ -252,7 +254,7 @@ class CLI:
 
 	def run(self):
 		signal.signal(signal.SIGINT, signal_handler)
-
+		self._facade._reminder_service.get_pending_goals()
 		while True:
 			self.display_menu()
 			choice = click.prompt("\nEnter your choice", type=int)
@@ -300,8 +302,9 @@ def main():
 	goal_service = GoalService(goal_repository, habit_service)
 	progress_repository = ProgressesRepository(database, goal_repository)
 	progress_service = ProgressesService(progress_repository, goal_service)
+	reminder_service = ReminderService(goal_service=goal_service)
 
-	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service)
+	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service)
 	cli = CLI(habit_tracker_facade=habit_tracker_facade)
 	cli.run()
 

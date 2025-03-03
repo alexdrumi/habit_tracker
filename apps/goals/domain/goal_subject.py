@@ -18,7 +18,7 @@ class GoalSubject:
 	
 	def attach(self, observer):
 		self._observers.append(observer)
-	
+
 	def notify(self):
 		for observer in self._observers: #will trigger all observers (notification, progress observer for blueprint)
 			observer.update(progress_data=self._goal_data)#this will be a notification method,forgot to specify goal_subject=self, before...
