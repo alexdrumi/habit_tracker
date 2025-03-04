@@ -23,6 +23,7 @@ class Progresses(models.Model):
 	progress_description = models.CharField(max_length=30, blank=True, null=True)
 	current_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
 	distance_from_goal_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
+	current_streak = models.IntegerField(default=0)
 	occurence_date = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
@@ -30,12 +31,10 @@ class Progresses(models.Model):
 		#should there be any unique constrain here?pro not
 	
 	def save(self, *args, **kwargs):
-
 		if isinf(self.goal_id.current_kvi_value) or isnan(self.goal_id.current_kvi_value):  #mysql would throw tantrum here
 			raise ValueError("Invalid KVI value.")
 		if self.goal_id.current_kvi_value < 0.0: #technically this would be validation error but for now its fine, most likely redundant, simple
 			raise ValueError("Invalid KVI value.")
-		
 		self.current_kvi_value = self.goal_id.current_kvi_value
 		self.distance_from_goal_kvi_value = self.goal_id.target_kvi_value - self.goal_id.current_kvi_value
 		#no need to check the kvi probably, goal tester and constrain already checks that

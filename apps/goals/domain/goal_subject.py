@@ -26,6 +26,7 @@ class GoalSubject:
 	def increment_kvi(self, increment):
 		target_kvi_value = self._goal_data['target_kvi']
 		new_kvi_value = float(self._goal_data['current_kvi']) + increment
+		# new_streak = self._goal_data['streak'] + 1
 		#we also have to update the streak of the related habit
 		
 		#update goalfield PROBABLY BETTER IF ITS VIA THE SERVICE FOR INPUT CHECK?????????

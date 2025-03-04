@@ -19,13 +19,17 @@ class ProgressObserver:
 		goal_id = progress_data['goal_id']
 		current_val = progress_data['current_kvi']
 		target_val = progress_data['target_kvi']
-
+		current_streak = progress_data['streak']
 		distance_from_goal = target_val - current_val
 
 		#should we handle this via the service? No validation logic is applied here.
+		print(f"{progress_data} is the progress data inside observer")
+		
 		self._progress_service.create_progress(
 			goal_id=goal_id,
 			current_kvi_value=current_val,
 			distance_from_target_kvi_value=distance_from_goal,
-			progress_description="some autogen entry"
+			current_streak=current_streak,
+			progress_description="some autogen entry",
+			#progress will need streak as well
 		)

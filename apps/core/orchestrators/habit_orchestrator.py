@@ -40,7 +40,8 @@ class HabitOrchestrator:
 
 		#get the periodicity type for notification observer
 		habit_periodicity_type = self._habit_facade.get_habit_strategy(validated_habit_id)
-
+		
+		# print(f"The periodicity type of habit {habit_id} is { habit_periodicity_type} ")
 		#build the subject (this wil be the subject of any kind of observers)
 		goal_subject = build_goal_subject(
 			habit_id=validated_habit_id,
@@ -48,9 +49,16 @@ class HabitOrchestrator:
 			habit_periodicity_type = habit_periodicity_type,
 			goal_service=self._habit_facade._goal_service,
 			progress_service=self._habit_facade._progress_service
-			)
-		increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
-		goal_subject.increment_kvi(increment=increment_amount) #this adds the usual +1 but we can change it later for custom kvi
+		)
+		kvi_increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
+		new_streak_amount = goal_subject._goal_data['streak'] + 1
+		goal_subject._goal_data['streak'] = new_streak_amount
+		#increment streak of the habit via the facade
+
+		#we are about to update the new streak
+		print(f"The new streak amount will be: {goal_subject._goal_data['streak']}")
+		self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
+		goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
 
 
 	def fetch_ready_to_tick_goals_of_habits(self):

@@ -94,14 +94,23 @@ class HabitService:
 		return habit_entity
 
 
-	@handle_log_service_exceptions
-	def update_habit_streak(self, user_name, habit_name, updated_streak_value):
+	# @handle_log_service_exceptions
+	# def update_habit_streak(self, user_name, habit_name, updated_streak_value):
+	# 	if not isinstance(updated_streak_value, int) or updated_streak_value < 0:
+	# 		raise ValueError("Invalid streak value. It must be a non-negative integer.")
+
+	# 	habit_id = self.get_habit_id(user_name, habit_name)
+	# 	updated_habit_rows = self._repository.update_habit_field(habit_id, 'habit_streak', updated_streak_value)
+	# 	return updated_habit_rows
+
+	def update_habit_streak(self, habit_id, updated_streak_value):
 		if not isinstance(updated_streak_value, int) or updated_streak_value < 0:
 			raise ValueError("Invalid streak value. It must be a non-negative integer.")
 
-		habit_id = self.get_habit_id(user_name, habit_name)
-		updated_habit_rows = self._repository.update_habit_field(habit_id, 'habit_streak', updated_streak_value)
+		validated_habit_id = self.validate_a_habit(habit_id)
+		updated_habit_rows = self._repository.update_habit_field(validated_habit_id, 'habit_streak', updated_streak_value)
 		return updated_habit_rows
+
 
 	#FIX VALUE ERRORS, NOW I JUST COPIED MY PREV
 	@handle_log_service_exceptions

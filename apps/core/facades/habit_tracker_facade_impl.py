@@ -98,5 +98,5 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 
 	#def complete a habit for the orchestrator
 	"""PROGRESS RELATED METHODS"""
-	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, progress_description=None):
-		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description)
+	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, current_streak, progress_description=None):
+		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description, current_streak=current_streak)
