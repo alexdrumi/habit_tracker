@@ -49,8 +49,8 @@ class HabitOrchestrator:
 			goal_service=self._habit_facade._goal_service,
 			progress_service=self._habit_facade._progress_service
 			)
-
-		goal_subject.increment_kvi() #this adds the usual +1 but we can change it later for custom kvi
+		increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
+		goal_subject.increment_kvi(increment=increment_amount) #this adds the usual +1 but we can change it later for custom kvi
 
 
 	def fetch_ready_to_tick_goals_of_habits(self):

@@ -116,7 +116,9 @@ class GoalRepository:
 	def get_goal_entity_by_id(self, goal_id, habit_id):
 		#we will validate the habit in the service layer so by this time it exists
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
+			# "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s";
+			# query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
+			query = "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s;"
 			cursor.execute(query, (goal_id, habit_id))
 			result = cursor.fetchone()
 			if result:
@@ -124,7 +126,8 @@ class GoalRepository:
 					'goal_id': result[0],
 					'habit_id': result[1],
 					'target_kvi': result[2],
-					'current_kvi': result[3]
+					'current_kvi': result[3],
+					'streak': result[4]
 				}
 
 			else:

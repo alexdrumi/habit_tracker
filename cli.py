@@ -104,7 +104,7 @@ class CLI:
 		all_users = self._facade.query_all_user_data()
 		self.print_users(all_users)
 
-	def option_4_list_users_with_habits(self):
+	def option_4_list_users_with_existing_habits(self):
 		click.echo("You selected option 4 - List users with already existing habits")
 		click.pause()
 
@@ -269,7 +269,7 @@ class CLI:
 				self.option_3_query_all_user_data()
 			
 			if choice == 4:
-				self.option_4_get_users_with_habits()
+				self.option_4_list_users_with_existing_habits()
 			
 			if choice == 5:
 				self.option_5_create_new_habit()

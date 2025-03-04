@@ -28,15 +28,16 @@ class NotificationObserver:
 			"weekly": WeeklyNotificationStrategy
 		}
 
-		print(progress_data)
+		print(f'{progress_data}  is progress data')
 
 		#current kvi is the amount of completed times
 		#if we reach target kvi, we have to reset the current kvi
 		
+		#does this get the updated kvi or since its updating in sync, its still the old one before update?
 		progress_dto = ProgressHistoryDTO(
-			progress_data['last_occurence'], 
-			2, #we should check against target amount and current completed one
-			progress_data['target_kvi'] - progress_data['current_kvi']
+				progress_data['last_occurence'], 
+				progress_data['target_kvi'] - progress_data['current_kvi'],
+				progress_data['streak'],
 			)
 
 		#if completed, send a completion message

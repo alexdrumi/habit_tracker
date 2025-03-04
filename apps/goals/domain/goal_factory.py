@@ -26,5 +26,6 @@ def build_goal_subject(goal_id, habit_id, habit_periodicity_type, goal_service: 
 	print(f"The habit periodicity type is: {goal_notification_strategy}")
 
 	goal_subject.attach(ProgressObserver(progress_service=progress_service))
+	#streak observer?
 	goal_subject.attach(NotificationObserver(notification_stragety=goal_notification_strategy))
 	return goal_subject

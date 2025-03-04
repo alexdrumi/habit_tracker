@@ -23,10 +23,10 @@ class GoalSubject:
 		for observer in self._observers: #will trigger all observers (notification, progress observer for blueprint)
 			observer.update(progress_data=self._goal_data)#this will be a notification method,forgot to specify goal_subject=self, before...
 	
-	def increment_kvi(self, increment=1.0):
+	def increment_kvi(self, increment):
 		target_kvi_value = self._goal_data['target_kvi']
 		new_kvi_value = float(self._goal_data['current_kvi']) + increment
-		
+		#we also have to update the streak of the related habit
 		
 		#update goalfield PROBABLY BETTER IF ITS VIA THE SERVICE FOR INPUT CHECK?????????
 		self._goal_service.update_a_goal(goal_id=self._goal_data['goal_id'], current_kvi_value=new_kvi_value)
