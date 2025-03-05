@@ -17,7 +17,8 @@ class WeeklyNotificationStrategy(NotificationStrategy):
 		if time_difference < timedelta(weeks=1):
 			return f"You have {timedelta(weeks=1) - time_difference} left!"
 		return None
-	
+
+
 	def on_completion_message(self, progress_data: ProgressHistoryDTO):
 		now = datetime.now()
 

@@ -14,7 +14,11 @@ from datetime import datetime, timedelta
 class DailyNotificationStrategy(NotificationStrategy):
 	def before_deadline_message(self, progress_data: ProgressHistoryDTO):
 		now = datetime.now()
+		last_updated_time = progress_data.to_dict().get('_last_updated_time')
 
+
+		if last_updated_time == None:
+			return "NO MESSAGE HERE"
 		#can we make a string from the passed dt last occurence?
 		dto_to_dict = progress_data.to_dict()
 		dict_keys = dto_to_dict.keys()

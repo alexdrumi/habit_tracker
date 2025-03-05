@@ -173,12 +173,17 @@ class GoalRepository:
 			updated_values.append(goal_id)
 
 			query = "UPDATE goals SET " + set_commands + " WHERE goal_id = %s;"
+			print(f"QUERY WAS: {query}, updated vals {updated_values}")
 			with self._db._connection.cursor() as cursor:
 				cursor.execute(query, updated_values)
 				self._db._connection.commit()
 
-				if cursor.rowcount == 0: #this should be checked by now tbh
+				if cursor.rowcount == 0: #if values are the same its also the case, thus this is incorrect
+					print(f"DEBUG: No rows updated for goal_id={goal_id}. Either goal does not exist, or values are the same.")
 					raise GoalNotFoundError(f"Goal with goal_id {goal_id} is not found.")
+
+				# if cursor.rowcount == 0: #this should be checked by now tbh
+				# 	raise GoalNotFoundError(f"Goal with goal_id {goal_id} is not found.")
 				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 		except Exception as error:
 			self._db._connection.rollback()

@@ -53,12 +53,20 @@ class HabitOrchestrator:
 		kvi_increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
 		new_streak_amount = goal_subject._goal_data['streak'] + 1
 		goal_subject._goal_data['streak'] = new_streak_amount
+		last_progress = self._habit_facade._progress_service.get_last_progress_entry(goal_id=goal_subject._goal_data['goal_id'])
+		goal_subject._goal_data['last_occurence'] = last_progress[3] if last_progress else None
+
 		#increment streak of the habit via the facade
 
 		#we are about to update the new streak
-		print(f"The new streak amount will be: {goal_subject._goal_data['streak']}")
-		self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
-		goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
+		print(f"The new streak amount will be: {goal_subject._goal_data['streak']}, the KVI_increment_amount will be {kvi_increment_amount}")
+		
+		if goal_subject.is_expired() == True:
+			self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=0)
+			goal_subject.reset_progress()
+		else:
+			self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
+			goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
 
 
 	def fetch_ready_to_tick_goals_of_habits(self):
