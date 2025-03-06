@@ -39,10 +39,9 @@ class HabitOrchestrator:
 		validated_goal_id = self._habit_facade.validate_a_goal(goal_id=goal_id)
 
 		#get the periodicity type for notification observer
-		habit_periodicity_type = self._habit_facade.get_habit_strategy(validated_habit_id)
+		habit_periodicity_type = self._habit_facade.get_habit_strategy(validated_habit_id)[0]
 		
-		# print(f"The periodicity type of habit {habit_id} is { habit_periodicity_type} ")
-		#build the subject (this wil be the subject of any kind of observers)
+		#build goalsubject
 		goal_subject = build_goal_subject(
 			habit_id=validated_habit_id,
 			goal_id=validated_goal_id,
@@ -50,20 +49,24 @@ class HabitOrchestrator:
 			goal_service=self._habit_facade._goal_service,
 			progress_service=self._habit_facade._progress_service
 		)
+		
 		kvi_increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
 		new_streak_amount = goal_subject._goal_data['streak'] + 1
 		goal_subject._goal_data['streak'] = new_streak_amount
 		last_progress = self._habit_facade._progress_service.get_last_progress_entry(goal_id=goal_subject._goal_data['goal_id'])
 		goal_subject._goal_data['last_occurence'] = last_progress[3] if last_progress else None
 
-		#increment streak of the habit via the facade
-
-		#we are about to update the new streak
-		print(f"The new streak amount will be: {goal_subject._goal_data['streak']}, the KVI_increment_amount will be {kvi_increment_amount}")
+		if goal_subject.is_too_early() == True:
+			now = datetime.now()
+			difference = now - goal_subject._goal_data['last_occurence']
+			waiting_time = timedelta(hours=24) - difference #incorrect caltulation for now
+			print(f"It is too early to tick this habit, you have to wait {waiting_time} hours.")
+			return
 		
-		if goal_subject.is_expired() == True:
+		elif goal_subject.is_expired() == True:
 			self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=0)
 			goal_subject.reset_progress()
+		
 		else:
 			self._habit_facade._habit_service.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
 			goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi

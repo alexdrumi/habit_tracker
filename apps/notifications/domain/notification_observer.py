@@ -49,12 +49,12 @@ class NotificationObserver:
 		#if yes, send a reminder that 'hey, you gotta tick this'
 		
 		strategy = strategy_mapping[self._notification_stragety]() #this will return DailyNotificationStrategy
-		deadline_msg = strategy.before_deadline_message(progress_data=progress_dto)
+		# deadline_msg = strategy.before_deadline_message(progress_data=progress_dto)
 		completion_msg = strategy.on_completion_message(progress_data=progress_dto)
-		failure_msg = strategy.on_failure_message(progress_data=progress_dto)
+		failure_msg = strategy.on_expired_message(progress_data=progress_dto)
 
 		print("AVAILABLE MESSAGES ARE\n\n")
-		print(deadline_msg, completion_msg, failure_msg)
+		print(completion_msg, failure_msg)
 		
 		# ProgressHistoryDTO()
 		# #should we handle this via the service? No validation logic is applied here.

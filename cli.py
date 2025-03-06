@@ -129,8 +129,9 @@ class CLI:
 				click.echo("Invalid input. Please enter a valid periodicity, an integer, either 1 or 2.")
 			else:
 				break
-		target_kvi_val = 1.0 if habit_periodicity_type == 1 else 7.0
-		periodicity_type = 'daily' if habit_periodicity_type == 1 else 'weekly'
+		periodicity_type = 'daily' if int(habit_periodicity_type) == 1 else 'weekly'
+		target_kvi_val = 1.0 if periodicity_type == 'daily' else 7.0
+		print(f"{int(habit_periodicity_type)} is periodicity type, {target_kvi_val} is target kvi")
 
 		new_habit = self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
 		new_goal = self._facade.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=habit_goal_description)

@@ -10,37 +10,35 @@ from datetime import datetime, timedelta
 |           1 |                 8 | NULL                 | 2025-02-19 00:00:00.000000 |         13 |                           -7 |
 """
 
-
+#this will be implemented with a 
 class DailyNotificationStrategy(NotificationStrategy):
-	def before_deadline_message(self, progress_data: ProgressHistoryDTO):
-		now = datetime.now()
-		last_updated_time = progress_data.to_dict().get('_last_updated_time')
+	# def before_deadline_message(self, progress_data: ProgressHistoryDTO):
+	# 	now = datetime.now()
+	# 	last_updated_time = progress_data.to_dict().get('_last_updated_time')
 
 
-		if last_updated_time == None:
-			return "NO MESSAGE HERE"
-		#can we make a string from the passed dt last occurence?
-		dto_to_dict = progress_data.to_dict()
-		dict_keys = dto_to_dict.keys()
-		last_updated_time = dto_to_dict.get('_last_updated_time')
-		time_difference = now - last_updated_time
-		# print(f"{last_updated_time} is the last time this was updated, now is {now}, {type(last_updated_time)}, {type(now)}")
-		print(f"{now - last_updated_time} is the diff between now and last uipdated")
-		if time_difference < timedelta(hours=24): #this has to be eventually 4 hours before the actual deadline
-			return "ITS PERFECTLY IN TIME"
-		# return None
-		return "BEFORE DEADLINE MESSAGE"
+	# 	if last_updated_time == None:
+	# 		return "NO MESSAGE HERE"
+	# 	#can we make a string from the passed dt last occurence?
+	# 	dto_to_dict = progress_data.to_dict()
+	# 	dict_keys = dto_to_dict.keys()
+	# 	last_updated_time = dto_to_dict.get('_last_updated_time')
+	# 	time_difference = now - last_updated_time
+	# 	# print(f"{last_updated_time} is the last time this was updated, now is {now}, {type(last_updated_time)}, {type(now)}")
+	# 	print(f"{now - last_updated_time} is the diff between now and last uipdated")
+	# 	if time_difference < timedelta(hours=24): #this has to be eventually 4 hours before the actual deadline
+	# 		return "ITS PERFECTLY IN TIME"
+	# 	# return None
+	# 	return "BEFORE DEADLINE MESSAGE"
 
 	def on_completion_message(self, progress_data: ProgressHistoryDTO):
 		# if progress_data._distance_from_goal == 0:
-		# 	return "CONGRATS, YOU COMPLETED THIS!"
-		# return None
-		return "ON COMPLETION MESSAGE"
+		streak = progress_data.to_dict().get('streak')
+		if streak != 0:
+			return f"Congratulations, you have completed a daily habit with, your current streak is {streak}"
 
-	def on_failure_message(self, progress_data: ProgressHistoryDTO):
-		now = datetime.now()
+	def on_expired_message(self, progress_data: ProgressHistoryDTO):
+		streak = progress_data.to_dict().get('streak')
 
-		# if progress_data._last_updated_time  > now:
-		# 	return "Lazy fella, y u dont work?"
-		# return None
-		return "ON FAILURE MESSAGE"
+		if streak == 0:
+			return f"You have missed the previous deadline, you have to start to tick your habit again."
