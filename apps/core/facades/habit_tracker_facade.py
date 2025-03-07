@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 
-class HabitTrackerFacade(ABC):
+class HabitTrackerFacadeInterface(ABC):
+	"""USER RELATED METHODS"""
 	@abstractmethod
-	def create_user(self, user_name: str, user_password: str, user_age: int, user_gender: str, user_role: str) ->dict:
+	def validate_user_by_id(self, user_id: int) ->int:
+		pass
+
+	@abstractmethod
+	def create_user(self, user_name: str, user_password: str, user_age: int, user_gender: str, user_role: str) -> dict:
 		pass
 	
 	@abstractmethod
@@ -41,6 +46,9 @@ class HabitTrackerFacade(ABC):
 	@abstractmethod
 	def complete_a_habit(self, habit_id, goal_id):
 		pass
+	
+	def update_habit_streak(habit_id, updated_streak_value):
+		pass
 
 	
 	"""GOAL RELATED METHODS"""
@@ -72,6 +80,19 @@ class HabitTrackerFacade(ABC):
 	def fetch_ready_to_tick_goals_of_habits(self):
 		pass
 	
+	@abstractmethod
+	def query_all_goals(self):
+		pass
+
+	@abstractmethod
+	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
+		pass
+
 	"""PROGRESS RELATED METHODS"""
+	@abstractmethod
 	def  create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, progress_description=None):
+		pass
+	
+	@abstractmethod
+	def get_last_progress_entry(self, goal_id):
 		pass

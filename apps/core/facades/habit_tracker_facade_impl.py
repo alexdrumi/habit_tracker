@@ -1,4 +1,4 @@
-from apps.core.facades.habit_tracker_facade import HabitTrackerFacade
+from apps.core.facades.habit_tracker_facade import HabitTrackerFacadeInterface
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 
 from apps.users.services.user_service import UserService
@@ -13,7 +13,7 @@ from apps.reminders.services.reminder_service import ReminderService
 #FOR NOW THIS IS REALLY INCONSISTENT AS I'VE PLANNED LOGGING IN SERVICE.
 #THERE IS A CHECK NEEDED IN CLI SO THAT THE LOOP KEEPS RUNNING SO MAYBE HERE WE JUST PASS THE EXCP TO THE LAYER ABOVE
 
-class HabitTrackerFacadeImpl(HabitTrackerFacade):
+class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
 
 	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService, reminder_service: ReminderService):
@@ -34,7 +34,10 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	def query_all_user_data(self) -> dict:
 		return self._user_service.query_all_user_data()
 	
-	
+	def validate_user_by_id(self, user_id: int) ->int:
+		return self._user_service.validate_user_by_id(int(user_id))
+
+
 	"""HABIT RELATED METHODS"""
 	def query_user_and_related_habits(self) -> dict:
 		return self._user_service.quary_user_and_related_habits()
@@ -44,7 +47,6 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 
 	def create_a_habit(self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
 		return self._habit_service.create_a_habit(habit_name, habit_action, habit_periodicity_type, int(habit_user_id))
-
 
 	def get_all_habits(self):
 		return self._habit_service.get_all_habits()
@@ -60,6 +62,10 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 
 	def get_habit_strategy(self, habit_id):
 		return self._habit_service.get_periodicity_type(habit_id)
+
+	def update_habit_streak(self, habit_id, updated_streak_value):
+		return self._habit_service.update_habit_streak(habit_id, updated_streak_value)
+
 
 
 	"""GOAL RELATED METHODS"""
@@ -87,16 +93,23 @@ class HabitTrackerFacadeImpl(HabitTrackerFacade):
 	def fetch_ready_to_tick_goals_of_habits(self):
 		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits()
 	
-
-
 	def validate_a_goal(self, goal_id):
 		return self._goal_service.validate_goal_id(goal_id=goal_id)
 	
 	def get_goal_entity_by_id(self, goal_id, habit_id):
 		return self._goal_service.get_goal_entity_by_id(goal_id=goal_id, habit_id=habit_id)
 
+	def query_all_goals(self):
+		return self._goal_service.query_all_goals()
+
+	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
+		return self._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id)
+
 
 	#def complete a habit for the orchestrator
 	"""PROGRESS RELATED METHODS"""
 	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, current_streak, progress_description=None):
 		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description, current_streak=current_streak)
+	
+	def get_last_progress_entry(self, goal_id):
+		return self._progress_service.get_last_progress_entry(goal_id=goal_id)
