@@ -2,7 +2,6 @@ from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 
 
-
 class HabitController:
 	def __init__(self, habit_tracker_facade: HabitTrackerFacadeImpl, habit_tracker_orchestrator: HabitOrchestrator):
 		self._facade = habit_tracker_facade
@@ -46,6 +45,5 @@ class HabitController:
 	def complete_a_habit(self, habit_id, goal_id):
 		return self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
 
-	
-
-
+	def get_pending_goals(self):
+		return self._facade._reminder_service.get_pending_goals()
