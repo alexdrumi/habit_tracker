@@ -16,12 +16,13 @@ from apps.reminders.services.reminder_service import ReminderService
 class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
 
-	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService, reminder_service: ReminderService):
+	def __init__(self, user_service: UserService, habit_service: HabitService, goal_service: GoalService, progress_service: ProgressesService, reminder_service: ReminderService, analytics_service: AnalyticsService):
 		self._user_service = user_service
 		self._habit_service = habit_service
 		self._goal_service = goal_service
 		self._progress_service = progress_service
 		self._reminder_service = reminder_service
+		self._analytics_service = analytics_service
 		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade
 
 	"""USER RELATED METHODS"""
@@ -113,3 +114,15 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	
 	def get_last_progress_entry(self, goal_id):
 		return self._progress_service.get_last_progress_entry(goal_id=goal_id)
+	
+	"""REMINDER RELATED METHODS"""
+	def get_pending_goals(self):
+		return self._reminder_service.get_pending_goals()
+	
+
+	"""ANALYTICS RELATED METHODS"""
+	def calculate_longest_streak(self):
+		return self._analytics_service.calculate_longest_streak()
+	
+	def get_same_periodicity_type_habits(self):
+		return self._analytics_service.get_same_periodicity_type_habits()

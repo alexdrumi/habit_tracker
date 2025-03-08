@@ -31,6 +31,9 @@ from apps.reminders.services.reminder_service import ReminderService
 from apps.core.controllers.habit_controller import HabitController
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 
+from apps.analytics.repositories.analytics_repository import AnalyticsRepository
+from apps.analytics.services.analytics_service import AnalyticsService
+
 def signal_handler(sig, frame):
 	print('You pressed Ctrl+C, doei!')
 	sys.exit(0)
@@ -63,6 +66,8 @@ class CLI:
 		click.echo("6, Delete a certain habit")
 		click.echo("7, List goals with associated habits")
 		click.echo("8, Complete a habit/goal")
+		click.echo("9, Get longest habit streak")
+		click.echo("10, Get habits by same periodicity type")
 
 	def prompt_for_valid_integer(self, message):
 		while True:
@@ -208,6 +213,31 @@ class CLI:
 
 		self._controller.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
 
+	def option_9_longest_streak(self):
+		click.echo("\nYou selected option 9 - Longest Habit Streak")
+		click.pause()
+
+		result = self._controller.calculate_longest_streak()
+
+		if result:
+			#we can style it like this also for the rest
+			click.echo(click.style("\nHabit with the longest current streak:", fg="green", bold=True))
+			click.echo(click.style(f"  Habit Name: {result[1]}", fg="white"))
+			click.echo(click.style(f"  Habit ID: {result[0]}", fg="white"))
+			click.echo(click.style(f"  Streak: {result[2]} days", fg="yellow", bold=True))
+		else:
+			click.echo(click.style("\nNo habits found with streaks yet. Complete a habit first!", fg="red", bold=True))
+
+
+	def option_10_same_habit_periodicity(self):
+		click.echo("\nYou selected option 10 - Group habits by periodicity.")
+		click.pause()
+		
+		result = self._controller.get_same_periodicity_type_habits()
+
+		print(result)
+
+
 
 	def run(self):
 		signal.signal(signal.SIGINT, signal_handler)
@@ -241,6 +271,12 @@ class CLI:
 			if choice == 8:
 				self.option_8_complete_habit()
 
+			if choice == 9:
+				self.option_9_longest_streak()
+			
+			if choice == 10:
+				self.option_10_same_habit_periodicity()
+
 def main():
 	database = MariadbConnection()
 	user_repository = UserRepository(database)
@@ -252,8 +288,10 @@ def main():
 	progress_repository = ProgressesRepository(database, goal_repository)
 	progress_service = ProgressesService(progress_repository, goal_service)
 	reminder_service = ReminderService(goal_service=goal_service)
-
-	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service)
+	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository) #not sure if we need habit stuff here
+	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service) #not sure if we need habit stuff here
+	
+	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service, analytics_service=analytics_service)
 	habit_tracker_orchestrator = HabitOrchestrator(habit_tracker_facade=habit_tracker_facade)
 	habit_controller = HabitController(habit_tracker_facade=habit_tracker_facade, habit_tracker_orchestrator=habit_tracker_orchestrator)
 	

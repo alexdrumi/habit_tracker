@@ -46,4 +46,11 @@ class HabitController:
 		return self._facade.complete_a_habit(habit_id=int(habit_id), goal_id=int(goal_id))
 
 	def get_pending_goals(self):
-		return self._facade._reminder_service.get_pending_goals()
+		return self._facade.get_pending_goals()
+
+	def calculate_longest_streak(self):
+		return self._facade.calculate_longest_streak()
+
+	def get_same_periodicity_type_habits(self):
+		return self._facade.get_same_periodicity_type_habits()
+

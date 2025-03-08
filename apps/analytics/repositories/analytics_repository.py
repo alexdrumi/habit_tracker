@@ -109,3 +109,38 @@ class AnalyticsRepository:
 		except Exception as error:
 				self._db._connection.rollback()
 				raise
+		
+	
+	def calculate_longest_streak(self):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT habit_id, habit_name, habit_streak FROM habits WHERE habit_streak = (SELECT MAX(habit_streak) FROM habits) ORDER BY habit_streak DESC;"
+				
+				cursor.execute(query)
+				result = cursor.fetchone()
+				#no commit needed, nothing changed
+				if result:
+					return result
+				else:
+					raise AnalyticsNotFoundError(f"Analytics is not found.")
+
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
+
+	def get_same_periodicity_type_habits(self):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT habit_periodicity_type, COUNT(*) AS habit_count, GROUP_CONCAT(CONCAT(habit_id, ': ', habit_name) SEPARATOR ', ') AS habit_list FROM habits GROUP BY habit_periodicity_type ORDER BY habit_count DESC;"
+
+				cursor.execute(query)
+				result = cursor.fetchall()
+
+				if result:
+					return result
+				else:
+					raise AnalyticsNotFoundError(f"Analytics is not found.")
+			
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise

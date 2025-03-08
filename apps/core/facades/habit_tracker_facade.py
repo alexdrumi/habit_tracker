@@ -96,3 +96,15 @@ class HabitTrackerFacadeInterface(ABC):
 	@abstractmethod
 	def get_last_progress_entry(self, goal_id):
 		pass
+
+	"""REMINDER RELATED METHODS"""
+	def get_pending_goals(self):
+		pass
+
+
+	"""ANALYTICS RELATED METHODS"""
+	def calculate_longest_streak(self):
+		pass
+
+	def get_same_periodicity_type_habits(self):
+		pass

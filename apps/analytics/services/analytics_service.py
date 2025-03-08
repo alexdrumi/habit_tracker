@@ -90,3 +90,29 @@ class AnalyticsService:
 		except Exception as error:
 			logging.error(f"Unexpected error in update analytics: {error}")
 			raise
+
+
+	def calculate_longest_streak(self):
+		try:
+			result = self._repository.calculate_longest_streak()
+			# print(f"WE ARE BEING CALLED HERE")
+			return result
+
+		except AnalyticsNotFoundError as aerror:
+			logging.error(f"Analytics is not found. error: {aerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update analytics: {error}")
+			raise
+
+
+	def get_same_periodicity_type_habits(self):
+		try:
+			result = self._repository.get_same_periodicity_type_habits()
+			return result
+		except AnalyticsNotFoundError as aerror:
+			logging.error(f"Analytics is not found. error: {aerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update analytics: {error}")
+			raise
