@@ -1,12 +1,14 @@
 from apps.analytics.repositories.analytics_repository import AnalyticsRepository, AnalyticsNotFoundError
 from apps.habits.services.habit_service import HabitService
+from apps.progresses.services.progress_service import ProgressesService
 from mysql.connector.errors import IntegrityError
 import logging
 
 class AnalyticsService:
-	def __init__(self, repository: AnalyticsRepository, habit_service: HabitService):
+	def __init__(self, repository: AnalyticsRepository, habit_service: HabitService, progress_service: ProgressesService):
 		self._repository = repository
 		self._habit_service = habit_service
+		self._progress_service = progress_service
 
 
 	def validate_analytics(self, action, habit_id=None, analytics_id=None, times_completed=None, streak_length=None, last_completed_at=None):
@@ -116,3 +118,28 @@ class AnalyticsService:
 		except Exception as error:
 			logging.error(f"Unexpected error in update analytics: {error}")
 			raise
+
+	def get_currently_tracked_habits(self):
+		try:
+			result = self._repository.get_currently_tracked_habits()
+			return result
+		except AnalyticsNotFoundError as aerror:
+			logging.error(f"Analytics is not found. error: {aerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update analytics: {error}")
+			raise
+	
+	def longest_streak_for_habit(self, habit_id):
+		try:
+			result = self._repository.longest_streak_for_habit(habit_id)
+			return result
+		except AnalyticsNotFoundError as aerror:
+			logging.error(f"Analytics is not found. error: {aerror}")
+			raise
+		except Exception as error:
+			logging.error(f"Unexpected error in update analytics: {error}")
+			raise
+		# - and return the longest run streak for a given habit.
+		# try: 
+		# 	result 

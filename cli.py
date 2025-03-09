@@ -55,6 +55,64 @@ class CLI:
 	def display_goals_and_habits(self, goals_and_habits):
 		for data in goals_and_habits:
 			print(f"\ngoal_name: {data[0]}, goal_id: {data[1]}, habit_name: {data[3]}, habit_id: {data[2]}")
+	
+
+	def display_same_periodicity_type_habits(self, habits):
+		for habit_type in habits:
+			periodicity = habit_type[0]  #daily or weekly atm
+			habit_count = habit_type[1]  #how many are there in the group
+			habit_list = habit_type[2]   #concatted string
+
+			#header
+			print("\n" + "-" * 80)
+			print(click.style(f" Habits with periodicity type: {periodicity.upper()} ", fg="green", bold=True))
+			print("\n" + "-" * 80)
+
+			#split into individual habit list
+			all_habits = habit_list.split(',')
+
+			for habit in all_habits:
+				habit_details = habit.split(':')
+				habit_id = habit_details[0].strip()
+				habit_name = habit_details[1].strip()
+				print(
+					click.style("Habit ID: ", fg="yellow", bold=True) + 
+					click.style(habit_id, fg="green") +
+					click.style(" | Habit Name: ", fg="yellow", bold=True) + 
+					click.style(habit_name, fg="white", bold=True)
+				)
+		print("\n" + "-" * 80)
+
+
+
+
+
+	def display_tracked_habits(self, habits):
+		if not habits:
+			click.echo(click.style("\nNo habits are currently being tracked.", fg="red", bold=True))
+			return
+
+		print("\n" + "-" * 80)
+		print(click.style(" Currently tracked habits ", fg="green", bold=True))
+		print("-" * 80)
+
+		for habit in habits:
+			habit_id, habit_name, streak, periodicity = habit
+
+			click.echo(
+				click.style("Habit ID: ", fg="yellow", bold=True) + 
+				click.style(str(habit_id), fg="green") + 
+				click.style(" | Habit name: ", fg="yellow", bold=True) + 
+				click.style(habit_name, fgs="white", bold=True) +
+				click.style(" | Streak: ", fg="yellow", bold=True) +
+				click.style(str(streak), fg="magenta") +
+				click.style(" | Periodicity: ", fg="yellow", bold=True) + 
+				click.style(periodicity.capitalize(), fg="blue", bold=True)
+			)  
+
+		print("-" * 80)
+
+
 
 	def display_menu(self):
 		click.echo("\nMain menu:")
@@ -68,6 +126,8 @@ class CLI:
 		click.echo("8, Complete a habit/goal")
 		click.echo("9, Get longest habit streak")
 		click.echo("10, Get habits by same periodicity type")
+		click.echo("11, Get currently tracked habits")
+		click.echo("12, Get longest ever streak for habit")
 
 	def prompt_for_valid_integer(self, message):
 		while True:
@@ -189,14 +249,14 @@ class CLI:
 			else:
 				occurence_date_str = occurence_date.strftime("%Y-%m-%d %H:%M:%S")
 
-			# Print formatted habit and goal information
+			#eventually we could even place these in one single print call, also the rest above
 			print(f"\nHabit ID: {habit_id}")
 			print(f"Goal ID: {goal_id}")
 			print(f"Goal Name: {goal_name}")
 			print(f"Target KVI: {target_kvi_value}")
 			print(f"Current KVI: {current_kvi_value}")
 			print(f"Last Ticked: {occurence_date_str}")
-			print("--------------------------------------------------------------------------------")
+			print("\n" + "-" * 80)
 
 
 	def option_8_complete_habit(self):
@@ -234,11 +294,29 @@ class CLI:
 		click.pause()
 		
 		result = self._controller.get_same_periodicity_type_habits()
+		#[('daily', 2, '[{"habit_id": 43, "habit_name": "test1"},{"habit_id": 44, "habit_name": "test2"}]'), ('weekly', 1, '[{"habit_id": 45, "habit_name": "tedst3"}]')]
+		# print(result)
+		self.display_same_periodicity_type_habits(result)
 
-		print(result)
+
+	def option_11_get_currently_tracked_habits(self):
+		click.echo("\nYou selected option 11 - Get currently tracked habits.")
+		click.pause()
+
+		result = self._controller.get_currently_tracked_habits()
+		self.display_tracked_habits(result)
 
 
+	def option_12_get_longest_ever_streak_for_habit(self):
+		click.echo("\nYou selected option 12 - Get_longest_ever_streak_for_habit.")
+		click.pause()
+		 
+		habit_id = self.prompt_for_valid_integer("Select a habit id for its longest ever streak recorded")
+		result = self._controller.longest_streak_for_habit(habit_id)
+		click.echo(click.style(f"Longest streak opf habit {habit_id}: {result[0][1]} days", fg="yellow", bold=True))
 
+
+	
 	def run(self):
 		signal.signal(signal.SIGINT, signal_handler)
 		self._controller.get_pending_goals()
@@ -277,6 +355,12 @@ class CLI:
 			if choice == 10:
 				self.option_10_same_habit_periodicity()
 
+			if choice == 11:
+				self.option_11_get_currently_tracked_habits()
+
+			if choice == 12:
+				self.option_12_get_longest_ever_streak_for_habit()
+
 def main():
 	database = MariadbConnection()
 	user_repository = UserRepository(database)
@@ -289,7 +373,7 @@ def main():
 	progress_service = ProgressesService(progress_repository, goal_service)
 	reminder_service = ReminderService(goal_service=goal_service)
 	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository) #not sure if we need habit stuff here
-	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service) #not sure if we need habit stuff here
+	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service, progress_service=progress_service) #not sure if we need habit stuff here
 	
 	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service, analytics_service=analytics_service)
 	habit_tracker_orchestrator = HabitOrchestrator(habit_tracker_facade=habit_tracker_facade)

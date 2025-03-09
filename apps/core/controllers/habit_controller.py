@@ -54,3 +54,8 @@ class HabitController:
 	def get_same_periodicity_type_habits(self):
 		return self._facade.get_same_periodicity_type_habits()
 
+	def get_currently_tracked_habits(self):
+		return self._facade.get_currently_tracked_habits()
+
+	def longest_streak_for_habit(self, habit_id):
+		return self._facade.longest_streak_for_habit(habit_id)

@@ -109,7 +109,7 @@ class AnalyticsRepository:
 		except Exception as error:
 				self._db._connection.rollback()
 				raise
-		
+
 	
 	def calculate_longest_streak(self):
 		try:
@@ -128,6 +128,7 @@ class AnalyticsRepository:
 			self._db._connection.rollback()
 			raise
 
+
 	def get_same_periodicity_type_habits(self):
 		try:
 			with self._db._connection.cursor() as cursor:
@@ -144,3 +145,55 @@ class AnalyticsRepository:
 		except Exception as error: #rolback for unexpected errors
 			self._db._connection.rollback()
 			raise
+
+
+	def get_currently_tracked_habits(self):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = "SELECT habit_id, habit_name, habit_streak, habit_periodicity_type FROM habits WHERE habit_streak > 0;"
+
+				cursor.execute(query)
+				result = cursor.fetchall()
+
+				if result:
+					return result
+				else:
+					raise AnalyticsNotFoundError(f"Analytics is not found.")
+			
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
+
+	def longest_streak_for_habit(self, habit_id):
+		try:
+			with self._db._connection.cursor() as cursor:
+				query = " SELECT p.* FROM progresses p JOIN goals g ON p.goal_id_id = g.goal_id WHERE g.habit_id_id = %s ORDER BY p.current_streak DESC LIMIT 1;"
+				cursor.execute(query, (habit_id, ))
+
+				result = cursor.fetchall()
+			if result:
+				return result
+			else:
+				raise AnalyticsNotFoundError(f"Analytics is not found.")
+	
+		except Exception as error: #rolback for unexpected errors
+			self._db._connection.rollback()
+			raise
+
+	# #https://mariadb.com/kb/en/json_arrayagg/ , otherwise I would have split calls in the layers above. This is gonna be a simple loop
+	# def get_same_periodicity_type_habits(self):
+	# 	try:
+	# 		with self._db._connection.cursor() as cursor:
+	# 			query = "SELECT habit_periodicity_type, COUNT(*) AS habit_count, JSON_ARRAYAGG(JSON_OBJECT('habit_id', habit_id, 'habit_name', habit_name)) AS habit_list FROM habits GROUP BY habit_periodicity_type ORDER BY habit_count DESC;"
+
+	# 			cursor.execute(query)
+	# 			result = cursor.fetchall()
+
+	# 			if result:
+	# 				return result
+	# 			else:
+	# 				raise AnalyticsNotFoundError(f"Analytics is not found.")
+			
+	# 	except Exception as error: #rolback for unexpected errors
+	# 		self._db._connection.rollback()
+	# 		raise
