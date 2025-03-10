@@ -5,27 +5,27 @@ class ReminderService:
 	def __init__(self, goal_service: GoalService):
 		self._goal_service = goal_service
 	
-
-	def calculate_time_between_last_occurence_and_now(self, last_occurence_datetime, current_time, deadline_timedelta_object):
+	
+	def calculate_tickability(self, last_occurence_datetime, current_time, time_delta_difference):
 		time_between_last_occurrence_and_now = current_time - last_occurence_datetime
-		if time_between_last_occurrence_and_now < deadline_timedelta_object:
-			return f"You have {deadline_timedelta_object - time_between_last_occurrence_and_now} to tick this habit/goal."
-		return None
+		absolute_time_difference = abs(time_between_last_occurrence_and_now.total_seconds())
+		
+		is_too_early = (absolute_time_difference < time_delta_difference.total_seconds())
+		is_too_late = (absolute_time_difference > time_delta_difference.total_seconds() * 2)
+
+		return (not (is_too_early or is_too_late))
+		
 
 
 
 	def is_tickable(self, daily_or_weekly, last_occurence):
-		if len(last_occurence) == 0:
-			return None
+		if last_occurence == None:
+			return True
 		
 		current_time = datetime.now()
-		print(f'last occurence is {last_occurence['occurence_date']}')
-		last_occurence_datetime = last_occurence['occurence_date'] #$print(last_occurence)	
-		if daily_or_weekly == 1:
-			return self.calculate_time_between_last_occurence_and_now(last_occurence_datetime, current_time, timedelta(hours=24))
-		elif daily_or_weekly == 7:
-			return self.calculate_time_between_last_occurence_and_now(last_occurence_datetime, current_time, timedelta(weeks=1))
-		return None
+		last_occurence_datetime = last_occurence['occurence_date']
+		td = timedelta(hours=24) if daily_or_weekly == 1 else timedelta(weeks=1)
+		return self.calculate_tickability(last_occurence_datetime, current_time, td)
 
 
 
@@ -36,11 +36,17 @@ class ReminderService:
 		goals_which_need_reminders = []
 		#go through all goals
 		for goal in all_goals:
-			last_occurence = self._goal_service.get_last_progress_entry_associated_with_goal_id(goal['goal_id'])
-			print(f'{last_occurence} of {goal['goal_id']}')
-			
+			last_occurence = self._goal_service.get_last_progress_entry_associated_with_goal_id(goal['goal_id'])			
 			daily_or_weekly = 1 if goal	['target_kvi_value'] == 1.0 else 7
+			print(last_occurence)
 			is_tickable = self.is_tickable(daily_or_weekly, last_occurence)
+
+			if is_tickable == False:
+				print('\n' + "-" *80)
+				print("\033[91mNo goals are currently tickable. Try completing a habit first!\033[0m")
+				print("-" *80)
+				return
+
 			# if is_tickable is not None:
 			goals_which_need_reminders.append({
 				'goal_id': goal['goal_id'],
@@ -60,5 +66,5 @@ class ReminderService:
 		for goal in goals_which_need_reminders:
 			if goal['print_message'] == None:
 				goal['print_message'] = "Habit was never ticked, you are free to tick it for the first time!"
-			print(f"\033[91m- Goal: {goal['goal_name']}, Habit ID: {goal['habit_id']}, {goal['print_message']}\033[0m")  # Red text
+			print(f"\033[91m- Goal name: {goal['goal_name']}, Goal ID: {goal['goal_id']}, Habit ID: {goal['habit_id']}, {goal['print_message']}\033[0m")  # Red text
  

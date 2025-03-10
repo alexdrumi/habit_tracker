@@ -263,7 +263,7 @@ class CLI:
 		click.echo("You selected option 11 - Complete a habit")
 		click.pause()
 
-		self.option_9_list_all_goals_with_habits()
+		self.option_7_list_all_goals_with_habits()
 
 		tickable_habits_and_goals = self._controller.fetch_ready_to_tick_goals_of_habits()
 		self.display_tickable_habits(tickable_habits_and_goals)
