@@ -52,7 +52,7 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def get_all_habits(self):
 		return self._habit_service.get_all_habits()
 
-	def delete_a_habit_by_id(self, habit_id, goal_id):
+	def delete_a_habit_by_id(self, habit_id, goal_id): #we ll see if we actually need this
 		return self._habit_service.delete_a_habit_by_id(habit_id, goal_id)
 	
 	def validate_a_habit(self, habit_id):
@@ -70,6 +70,9 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def delete_a_habit(self, habit_id):
 		return self._habit_orchestrator.delete_a_habit(habit_id)
 	
+	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
+		return self._habit_service.delete_habit_physical_preserving_progress(habit_id, goal_id)
+
 
 	"""GOAL RELATED METHODS"""
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):

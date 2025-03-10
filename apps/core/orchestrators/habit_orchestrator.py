@@ -129,7 +129,7 @@ class HabitOrchestrator:
 		
 		# print(goal_id)
 		#if goal id, otherwise there is a problem
-		deleted = self._habit_facade.delete_a_habit_by_id(habit_id=validated_habit_id, goal_id=int(goal_id[0]))
+		deleted = self._habit_facade.delete_habit_physical_preserving_progress(habit_id=validated_habit_id, goal_id=int(goal_id[0]))
 
 
 

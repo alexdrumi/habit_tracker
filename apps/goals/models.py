@@ -44,7 +44,7 @@ class Goals(models.Model):
 		constraints = [
 			#https://docs.djangoproject.com/en/5.1/ref/models/constraints/
 			models.UniqueConstraint(fields=['goal_name', 'habit_id'], name="unique_goal_for_habit_id") #cant have the same goals for the same habit
-		]
+		] #
 	
 	def save(self, *args, **kwargs):
 		if not self.goal_name.strip(): #check for empty name or whitespaces etc

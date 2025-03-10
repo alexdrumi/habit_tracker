@@ -17,14 +17,18 @@ class Progresses(models.Model):
 	progress_id = models.AutoField(primary_key=True)
 	goal_id = models.ForeignKey(
 		Goals,
-		on_delete=models.CASCADE, #delete the progress if the goal is deleted
-		related_name='goal_progresses'
+		on_delete=models.SET_NULL, #delete the progress if the goal is deleted
+		related_name='goal_progresses',
+		null=True,
+		blank=True
 	)
 	progress_description = models.CharField(max_length=30, blank=True, null=True)
 	current_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
 	distance_from_goal_kvi_value = models.FloatField(validators=[MinValueValidator(0.0)], default=0.0)
 	current_streak = models.IntegerField(default=0)
 	occurence_date = models.DateTimeField(auto_now_add=True)
+	goal_name = models.CharField(max_length=60, blank=True, null=True, default=None)
+	habit_name = models.CharField(max_length=60, blank=True, null=True, default=None)
 
 	class Meta:
 		db_table = "progresses"

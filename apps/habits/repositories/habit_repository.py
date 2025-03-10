@@ -216,7 +216,64 @@ class HabitRepository:
 		finally:
 			self._db._connection.autocommit = True #allow autocommit again
 
+	# def soft_delete_habit(self, habit_id):
+	# 	'''
+	# 	Soft deletes a habit based on habit_id.
 
+	# 	Args:
+	# 		int: The id of the habit wished to be deleted.
+		
+	# 	Returns:
+	# 		Int: Amount of rows affected.
+	# 	'''
+	# 	with self._db._connection.cursor() as cursor:
+	# 		query = "UPDATE habits SET deleted_at = NOW() WHERE habit_id = %s;"
+	# 		cursor.execute(query, (habit_id,))
+	# 		self._db._connection.commit()
+
+	# 		if cursor.rowcount == 0:
+	# 			raise HabitNotFoundError(habit_id)
+	# 		return cursor.rowcount
+
+	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
+		"""
+		Physically remove a habit, also removing its goals but preserving any progress records
+		(by setting goal_id_id = NULL).
+		"""
+		with self._db._connection.cursor() as cursor:
+			self._db._connection.autocommit = False
+			try:
+				#find all goals referencing this habit
+				#find_goals_query = "SELECT goal_id FROM goals WHERE habit_id_id = %s
+				#cursor.execute(find_goals_query, (habit_id,))
+				#goals = cursor.fetchall()  #[(24,), (25,)..]
+				
+				# if goals:
+				# 	goal_ids = [str(g[0]) for g in goals]  # e.g., ['24','25']
+
+				#goal_id_id=NULL in progresses for these goals
+				set_null_query = f"UPDATE progresses SET goal_id_id = NULL WHERE goal_id_id = %s;"
+				cursor.execute(set_null_query, (goal_id, ))
+
+				# 3. Delete the goals for this habit
+				delete_goals_query = "DELETE FROM goals WHERE habit_id_id = %s;"
+				cursor.execute(delete_goals_query, (habit_id,))
+
+				# 4. Delete the habit
+				delete_habit_query = "DELETE FROM habits WHERE habit_id = %s;"
+				cursor.execute(delete_habit_query, (habit_id,))
+
+				if cursor.rowcount == 0:
+					raise HabitNotFoundError(habit_id)
+
+				self._db._connection.commit()
+				return cursor.rowcount
+
+			except Exception as err:
+				self._db._connection.rollback()
+				raise err
+			finally:
+				self._db._connection.autocommit = True
 
 	@handle_habit_repository_errors
 	def get_all_habits(self):

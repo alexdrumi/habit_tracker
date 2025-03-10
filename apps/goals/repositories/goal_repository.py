@@ -118,16 +118,18 @@ class GoalRepository:
 		with self._db._connection.cursor() as cursor:
 			# "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s";
 			# query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
-			query = "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s;"
+			query = "SELECT g.goal_id, g.goal_name, g.habit_id_id, h.habit_name, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s;"
 			cursor.execute(query, (goal_id, habit_id))
 			result = cursor.fetchone()
 			if result:
 				return {
 					'goal_id': result[0],
-					'habit_id': result[1],
-					'target_kvi': result[2],
-					'current_kvi': result[3],
-					'streak': result[4]
+					'goal_name': result[1],
+					'habit_id': result[2],
+					'habit_name': result[3],
+					'target_kvi': result[4],
+					'current_kvi': result[5],
+					'streak': result[6]
 				}
 
 			else:

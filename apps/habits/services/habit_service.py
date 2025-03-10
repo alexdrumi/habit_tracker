@@ -174,6 +174,13 @@ class HabitService:
 		validated_habit_id = self.validate_a_habit(habit_id) #prob we could call validation from orchestrator as well
 		deleted_count = self._repository.delete_a_habit(validated_habit_id, goal_id=goal_id)
 		return deleted_count
+	
+	@handle_log_service_exceptions
+	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
+		validated_habit_id = self.validate_a_habit(habit_id) #prob we could call validation from orchestrator as well
+		#validated goal?
+		deleted_count = self._repository.delete_habit_physical_preserving_progress(habit_id=habit_id, goal_id=goal_id)
+		return deleted_count
 
 	@handle_log_service_exceptions
 	def get_all_habits(self):

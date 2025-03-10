@@ -30,7 +30,7 @@ class HabitController:
 	def get_all_habits(self):
 		return self._facade.get_all_habits()
 	
-	def delete_a_habit(self, habit_id):
+	def delete_a_habit(self, habit_id): #try to preserve the progress entries now
 		return self._facade.delete_a_habit(int(habit_id)) 
 
 	def query_goals_and_related_habits(self):
@@ -59,3 +59,4 @@ class HabitController:
 
 	def longest_streak_for_habit(self, habit_id):
 		return self._facade.longest_streak_for_habit(habit_id)
+	

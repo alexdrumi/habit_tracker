@@ -30,9 +30,9 @@ class ProgressesService:
 
 
 	@handle_log_service_exceptions
-	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, current_streak, progress_description=None):
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, current_streak, goal_name, habit_name, progress_description=None):
 		validated_goal_id = self._goal_service.validate_goal_id(goal_id) #we call this now from orchestrator, but maybe later we use it also as a single call, better to validate here as well
-		progress_entity = self._repository.create_progress(goal_id=validated_goal_id, current_kvi_value=current_kvi_value, distance_from_target_kvi_value=distance_from_target_kvi_value, current_streak=current_streak, progress_description=progress_description)
+		progress_entity = self._repository.create_progress(goal_id=validated_goal_id, current_kvi_value=current_kvi_value, distance_from_target_kvi_value=distance_from_target_kvi_value, current_streak=current_streak, goal_name=goal_name, habit_name=habit_name, progress_description=progress_description)
 		return progress_entity
 
 
