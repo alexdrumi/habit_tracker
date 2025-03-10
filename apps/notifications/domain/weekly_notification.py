@@ -20,22 +20,11 @@ class WeeklyNotificationStrategy(NotificationStrategy):
 
 
 	def on_completion_message(self, progress_data: ProgressHistoryDTO):
-		now = datetime.now()
+		# now = datetime.now()
 
-		if progress_data.last_updated_time == None:
-			return "NO MESSAGE HERE"
-		
-		#if the last updated time was not yet a week ago, we refuse to get it completed
-		dto_to_dict = progress_data.to_dict()
-		print(f"{dto_to_dict} is the dto to ditc")
-		dict_keys = dto_to_dict.keys()
-		last_updated_time = dto_to_dict.get('last_updated_time')
-		streak = dto_to_dict.get('streak')
-		time_difference = now - last_updated_time
-		if progress_data.distance_from_goal <= 0 :
-			return f"CONGRATS, you completed this {streak} amount of times."
-		return None
-
+		streak = progress_data.to_dict().get('streak')
+		if streak != 0:
+			return f"Congratulations, you have completed a daily habit with, your current streak is {streak}"
 
 	def on_expired_message(self, progress_data: ProgressHistoryDTO):
 		streak = progress_data.to_dict().get('streak')

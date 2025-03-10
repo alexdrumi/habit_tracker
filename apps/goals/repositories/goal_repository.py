@@ -253,7 +253,27 @@ class GoalRepository:
 			cursor.execute(query, (habit_id, ))
 
 			result = cursor.fetchall()
+			if result:
+				return result
+			else:
+				return []
 
+	@handle_goal_repository_errors
+	def query_goal_of_a_habit(self, habit_id):
+		'''
+		Requests all goals of one specific habit. Initially this will be only one goal per habit, eventually can have more goals.
+
+		Args:
+			None
+		
+		Returns:
+			dict(list): every goal data with goal_name, goal_id, habit_name, habit_id
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_id from goals WHERE habit_id_id = %s"
+			cursor.execute(query, (habit_id, ))
+
+			result = cursor.fetchone()
 			if result:
 				return result
 			else:

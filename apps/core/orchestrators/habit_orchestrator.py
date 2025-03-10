@@ -123,29 +123,13 @@ class HabitOrchestrator:
 		return tickable_goals_and_habits
 
 
-
-
-	# def complete_a_habit(self, habit_id, goal_id):
-	# 	#we check whether habit exists
-	# 	validated_habit_id = self._habit_facade.validate_a_habit(habit_id=habit_id)
-
-	# 	#check whether the goal exists
-	# 	validated_goal_id = self._habit_facade.validate_a_goal(goal_id=goal_id)
-
-	# 	#select the goal whos target kvi we want to update
-	# 	goal_entity = self._habit_facade.get_goal_entity_by_id(validated_goal_id, validated_habit_id)
-	# 	current_kvi_value = goal_entity['current_kvi']
-	# 	target_kvi_value = goal_entity['target_kvi']
-	# 	print(f"{goal_entity} is the goal entity\n\n\n")
-	# 	# [(1, 3, 8.0, 6.0)] is the goal entit
-	# 	#goalid, habitid, targetkvi, currentkvi
-	# 	new_kvi_value = float(current_kvi_value) + 1.0
-	# 	self._habit_facade.update_goal_current_kvi_value(goal_id=validated_goal_id, current_kvi_value=new_kvi_value)
-
-	# 	#create the blueprint with the updated values
-	# 	distance_from_goal_kvi_value = target_kvi_value - new_kvi_value
-	# 	progress_entity = self._habit_facade.create_a_progress(validated_goal_id, current_kvi_value=new_kvi_value, distance_from_kvi_value=distance_from_goal_kvi_value, progress_description=None)
+	def delete_a_habit(self, habit_id):
+		validated_habit_id = self._habit_facade.validate_a_habit(habit_id)
+		goal_id = self._habit_facade.query_goal_of_a_habit(habit_id=validated_habit_id)
 		
-	# 	# print(f"{progress_entity} is the progress entity")
-	# 	#we could return the updated progress if needed with the values fso one could see where are we in the progress
-	# 	#or we just leave that to the analytics
+		# print(goal_id)
+		#if goal id, otherwise there is a problem
+		deleted = self._habit_facade.delete_a_habit_by_id(habit_id=validated_habit_id, goal_id=int(goal_id[0]))
+
+
+

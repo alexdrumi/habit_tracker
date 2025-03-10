@@ -220,7 +220,8 @@ class CLI:
 		click.pause()
 
 		habit_id = self.prompt_for_valid_integer("Enter the habit ID to delete.")
-		deleted_amount = self._controller.delete_a_habit_by_id(int(habit_id)) 
+		#pull the related goal id
+		deleted_amount = self._controller.delete_a_habit(int(habit_id)) 
 		
 		click.echo(f"\nDeleted habit with id {habit_id}")
 

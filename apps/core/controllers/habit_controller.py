@@ -30,13 +30,13 @@ class HabitController:
 	def get_all_habits(self):
 		return self._facade.get_all_habits()
 	
-	def delete_a_habit_by_id(self, habit_id):
-		return self._facade.delete_a_habit_by_id(int(habit_id)) 
+	def delete_a_habit(self, habit_id):
+		return self._facade.delete_a_habit(int(habit_id)) 
 
 	def query_goals_and_related_habits(self):
 		return self._facade.query_goals_and_related_habits()
 
-	def delete_a_goal(self, goal_id):
+	def delete_a_goal(self, goal_id): #prob not needed, habit needs to be deleted
 		return 	self._facade.delete_a_goal(int(goal_id))
 	
 	def fetch_ready_to_tick_goals_of_habits(self):

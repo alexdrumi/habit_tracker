@@ -132,9 +132,15 @@ class GoalService:
 
 
 	@handle_log_service_exceptions
-	def query_goals_of_a_habit(self, habit_id):
+	def query_goals_of_a_habit(self, habit_id): #more extensive
 		goals = self._repository.query_goals_of_a_habit(habit_id)
 		return goals
+	
+	@handle_log_service_exceptions
+	def query_goal_of_a_habit(self, habit_id):
+		goal = self._repository.query_goal_of_a_habit(habit_id=habit_id)
+		return goal
+	
 	
 	# def fetch_ready_to_tick_goals_of_habits(self, habit_id, goal_id):
 	# 	available = self._repository.

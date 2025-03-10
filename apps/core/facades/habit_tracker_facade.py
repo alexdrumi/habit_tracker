@@ -32,7 +32,7 @@ class HabitTrackerFacadeInterface(ABC):
 		pass
 
 	@abstractmethod
-	def delete_a_habit_by_id(self, habit_id):
+	def delete_a_habit_by_id(self, habit_id, goal_id):
 		pass
 	
 	@abstractmethod
@@ -71,6 +71,9 @@ class HabitTrackerFacadeInterface(ABC):
 	@abstractmethod
 	def query_goals_of_a_habit(self, habit_id):
 		pass
+
+	def query_goal_of_a_habit(self, habit_id):
+		pass
 	
 	@abstractmethod
 	def get_goal_entity_by_id(self, goal_id, habit_id):
@@ -87,6 +90,10 @@ class HabitTrackerFacadeInterface(ABC):
 	@abstractmethod
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
 		pass
+	
+	# @abstractmethod
+	# def get_goal_of_habit(self, habit_id):
+	# 	pass
 
 	"""PROGRESS RELATED METHODS"""
 	@abstractmethod

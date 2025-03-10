@@ -177,7 +177,7 @@ class HabitRepository:
 			return habit_id[0] #id
 
 	@handle_habit_repository_errors		
-	def delete_a_habit(self, habit_id):
+	def delete_a_habit(self, habit_id, goal_id):
 		'''
 		Deletes a habit based on habit_id.
 
@@ -191,10 +191,13 @@ class HabitRepository:
 		#ifautocommit is enabled, each delete statement in the function would be immediately committed to the database before  the next statement.
 		try: #not sure how else to solve this because the decorator already has a try block but we need to reset autocommit
 			with self._db._connection.cursor() as cursor:
+				#delete progresses first
+				prorgresses_query = "DELETE FROM progresses WHERE goal_id_id = %s"
+				cursor.execute(prorgresses_query, (goal_id,))
 
 				#delete the related analytics first, cascade only works with ORMS
-				analytics_query = "DELETE FROM analytics WHERE habit_id_id = %s"
-				cursor.execute(analytics_query, (habit_id,))
+				# analytics_query = "DELETE FROM analytics WHERE habit_id_id = %s"
+				# cursor.execute(analytics_query, (habit_id,))
 
 				#delete also goals
 				goals_query = "DELETE FROM goals WHERE habit_id_id = %s"
@@ -258,3 +261,24 @@ class HabitRepository:
 				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
 			
 			return habits #no rows updated but also no error found
+	
+	def get_goal_of_habit(self, habit_id):
+		'''
+		Get the related goal_id for a habit.
+
+		Args:
+			int: habit_id
+		
+		Returns:
+			int: goal_id
+		'''
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT goal_id FROM goals WHERE habit_id_id = %s;"
+			cursor.execute(query, habit_id)
+			goal = cursor.fetchall()
+				
+			if not goal:
+				dummy_id_holder = -1
+				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
+			
+			return goal #no rows updated but also no error found

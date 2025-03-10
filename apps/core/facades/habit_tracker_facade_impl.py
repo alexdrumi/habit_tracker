@@ -52,8 +52,8 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def get_all_habits(self):
 		return self._habit_service.get_all_habits()
 
-	def delete_a_habit_by_id(self, habit_id):
-		return self._habit_service.delete_a_habit_by_id(habit_id)
+	def delete_a_habit_by_id(self, habit_id, goal_id):
+		return self._habit_service.delete_a_habit_by_id(habit_id, goal_id)
 	
 	def validate_a_habit(self, habit_id):
 		return self._habit_service.validate_a_habit(habit_id)
@@ -67,7 +67,9 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def update_habit_streak(self, habit_id, updated_streak_value):
 		return self._habit_service.update_habit_streak(habit_id, updated_streak_value)
 
-
+	def delete_a_habit(self, habit_id):
+		return self._habit_orchestrator.delete_a_habit(habit_id)
+	
 
 	"""GOAL RELATED METHODS"""
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
@@ -90,6 +92,10 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		return self._goal_service.query_goals_of_a_habit(habit_id=habit_id)
 		# goal_name, goal_id, habit_id_id, habit_name, habit_periodicity_value
 	
+	def query_goal_of_a_habit(self, habit_id):
+		return self._goal_service.query_goal_of_a_habit(habit_id=habit_id)
+
+
 	#maybe have an orchestrator call which filters the goals after querying goals of a habit
 	def fetch_ready_to_tick_goals_of_habits(self):
 		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits()
@@ -106,6 +112,8 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
 		return self._goal_service.get_last_progress_entry_associated_with_goal_id(goal_id)
 
+	def get_goal_of_habit(self, habit_id):
+		return self._goal_service.get_goal_of_habit(habit_id)
 
 	#def complete a habit for the orchestrator
 	"""PROGRESS RELATED METHODS"""

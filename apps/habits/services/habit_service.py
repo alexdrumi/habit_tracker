@@ -170,12 +170,17 @@ class HabitService:
 		return deleted_count
 
 	@handle_log_service_exceptions
-	def delete_a_habit_by_id(self, habit_id):
-		validated_habit_id = self.validate_a_habit(habit_id)
-		deleted_count = self._repository.delete_a_habit(validated_habit_id)
+	def delete_a_habit_by_id(self, habit_id, goal_id):
+		validated_habit_id = self.validate_a_habit(habit_id) #prob we could call validation from orchestrator as well
+		deleted_count = self._repository.delete_a_habit(validated_habit_id, goal_id=goal_id)
 		return deleted_count
 
 	@handle_log_service_exceptions
 	def get_all_habits(self):
 		list_of_habits = self._repository.get_all_habits()
 		return list_of_habits
+
+	@handle_log_service_exceptions
+	def get_goal_of_habit(self, habit_id):
+		goal_id = self._repository.get_goal_of_habit(habit_id)
+		return goal_id
