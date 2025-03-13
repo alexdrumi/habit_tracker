@@ -8,10 +8,6 @@ from apps.progresses.services.progress_service import ProgressesService
 from apps.analytics.services.analytics_service import AnalyticsService
 from apps.reminders.services.reminder_service import ReminderService
 
-#WE WILL DEFINITELY HAVE TO HAVE SOME ERROR CHECKS HERE
-#AND ALSO IN THE CLI LAYER
-#FOR NOW THIS IS REALLY INCONSISTENT AS I'VE PLANNED LOGGING IN SERVICE.
-#THERE IS A CHECK NEEDED IN CLI SO THAT THE LOOP KEEPS RUNNING SO MAYBE HERE WE JUST PASS THE EXCP TO THE LAYER ABOVE
 
 class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	"""Concrete implementation of the HabitTrackerFacade abstract class"""
@@ -23,7 +19,9 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		self._progress_service = progress_service
 		self._reminder_service = reminder_service
 		self._analytics_service = analytics_service
-		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade
+		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade interface (abstract class)
+
+
 
 	"""USER RELATED METHODS"""
 	def create_user(self, user_name: str, user_age: int, user_gender: str, user_role: str) ->dict:
@@ -37,6 +35,7 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	
 	def validate_user_by_id(self, user_id: int) ->int:
 		return self._user_service.validate_user_by_id(int(user_id))
+
 
 
 	"""HABIT RELATED METHODS"""
@@ -74,9 +73,9 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		return self._habit_service.delete_habit_physical_preserving_progress(habit_id, goal_id)
 
 
+
 	"""GOAL RELATED METHODS"""
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
-		print(f"INSIDE CREATE A GOAL; goalname {goal_name}, habit_id {habit_id}, target_kvi_value {target_kvi_value}, currentkvi {current_kvi_value}")
 		return self._goal_service.create_a_goal( goal_name, int(habit_id), target_kvi_value, current_kvi_value, goal_description)
 	
 	def delete_a_goal(self, goal_id):
@@ -93,13 +92,10 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	
 	def query_goals_of_a_habit(self, habit_id):
 		return self._goal_service.query_goals_of_a_habit(habit_id=habit_id)
-		# goal_name, goal_id, habit_id_id, habit_name, habit_periodicity_value
 	
 	def query_goal_of_a_habit(self, habit_id):
 		return self._goal_service.query_goal_of_a_habit(habit_id=habit_id)
 
-
-	#maybe have an orchestrator call which filters the goals after querying goals of a habit
 	def fetch_ready_to_tick_goals_of_habits(self):
 		return self._habit_orchestrator.fetch_ready_to_tick_goals_of_habits()
 	
@@ -118,18 +114,23 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def get_goal_of_habit(self, habit_id):
 		return self._goal_service.get_goal_of_habit(habit_id)
 
-	#def complete a habit for the orchestrator
+
+
+
 	"""PROGRESS RELATED METHODS"""
 	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, current_streak, progress_description=None):
 		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description, current_streak=current_streak)
 	
 	def get_last_progress_entry(self, goal_id):
 		return self._progress_service.get_last_progress_entry(goal_id=goal_id)
-	
+
+
+
 	"""REMINDER RELATED METHODS"""
 	def get_pending_goals(self):
 		return self._reminder_service.get_pending_goals()
-	
+
+
 
 	"""ANALYTICS RELATED METHODS"""
 	def calculate_longest_streak(self):

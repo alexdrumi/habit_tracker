@@ -35,7 +35,6 @@ def handle_habit_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			#in create_a_habit the first argument is habit_name and last is habit_user_id?
 			raise HabitAlreadyExistError(habit_name=args[0], habit_user_id=args[-1]) from ierror
 		except HabitRepositoryError as herror:
 			raise herror
@@ -147,7 +146,6 @@ class HabitRepository:
 			cursor.execute(query, (habit_id,))
 
 			habit_periodicity_type = cursor.fetchone()
-
 			if habit_periodicity_type:
 				return habit_periodicity_type
 			else:
@@ -155,7 +153,7 @@ class HabitRepository:
 
 
 	@handle_habit_repository_errors
-	def get_habit_id(self, user_id, habit_name):
+	def get_habit_id(self, user_name, habit_name):
 		'''
 		Gets the habit id based on user ID and habit name.
 
@@ -166,12 +164,11 @@ class HabitRepository:
 			Int: Habit ID.
 		'''
 		with self._db._connection.cursor() as cursor:
-			user_id = self._user_repository.get_user_id(user_name=user_id)
-			
+			user_id = self._user_repository.get_user_id(user_name=user_name)
 			query = "SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
 			cursor.execute(query, (user_id, habit_name,))
-			habit_id = cursor.fetchone()
 			
+			habit_id = cursor.fetchone()
 			if not habit_id:
 				raise HabitNotFoundError(habit_id) #doesnt this throw none or so?
 			return habit_id[0] #id
@@ -255,11 +252,11 @@ class HabitRepository:
 				set_null_query = f"UPDATE progresses SET goal_id_id = NULL WHERE goal_id_id = %s;"
 				cursor.execute(set_null_query, (goal_id, ))
 
-				# 3. Delete the goals for this habit
+				#delete the goals for this habit
 				delete_goals_query = "DELETE FROM goals WHERE habit_id_id = %s;"
 				cursor.execute(delete_goals_query, (habit_id,))
 
-				# 4. Delete the habit
+				#delete the habit
 				delete_habit_query = "DELETE FROM habits WHERE habit_id = %s;"
 				cursor.execute(delete_habit_query, (habit_id,))
 
@@ -273,7 +270,7 @@ class HabitRepository:
 				self._db._connection.rollback()
 				raise err
 			finally:
-				self._db._connection.autocommit = True
+				self._db._connection.autocommit = True #not sure how else can i escape this one
 
 	@handle_habit_repository_errors
 	def get_all_habits(self):
@@ -292,8 +289,7 @@ class HabitRepository:
 			habits = cursor.fetchall()
 				
 			if not habits:
-				dummy_id_holder = -1
-				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
+				return []
 			
 			return habits #no rows updated but also no error found
 	

@@ -17,7 +17,9 @@ class HabitTrackerFacadeInterface(ABC):
 	@abstractmethod
 	def query_all_user_data(self) -> dict:
 		pass
-	
+
+
+
 	"""HABIT RELATED METHODS"""
 	@abstractmethod
 	def query_user_and_related_habits(self) -> dict:
@@ -25,7 +27,7 @@ class HabitTrackerFacadeInterface(ABC):
 
 	@abstractmethod
 	def create_a_habit(self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
-		pass #this will be multistep from the orchestrator
+		pass
 
 	@abstractmethod
 	def get_all_habits(self):
@@ -56,7 +58,7 @@ class HabitTrackerFacadeInterface(ABC):
 		pass
 	
 
-	
+
 	"""GOAL RELATED METHODS"""
 	@abstractmethod
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
@@ -97,9 +99,7 @@ class HabitTrackerFacadeInterface(ABC):
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
 		pass
 
-	# @abstractmethod
-	# def get_goal_of_habit(self, habit_id):
-	# 	pass
+
 
 	"""PROGRESS RELATED METHODS"""
 	@abstractmethod
@@ -110,10 +110,13 @@ class HabitTrackerFacadeInterface(ABC):
 	def get_last_progress_entry(self, goal_id):
 		pass
 
+
+
 	"""REMINDER RELATED METHODS"""
 	@abstractmethod
 	def get_pending_goals(self):
 		pass
+
 
 
 	"""ANALYTICS RELATED METHODS"""

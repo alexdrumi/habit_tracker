@@ -23,16 +23,17 @@ class UserService:
 		self._repository = repository
 
 
-	def _validate_user_input(self, user_name: str, user_password: str, user_age=None, user_gender=None, user_role=None, is_update=False):
+	def _validate_user_input(self, user_name: str, user_password=None, user_age=None, user_gender=None, user_role=None, is_update=False):
 		if is_update == False: #if its create
+			print(f"{user_age}, {user_gender}, {user_role}")
 			if user_age is None or user_gender is None or user_role is None:
 				raise ValueError("Fields needed for creating a user: user_age, user_gender, user_role.")
 
 		if not isinstance(user_name, str) or not user_name.strip():
 			raise ValueError("Invalid user name.")
 
-		if not isinstance(user_password, str) or not user_password.strip():
-			raise ValueError("Invalid user password.")
+		# if not isinstance(user_password, str) or not user_password.strip():
+		# 	raise ValueError("Invalid user password.")
 
 		if user_age is not None:
 			if not isinstance(user_age, int) or not (0 < user_age < 120):
@@ -48,7 +49,7 @@ class UserService:
 
 	@handle_log_service_exceptions
 	def create_a_user(self, user_name: str, user_age: int, user_gender: str, user_role: str) ->dict:
-		self._validate_user_input(user_name, int(user_age), user_gender, user_role)
+		self._validate_user_input(user_name=user_name, user_age=int(user_age), user_gender=user_gender, user_role=user_role)
 		
 		user_entity = self._repository.create_a_user(user_name, int(user_age), user_gender, user_role)
 		return user_entity

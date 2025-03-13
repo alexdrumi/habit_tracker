@@ -24,13 +24,13 @@ def test_create_a_user(user_service, mock_repository):
 	mock_repository.create_a_user.return_value = expected_result
 	
 	#create user with the same info
-	result = user_service.create_a_user("jozsi", 25, "Male", "user")
+	result = user_service.create_a_user(user_name="jozsi", user_age=25, user_gender="Male", user_role="user")
 	
 	#This method is a convenient way of asserting that the last call has been made in a particular way: (from the docs, https://docs.python.org/3/library/unittest.mock.html)
 	mock_repository.create_a_user.assert_called_with("jozsi", 25, "Male", "user")
 
 	#just call an assert, if this fails would throw an error
-	assert result == {'user_id': 1, 'user_name': "jozsi", 'user_role': "user"}
+	assert result == expected_result
 
 
 
