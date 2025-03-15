@@ -24,14 +24,8 @@ def test_create_habit_success(habit_service, mock_habit_repository):
 	}
 	#set an expected return value upon creation
 	mock_habit_repository.create_a_habit.return_value = expected_result
-
 	result = habit_service.create_a_habit("test1", "testing 1", "daily", 1)
-
-	#mock assert that it was created with the expected values
-	#enforce default values (e.g habit_streak=0, and map periodicity type)
-
-
-	# Actual: create_a_habit(habit_name='test1', habit_action='testing 1', habit_periodicity_type='daily', habit_periodicity_value=1, habit_user_id=1, habit_streak=0)
+	
 	mock_habit_repository.create_a_habit.assert_called_with(
 		habit_name =  "test1",
 		habit_action="testing 1",
@@ -41,6 +35,24 @@ def test_create_habit_success(habit_service, mock_habit_repository):
 		habit_streak=0,
 	)
 	assert result == expected_result
+
+def test_create_habit_with_duplicate_should_raise_error(habit_service, mock_habit_repository):
+	expected_result = {
+		'habit_id': 1,
+		'habit_action': "testing 1",
+		'habit_streak': 0,
+		'habit_periodicity_type': "daily",
+		'habit_user_id': 1,
+	}
+	mock_habit_repository.create_a_habit.side_effect = [expected_result, HabitAlreadyExistError("test1", 1)]
+	result1 = habit_service.create_a_habit("test1", "testing 1", "daily", 1)
+	assert result1 == expected_result
+
+	#this should raise a duplicate error
+	with pytest.raises(HabitAlreadyExistError) as exc_info:
+		habit_service.create_a_habit("test1", "testing 1", "daily", 1)
+	assert "Habit 'test1' already exists for user with id: 1" in str(exc_info.value)
+
 
 #test invalid periodicity type
 def test_create_habit_invalid_periodicity(habit_service):

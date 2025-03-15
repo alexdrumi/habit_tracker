@@ -86,6 +86,15 @@ class HabitRepository:
 			Dict: Entire habit entity except the habit periodicity value.
 		'''
 		with self._db._connection.cursor() as cursor:
+			#duplicate check?
+			duplicate_check_query = "SELECT habit_id FROM habits WHERE habit_name = %s AND habit_user_id = %s"
+			cursor.execute(duplicate_check_query, (habit_name, habit_user_id,))
+			existing_habit = cursor.fetchone()
+
+			if existing_habit:
+				raise HabitAlreadyExistError(habit_name=habit_name, habit_user_id=habit_user_id)
+
+
 			query = "INSERT INTO habits(habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id, created_at) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
 			cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id))
 			self._db._connection.commit()

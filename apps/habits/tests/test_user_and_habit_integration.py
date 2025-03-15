@@ -10,8 +10,8 @@ class DummyUserRepository:
 		self.users = {}
 		self.next_id = 1
 
-	def create_a_user(self, user_name, user_age, user_gender, user_role):
-		if user_name in self.users:
+	def create_a_user(self, user_name, user_age, user_gender, user_role):  
+		if user_name in self.users:  
 			raise AlreadyExistError(user_name)
 		user = {
 			'user_id': self.next_id,
@@ -23,7 +23,7 @@ class DummyUserRepository:
 		self.users[user_name] = user
 		self.next_id += 1
 		return user
-
+  
 	def get_user_id(self, user_name):
 		if user_name in self.users:
 			return self.users[user_name]['user_id']
@@ -55,7 +55,7 @@ class DummyHabitRepository:
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id):
 		#simulate a duplicate
 		for habit in self.habits.values():
-			if habit["habit_name"] == habit_name and habit["habit_user_id"] == habit_user_id:  
+			if habit["habit_name"]== habit_name and habit["habit_user_id"] == habit_user_id:  
 				raise HabitAlreadyExistError(habit_name, habit_user_id)
 		habit = {
 			'habit_id': self.next_id, 
@@ -66,14 +66,14 @@ class DummyHabitRepository:
 			'habit_periodicity_value': habit_periodicity_value,  
 			'habit_user_id': habit_user_id,  
 		} 
-		self.habits[self.next_id] = habit
+		self.habits[self.next_id]= habit
 		self.next_id += 1
 		return habit
 
-
+  
 
 	def validate_a_habit(self, habit_id):
-		if habit_id not in self.habits:
+		if habit_id not in self.habits:  
 			raise HabitNotFoundError(habit_id)
 		return habit_id
 
@@ -91,10 +91,10 @@ class DummyHabitRepository:
 
  
 
-
-	def get_habit_id(self, user_id, habit_name):
+  
+	def get_habit_id(self, user_id, habit_name): 
 		for habit in self.habits.values():
-			if habit["habit_user_id"] == user_id and habit["habit_name"] == habit_name:
+			if habit["habit_user_id"] == user_id and habit["habit_name"]== habit_name:
 				return habit["habit_id"]
 		raise HabitNotFoundError(habit_name)
 
@@ -142,29 +142,27 @@ def habit_service(dummy_habit_repo):
 	return HabitService(dummy_habit_repo)
 
 
-
 def test_integration_create_user_and_habit(user_service, habit_service):
-	# Create a user
 	user = user_service.create_a_user("jozsi", 35, "male", "user")
 	user_id = user["user_id"]
-	# Create a habit for that user
+
 	habit = habit_service.create_a_habit("morning sleepback", "sleepback for 2 hours", "daily", user_id)
 	assert habit["habit_id"] == 1
-	assert habit["habit_name"] == "morning sleepback"
-	assert habit["habit_periodicity_type"].lower() == "daily"
+	assert habit["habit_name"] == "morning sleepback"  
+	assert habit["habit_periodicity_type"].lower() == "daily"  
 
 
 
 def test_create_duplicate_user(user_service):
-	user_service.create_a_user("aliz", 30, "female", "user")
+	user_service.create_a_user("aliz", 30, "female", "user")  
 	with pytest.raises(AlreadyExistError):
-		user_service.create_a_user("aliz", 30, "female", "user")  
+		user_service.create_a_user("aliz", 30, "female", "user")   
   
 def test_create_duplicate_habit_same_user(habit_service, user_service):
-	user = user_service.create_a_user("bob", 40, "male", "user")
-	habit_service.create_a_habit("yoga", "morning yoga", "daily", user["user_id"])
+	user = user_service.create_a_user("peti", 40, "male", "user")
+	habit_service.create_a_habit("yoga", "morning yoga", "daily", user["user_id"])  
 	with pytest.raises(HabitAlreadyExistError):
-		habit_service.create_a_habit("yoga", "morning yoga", "daily", user["user_id"])
+		habit_service.create_a_habit("yoga", "morning yoga", "daily", user["user_id"])  
 
 def test_create_same_habit_different_user(user_service, habit_service):
 	user1 = user_service.create_a_user("nori", 31, "female", "user")
@@ -173,5 +171,5 @@ def test_create_same_habit_different_user(user_service, habit_service):
 	habit1 = habit_service.create_a_habit("read book", "read 3 pages", "daily", user1["user_id"])
 	habit2 = habit_service.create_a_habit("read book", "read 3 pages", "daily", user2["user_id"])
  
-	assert habit1["habit_id"] == 1 
+	assert habit1["habit_id"] == 1   
 	assert habit2["habit_id"] == 2 

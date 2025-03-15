@@ -18,6 +18,9 @@ def handle_log_service_exceptions(f):
 		except HabitNotFoundError as herror:
 			logging.error(f"Service error in {f.__name__}: {herror}")
 			raise herror
+		except IntegrityError as ierror:
+				logging.error(f"Service error in {f.__name__}: {ierror}")
+				raise ierror
 		except Exception as error:
 			logging.error(f"Unexpected error in {f.__name__}: {error}")
 			raise error
@@ -86,7 +89,7 @@ class GoalService:
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
 		
 		#validate habit
-		validated_habit_id = self._habit_service._repository.validate_a_habit(habit_id)
+		validated_habit_id = self._habit_service.validate_a_habit(habit_id)
 
 		#validate goal input
 		self._validate_goal("create", goal_id=None, goal_name=goal_name, habit_id_id=validated_habit_id, target_kvi_value=target_kvi_value, current_kvi_value=current_kvi_value)

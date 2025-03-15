@@ -245,6 +245,7 @@ class CLI:
 		habit_goal_description = click.prompt("Describe your goal:", type=str).strip()
 	
 		try:
+			print(f"{habit_goal_name} isgoalname, {habit_periodicity_type}, {habit_action} is action, {habit_name} is name, {habit_goal_description} is goal descr, {user_id} is userid")
 			new_habit = self._controller.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
 			new_goal = self._controller.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=habit_goal_description)
 			click.echo(f"\nNew habit created:\n{new_habit}\nAssociated goal: {new_goal}")
