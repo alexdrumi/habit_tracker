@@ -1,22 +1,39 @@
 from datetime import datetime, timedelta
 from apps.goals.services.goal_service import GoalService
+from mysql.connector.errors import IntegrityError
+import logging
 
+def handle_reminder_service_exceptions(f):
+	def wrapper(*args, **kwargs):
+		try:
+			return f(*args, **kwargs)
+		except IntegrityError as ierror:
+			logging.error(f"ReminderService error in {f.__name__}: {ierror}")
+			raise ierror
+		except Exception as error:
+			logging.error(f"Unexpected error in {f.__name__}: {error}")
+			raise error
+	return wrapper
+
+  
+  
 class ReminderService:
 	def __init__(self, goal_service: GoalService):
 		self._goal_service = goal_service
 	
-	
+
+	@handle_reminder_service_exceptions
 	def calculate_tickability(self, last_occurence_datetime, current_time, time_delta_difference):
 		time_between_last_occurrence_and_now = current_time - last_occurence_datetime
 		absolute_time_difference = abs(time_between_last_occurrence_and_now.total_seconds())
 		is_too_early = (absolute_time_difference < time_delta_difference.total_seconds())
 		is_too_late = (absolute_time_difference > time_delta_difference.total_seconds() * 2)
-
+ 
 		return (not (is_too_early or is_too_late))
 		
 
-
-
+  
+	@handle_reminder_service_exceptions
 	def is_tickable(self, daily_or_weekly, last_occurence):
 		if len(last_occurence) == 0: #if it was never ticked, its tickable, time to track it
 			return True
@@ -27,7 +44,7 @@ class ReminderService:
 		return self.calculate_tickability(last_occurence_datetime, current_time, td)
 
 
-
+	@handle_reminder_service_exceptions
 	def get_pending_goals(self):
 		#get all goals via goal service
 		all_goals = self._goal_service.query_all_goals()
@@ -50,7 +67,7 @@ class ReminderService:
 				})
 		self.print_reminders(goals_which_need_reminders)
 
-
+	@handle_reminder_service_exceptions
 	def print_reminders(self, goals_which_need_reminders):
 		if not goals_which_need_reminders:
 			print("\033[92mNo pending goals to complete!\033[0m")

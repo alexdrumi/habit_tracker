@@ -2,9 +2,34 @@ from apps.habits.repositories.habit_repository import HabitRepository
 from apps.database.database_manager import MariadbConnection
 from mysql.connector.errors import IntegrityError
 
-class AnalyticsNotFoundError(Exception):
-	"""Custom exception raised when analytics is not found."""
-	pass
+class AnalyticsRepositoryError(Exception):
+	"""BASE exception"""
+	def __init__(self, message="An unexpected error occurred in analytics repository."):
+		super().__init__(message)
+
+
+class AnalyticsNotFoundError(AnalyticsRepositoryError):
+	"""Custom exception"""
+	def __init__(self, message):
+		super().__init__(message)
+
+
+def handle_analytics_repository_errors(f):
+	"""Decorator, with an optional rollback in case of integrity error"""
+	def exception_wrapper(self, *args, **kwargs):
+		try:
+			return f(self, *args, **kwargs)
+		except IntegrityError as ierror:
+			self._db._connection.rollback()
+			raise ierror
+		except AnalyticsRepositoryError as arerror:
+			raise arerror #just re raise it
+		except Exception as error:
+			self._db._connection.rollback()
+			raise error
+	return exception_wrapper
+
+
 
 
 class AnalyticsRepository:
@@ -13,54 +38,42 @@ class AnalyticsRepository:
 		self._habit_repository = habit_repository
 
 
+	@handle_analytics_repository_errors
 	def create_analytics(self, times_completed, streak_length, habit_id, last_completed_at=None):
 		'''
 		Create analytics for a certain analytics.
 		'''
-		try:
-			#validation of habit will come from the service layer
-			with self._db._connection.cursor() as cursor:
-				#probably validation should happen in the service later
-		
-				query = "INSERT INTO analytics(times_completed, streak_length, last_completed_at, created_at, habit_id_id) VALUES (%s, %s, %s, NOW(), %s);"
-				cursor.execute(query, (times_completed, streak_length, last_completed_at, habit_id))
-				self._db._connection.commit()
-				return {
-					'analytics_id': cursor.lastrowid,
-					'times_completed': times_completed,
-					'streak_length': streak_length,
-					'last_completed_at': last_completed_at,
-					'habit_id_id': habit_id,
-				}
-		except IntegrityError as ierror:
-			if "Duplicate entry" in str(ierror):
-				raise IntegrityError(f"Duplicate analytics for habit with id '{habit_id}'.") from ierror
-			raise
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
-
-
-	def get_analytics_id(self, habit_id):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT analytics_id FROM analytics WHERE habit_id_id = %s;"
-				cursor.execute(query, (habit_id,))
-				result = cursor.fetchone()
-				if result:
-					analytics_id_idx = 0
-					return result[analytics_id_idx]
-				else:
-					raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
-
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
+		#validation of habit will come from the service layer
+		with self._db._connection.cursor() as cursor:
+			#probably validation should happen in the service later
 	
+			query = "INSERT INTO analytics(times_completed, streak_length, last_completed_at, created_at, habit_id_id) VALUES (%s, %s, %s, NOW(), %s);"
+			cursor.execute(query, (times_completed, streak_length, last_completed_at, habit_id))
+			self._db._connection.commit()
+			return {
+				'analytics_id': cursor.lastrowid,
+				'times_completed': times_completed,
+				'streak_length': streak_length,
+				'last_completed_at': last_completed_at,
+				'habit_id_id': habit_id,
+			}
 
+
+	@handle_analytics_repository_errors
+	def get_analytics_id(self, habit_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT analytics_id FROM analytics WHERE habit_id_id = %s;"
+			cursor.execute(query, (habit_id,))
+			result = cursor.fetchone()
+			if result:
+				analytics_id_idx = 0
+				return result[analytics_id_idx]
+			else:
+				raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
+
+
+	@handle_analytics_repository_errors
 	def update_analytics(self, analytics_id, times_completed=None, streak_length=None, last_completed_at=None):
-		try:
-			print("INSIDE UPDATE ANALYTICS REPO")
 			updated_fields = []
 			updated_values = []
 
@@ -91,109 +104,72 @@ class AnalyticsRepository:
 					raise AnalyticsNotFoundError(f"Analytics for habit with analytiacs {analytics_id} is not found.")
 
 				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
-		except Exception as error:
-			self._db._connection.rollback()
-			raise
 
 
+	@handle_analytics_repository_errors  
 	def delete_analytics(self, analytics_id):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "DELETE FROM analytics WHERE analytics_id = %s"
-				result = cursor.execute(query, (analytics_id,))
-				self._db._connection.commit()
-				if cursor.rowcount == 0:
-					raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
-				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
-				
-		except Exception as error:
-				self._db._connection.rollback()
-				raise
+		with self._db._connection.cursor() as cursor:
+			query = "DELETE FROM analytics WHERE analytics_id = %s"
+			cursor.execute(query, (analytics_id,))
+			self._db._connection.commit()
+			if cursor.rowcount == 0:
+				raise AnalyticsNotFoundError(f"Analytics for habit with id {analytics_id} is not found.")
+			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 
-	
+
+  
+	@handle_analytics_repository_errors
 	def calculate_longest_streak(self):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT habit_id, habit_name, habit_streak FROM habits WHERE habit_streak = (SELECT MAX(habit_streak) FROM habits) ORDER BY habit_streak DESC;"
-				
-				cursor.execute(query)
-				result = cursor.fetchone()
-				#no commit needed, nothing changed
-				if result:
-					return result
-				else:
-					raise AnalyticsNotFoundError(f"Analytics is not found.")
-
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
-
-
-	def get_same_periodicity_type_habits(self):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT habit_periodicity_type, COUNT(*) AS habit_count, GROUP_CONCAT(CONCAT(habit_id, ': ', habit_name) SEPARATOR ', ') AS habit_list FROM habits GROUP BY habit_periodicity_type ORDER BY habit_count DESC;"
-
-				cursor.execute(query)
-				result = cursor.fetchall()
-
-				if result:
-					return result
-				else:
-					raise AnalyticsNotFoundError(f"Analytics is not found.")
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_id, habit_name, habit_streak FROM habits WHERE habit_streak = (SELECT MAX(habit_streak) FROM habits) ORDER BY habit_streak DESC;"
 			
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
-
-
-	def get_currently_tracked_habits(self):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = "SELECT habit_id, habit_name, habit_streak, habit_periodicity_type FROM habits WHERE habit_streak > 0;"
-
-				cursor.execute(query)
-				result = cursor.fetchall()
-
-				if result:
-					return result
-				else:
-					raise AnalyticsNotFoundError(f"Analytics is not found.")
-			
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
-
-	def longest_streak_for_habit(self, habit_id):
-		try:
-			with self._db._connection.cursor() as cursor:
-				query = " SELECT p.* FROM progresses p JOIN goals g ON p.goal_id_id = g.goal_id WHERE g.habit_id_id = %s ORDER BY p.current_streak DESC LIMIT 1;"
-				cursor.execute(query, (habit_id, ))
-
-				result = cursor.fetchall()
+			cursor.execute(query)
+			result = cursor.fetchone()
+			#no commit needed, nothing changed
 			if result:
 				return result
 			else:
 				raise AnalyticsNotFoundError(f"Analytics is not found.")
-	
-		except Exception as error: #rolback for unexpected errors
-			self._db._connection.rollback()
-			raise
+
+
+	@handle_analytics_repository_errors
+	def get_same_periodicity_type_habits(self):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_periodicity_type, COUNT(*) AS habit_count, GROUP_CONCAT(CONCAT(habit_id, ': ', habit_name) SEPARATOR ', ') AS habit_list FROM habits GROUP BY habit_periodicity_type ORDER BY habit_count DESC;"
+
+			cursor.execute(query)
+			result = cursor.fetchall()
+
+			if result:
+				return result
+			else:
+				raise AnalyticsNotFoundError(f"Analytics is not found.")
+
+
+	@handle_analytics_repository_errors
+	def get_currently_tracked_habits(self):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_id, habit_name, habit_streak, habit_periodicity_type FROM habits WHERE habit_streak > 0;"
+
+			cursor.execute(query)
+			result = cursor.fetchall()
+
+			if result:
+				return result
+			else:
+				raise AnalyticsNotFoundError(f"Analytics is not found.")
+
+	@handle_analytics_repository_errors
+	def longest_streak_for_habit(self, habit_id):
+		with self._db._connection.cursor() as cursor:
+			query = " SELECT p.* FROM progresses p JOIN goals g ON p.goal_id_id = g.goal_id WHERE g.habit_id_id = %s ORDER BY p.current_streak DESC LIMIT 1;"
+			cursor.execute(query, (habit_id, ))
+
+			result = cursor.fetchall()
+		if result:
+			return result
+		else:
+			raise AnalyticsNotFoundError(f"Analytics is not found.")
+
 
 	# #https://mariadb.com/kb/en/json_arrayagg/ , otherwise I would have split calls in the layers above. This is gonna be a simple loop
-	# def get_same_periodicity_type_habits(self):
-	# 	try:
-	# 		with self._db._connection.cursor() as cursor:
-	# 			query = "SELECT habit_periodicity_type, COUNT(*) AS habit_count, JSON_ARRAYAGG(JSON_OBJECT('habit_id', habit_id, 'habit_name', habit_name)) AS habit_list FROM habits GROUP BY habit_periodicity_type ORDER BY habit_count DESC;"
-
-	# 			cursor.execute(query)
-	# 			result = cursor.fetchall()
-
-	# 			if result:
-	# 				return result
-	# 			else:
-	# 				raise AnalyticsNotFoundError(f"Analytics is not found.")
-			
-	# 	except Exception as error: #rolback for unexpected errors
-	# 		self._db._connection.rollback()
-	# 		raise

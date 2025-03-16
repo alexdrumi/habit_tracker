@@ -79,16 +79,16 @@ def test_is_tickable_with_history(reminder_service):
 @patch("builtins.print")
 def test_get_pending_goals_some_goals(mock_print, reminder_service, mock_goal_service):
 	#if at least 1 goal is there, it should be printed in the pending goals 
-    mock_goal_service.query_all_goals.return_value = [
-        {"goal_id": 1, "goal_name": "pushups", "habit_id": 80, "target_kvi_value": 1.0},
-        {"goal_id": 2, "goal_name": "reading", "habit_id": 11, "target_kvi_value": 1.0},
-    ]
+	mock_goal_service.query_all_goals.return_value = [
+		{"goal_id": 1, "goal_name": "pushups", "habit_id": 80, "target_kvi_value": 1.0},
+		{"goal_id": 2, "goal_name": "reading", "habit_id": 11, "target_kvi_value": 1.0},
+	]
 
-    mock_goal_service.get_last_progress_entry_associated_with_goal_id.return_value = {}
+	mock_goal_service.get_last_progress_entry_associated_with_goal_id.return_value = {}
 
-    reminder_service.get_pending_goals()
+	reminder_service.get_pending_goals()
 
-    #theseare to be ticked
-    mock_print.assert_any_call("\033[91mGOALS THAT NEED TO BE TICKED\033[0m")
-    #line for each goal + 1 for header
-    assert mock_print.call_count >= 3 
+	#theseare to be ticked
+	mock_print.assert_any_call("\033[91mGOALS THAT NEED TO BE TICKED\033[0m")
+	#line for each goal + 1 for header
+	assert mock_print.call_count >= 3 

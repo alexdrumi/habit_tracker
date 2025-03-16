@@ -4,6 +4,24 @@ from apps.progresses.services.progress_service import ProgressesService
 from mysql.connector.errors import IntegrityError
 import logging
 
+def handle_analytics_service_exceptions(f):
+
+	def wrapper(*args, **kwargs):
+		try:
+			return f(*args, **kwargs) 
+		except AnalyticsNotFoundError as aerror:
+			logging.error(f"Service error in {f.__name__}: {aerror}")
+			raise aerror 
+		except IntegrityError as ierror:
+			logging.error(f"Service error in {f.__name__}: {ierror}")
+			raise ierror 
+		except Exception as error:
+			logging.error(f"Unexpected error in {f.__name__}: {error}")
+			raise error 
+
+	return wrapper  
+
+
 class AnalyticsService:
 	def __init__(self, repository: AnalyticsRepository, habit_service: HabitService, progress_service: ProgressesService):
 		self._repository = repository
@@ -30,116 +48,58 @@ class AnalyticsService:
 		if times_completed and (times_completed < 0 or times_completed > 365):
 			raise ValueError("times_completed must be between 0 and 365.")
 		
-
+	@handle_analytics_service_exceptions
 	def create_analytics(self, habit_id, times_completed, streak_length, last_completed_at=None):
-		try:
-			#check if habit id exist
-			validated_habit_id = self._habit_service._repository.validate_a_habit(habit_id)
-			analytics_entity = self._repository.create_analytics(times_completed, streak_length, habit_id, last_completed_at=last_completed_at)
-			return analytics_entity
-		except IntegrityError as ierror:
-			logging.error(f"Duplicate analytics type error: {ierror}")
-			raise
-		except Exception as error:
-			logging.error(f"AnalyticsService Exception in create analytics: {error}")
-			raise
-
-
+		validated_habit_id = self._habit_service.validate_a_habit(habit_id)
+		analytics_entity = self._repository.create_analytics(times_completed, streak_length, validated_habit_id, last_completed_at=last_completed_at)
+		
+		return analytics_entity
+		
+	@handle_analytics_service_exceptions
 	def update_analytics(self, habit_id, times_completed=None, streak_length=None, last_completed_at=None):
-		try:
-			#get analytics id, if there is none this will raise an error
-			analytics_id = self._repository.get_analytics_id(habit_id)
+		#get analytics id, if there is none this will raise an error
+		analytics_id = self._repository.get_analytics_id(habit_id)
 
-			#validate based on input
-			self.validate_analytics("update", habit_id=habit_id, analytics_id=analytics_id, times_completed=times_completed, streak_length=streak_length, last_completed_at=last_completed_at)
-			
-			#update analytics
-			updated_rows = self._repository.update_analytics(analytics_id, times_completed, streak_length, last_completed_at)
-			return updated_rows
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics for habit with id {habit_id} is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
+		#validate based on input
+		self.validate_analytics("update", habit_id=habit_id, analytics_id=analytics_id, times_completed=times_completed, streak_length=streak_length, last_completed_at=last_completed_at)
+		
+		#update analytics
+		updated_rows = self._repository.update_analytics(analytics_id, times_completed, streak_length, last_completed_at)
+		return updated_rows
+		
 
-
+	@handle_analytics_service_exceptions
 	def get_analytics_id(self, habit_id):
-		try:
-			#should we validate whether habit id exists first?
-			analytics_id = self._repository.get_analytics_id(habit_id)
-			return analytics_id
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics for habit with id {habit_id} is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
+		#should we validate whether habit id exists first?
+		analytics_id = self._repository.get_analytics_id(habit_id)
+		return analytics_id
 
-
+	@handle_analytics_service_exceptions
 	def delete_analytics(self, habit_id=None, analytics_id=None):
-		try:
-			self.validate_analytics('delete', habit_id=habit_id, analytics_id=analytics_id)
+		self.validate_analytics('delete', habit_id=habit_id, analytics_id=analytics_id)
 
-			if habit_id and not analytics_id:
-				analytics_id = self._repository.get_analytics_id(habit_id)
-			
-			deleted_rows = self._repository.delete_analytics(analytics_id)
-			return deleted_rows
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics for habit with id {habit_id} is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
+		if habit_id and not analytics_id:
+			analytics_id = self._repository.get_analytics_id(habit_id)
+		
+		deleted_rows = self._repository.delete_analytics(analytics_id)
+		return deleted_rows
 
-
+	@handle_analytics_service_exceptions
 	def calculate_longest_streak(self):
-		try:
-			result = self._repository.calculate_longest_streak()
-			# print(f"WE ARE BEING CALLED HERE")
-			return result
+		result = self._repository.calculate_longest_streak()
+		return result
 
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
-
-
+	@handle_analytics_service_exceptions
 	def get_same_periodicity_type_habits(self):
-		try:
-			result = self._repository.get_same_periodicity_type_habits()
-			return result
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
+		result = self._repository.get_same_periodicity_type_habits()
+		return result
 
+	@handle_analytics_service_exceptions
 	def get_currently_tracked_habits(self):
-		try:
-			result = self._repository.get_currently_tracked_habits()
-			return result
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
-	
+		result = self._repository.get_currently_tracked_habits()
+		return result
+
+	@handle_analytics_service_exceptions
 	def longest_streak_for_habit(self, habit_id):
-		try:
-			result = self._repository.longest_streak_for_habit(habit_id)
-			return result
-		except AnalyticsNotFoundError as aerror:
-			logging.error(f"Analytics is not found. error: {aerror}")
-			raise
-		except Exception as error:
-			logging.error(f"Unexpected error in update analytics: {error}")
-			raise
-		# - and return the longest run streak for a given habit.
-		# try: 
-		# 	result 
+		result = self._repository.longest_streak_for_habit(habit_id)
+		return result
