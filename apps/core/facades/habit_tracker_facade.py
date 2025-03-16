@@ -103,12 +103,13 @@ class HabitTrackerFacadeInterface(ABC):
 
 	"""PROGRESS RELATED METHODS"""
 	@abstractmethod
-	def  create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, progress_description=None):
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value,  goal_name, habit_name, current_streak=None, progress_description=None, occurence_date=None):
 		pass
 	
 	@abstractmethod
 	def get_last_progress_entry(self, goal_id):
 		pass
+
 
 
 

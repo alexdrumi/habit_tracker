@@ -292,8 +292,8 @@ class CLI:
 
 
 
-	def option_9_longest_streak(self):
-		click.echo("\nYou selected option 9 - Longest Habit Streak")
+	def option_9_longest_streak_in_database(self):
+		click.echo("\nYou selected option 9 - Longest Habit Streak in Database")
 		click.pause()
 
 		try:
@@ -380,7 +380,7 @@ class CLI:
 				self.option_8_complete_habit()
 
 			if choice == 9:
-				self.option_9_longest_streak()
+				self.option_9_longest_streak_in_database()
 			
 			if choice == 10:
 				self.option_10_same_habit_periodicity()

@@ -115,11 +115,17 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		return self._goal_service.get_goal_of_habit(habit_id)
 
 
-
-
 	"""PROGRESS RELATED METHODS"""
-	def create_a_progress(self, goal_id, current_kvi_value, distance_from_kvi_value, current_streak, progress_description=None):
-		return self._progress_service.create_progress(goal_id, current_kvi_value, distance_from_kvi_value, progress_description=progress_description, current_streak=current_streak)
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value,  goal_name, habit_name, current_streak=None, progress_description=None, occurence_date=None):
+		return self._progress_service.create_progress(
+			goal_id=goal_id, 
+			current_kvi_value=current_kvi_value,
+			distance_from_target_kvi_value=distance_from_target_kvi_value, 
+			goal_name=goal_name,
+			habit_name=habit_name,
+			current_streak=current_streak,
+			progress_description=progress_description,
+			occurence_date=occurence_date)
 	
 	def get_last_progress_entry(self, goal_id):
 		return self._progress_service.get_last_progress_entry(goal_id=goal_id)

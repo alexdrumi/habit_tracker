@@ -49,8 +49,34 @@ class ProgressesRepository:
 
 
 
+	# @handle_goal_repository_errors
+	# def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, current_streak, goal_name, habit_name, progress_description=None):
+	# 	'''
+	# 	Create a progress in the progresses table.
+
+	# 	Args:
+	# 		int, (str): The goal_id of the goal which made the progress. Optionally a progress description."
+		
+	# 	Returns:
+	# 		Dict: Progress id and goal id.
+	# 	'''
+	# 	with self._db._connection.cursor() as cursor:		 
+	# 		query = "INSERT INTO progresses(current_kvi_value, goal_id_id, distance_from_goal_kvi_value, current_streak, goal_name, habit_name, occurence_date) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
+	# 		cursor.execute(query, (current_kvi_value, goal_id, distance_from_target_kvi_value, current_streak, goal_name, habit_name))
+	# 		self._db._connection.commit()
+	# 		return {
+	# 			'progress_id': cursor.lastrowid,
+	# 			'goal_id': goal_id,
+	# 			'current_kvi_value': current_kvi_value,
+	# 			'distance_from_target_kvi_value': distance_from_target_kvi_value,
+	# 			'current_streak': current_streak,
+	# 			'goal_name': goal_name,
+	# 			'habit_name': habit_name
+	# 		}
+
+
 	@handle_goal_repository_errors
-	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, current_streak, goal_name, habit_name, progress_description=None):
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value, current_streak, goal_name, habit_name, progress_description=None, occurence_date=None):
 		'''
 		Create a progress in the progresses table.
 
@@ -60,19 +86,34 @@ class ProgressesRepository:
 		Returns:
 			Dict: Progress id and goal id.
 		'''
-		with self._db._connection.cursor() as cursor:		 
-			query = "INSERT INTO progresses(current_kvi_value, goal_id_id, distance_from_goal_kvi_value, current_streak, goal_name, habit_name, occurence_date) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
-			cursor.execute(query, (current_kvi_value, goal_id, distance_from_target_kvi_value, current_streak, goal_name, habit_name))
-			self._db._connection.commit()
-			return {
-				'progress_id': cursor.lastrowid,
-				'goal_id': goal_id,
-				'current_kvi_value': current_kvi_value,
-				'distance_from_target_kvi_value': distance_from_target_kvi_value,
-				'current_streak': current_streak,
-				'goal_name': goal_name,
-				'habit_name': habit_name
-			}
+		with self._db._connection.cursor() as cursor:
+			if occurence_date == None: 
+				query = "INSERT INTO progresses(current_kvi_value, goal_id_id, distance_from_goal_kvi_value, current_streak, goal_name, habit_name, occurence_date) VALUES (%s, %s, %s, %s, %s, %s, NOW());"
+				cursor.execute(query, (current_kvi_value, goal_id, distance_from_target_kvi_value, current_streak, goal_name, habit_name))
+				self._db._connection.commit()
+				return {
+					'progress_id': cursor.lastrowid,
+					'goal_id': goal_id,
+					'current_kvi_value': current_kvi_value,
+					'distance_from_target_kvi_value': distance_from_target_kvi_value,
+					'current_streak': current_streak,
+					'goal_name': goal_name,
+					'habit_name': habit_name
+				}
+			else:
+				query = "INSERT INTO progresses(current_kvi_value, goal_id_id, distance_from_goal_kvi_value, current_streak, goal_name, habit_name, occurence_date) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+				cursor.execute(query, (current_kvi_value, goal_id, distance_from_target_kvi_value, current_streak, goal_name, habit_name, occurence_date))
+				self._db._connection.commit()
+				return {
+					'progress_id': cursor.lastrowid,
+					'goal_id': goal_id,
+					'current_kvi_value': current_kvi_value,
+					'distance_from_target_kvi_value': distance_from_target_kvi_value,
+					'current_streak': current_streak,
+					'goal_name': goal_name,
+					'habit_name': habit_name
+				}
+
 	
 
 	@handle_goal_repository_errors
