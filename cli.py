@@ -339,9 +339,14 @@ class CLI:
 		click.pause()
 		
 		try:
+			self.option_5_get_all_habits()
 			habit_id = self.prompt_for_valid_integer("Select a habit id for its longest ever streak recorded")
 			result = self._controller.longest_streak_for_habit(habit_id)
-			click.echo(click.style(f"Longest streak opf habit {habit_id}: {result[0][1]} days", fg="yellow", bold=True))
+			if result:
+				click.echo(click.style(f"Longest streak opf habit {habit_id}: {result[0][6]} days", fg="yellow", bold=True))
+			else:
+				click.echo(click.style(f"No longest streak for habit {habit_id} yet.", fg="yellow", bold=True))
+
 		except Exception as error:
 			click.echo(click.style(f"Error while querying the longest streak ever: {error}", fg="red", bold=True))
 

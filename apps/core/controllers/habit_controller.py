@@ -60,3 +60,11 @@ class HabitController:
 	def longest_streak_for_habit(self, habit_id):
 		return self._facade.longest_streak_for_habit(habit_id)
 	
+	def update_habit_streak(self, habit_id, updated_streak_value):
+		return self._facade.update_habit_streak(habit_id, updated_streak_value)
+	
+	def get_current_streak(self, habit_id):
+		return self._facade.get_current_streak(habit_id=habit_id)
+	
+	def get_last_progress_entry(self, goal_id):
+		return self._facade.get_last_progress_entry(goal_id=goal_id)

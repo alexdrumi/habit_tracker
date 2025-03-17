@@ -57,7 +57,9 @@ class HabitTrackerFacadeInterface(ABC):
 	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
 		pass
 	
-
+	@abstractmethod
+	def get_current_streak(self, habit_id):
+		pass
 
 	"""GOAL RELATED METHODS"""
 	@abstractmethod

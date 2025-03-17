@@ -33,7 +33,8 @@ class ProgressesService:
 	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value,  goal_name, habit_name, current_streak=None, progress_description=None, occurence_date=None):
 		validated_goal_id = self._goal_service.validate_goal_id(goal_id) #we call this now from orchestrator, but maybe later we use it also as a single call, better to validate here as well
 		
-		last_progress_entry = self._repository.get_last_progress_entry(goal_id)
+		print(f"{goal_id} is the goal id inside the create progress")
+		last_progress_entry = self._repository.get_last_progress_entry(goal_id=validated_goal_id)
 		if not last_progress_entry and current_streak == None: #not sure if this will return None
 			new_streak = 1
 		elif current_streak:

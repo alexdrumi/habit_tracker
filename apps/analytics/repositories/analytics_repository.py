@@ -162,7 +162,7 @@ class AnalyticsRepository:
 	@handle_analytics_repository_errors
 	def longest_streak_for_habit(self, habit_id):
 		with self._db._connection.cursor() as cursor:
-			query = " SELECT p.* FROM progresses p JOIN goals g ON p.goal_id_id = g.goal_id WHERE g.habit_id_id = %s ORDER BY p.current_streak DESC LIMIT 1;"
+			query = "SELECT p.* FROM progresses p JOIN goals g ON p.goal_id_id = g.goal_id WHERE g.habit_id_id = %s ORDER BY p.current_streak DESC LIMIT 1;"
 			cursor.execute(query, (habit_id, ))
 
 			result = cursor.fetchall()

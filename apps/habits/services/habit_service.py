@@ -209,3 +209,15 @@ class HabitService:
 			raise ValueError(f"Invalid habit id: {habit_id}.")
 		goal_id = self._repository.get_goal_of_habit(habit_id)
 		return goal_id
+
+
+
+	@handle_log_service_exceptions
+	def get_current_streak(self, habit_id):
+		if not isinstance(habit_id, int) or habit_id <= 0: 
+			raise ValueError(f"Invalid habit id: {habit_id}.")
+		
+		validated_habit_id = self.validate_a_habit(habit_id)
+		streak = self._repository.get_current_streak(habit_id=validated_habit_id)
+		
+		return streak

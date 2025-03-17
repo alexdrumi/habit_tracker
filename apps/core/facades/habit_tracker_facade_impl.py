@@ -72,6 +72,8 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
 		return self._habit_service.delete_habit_physical_preserving_progress(habit_id, goal_id)
 
+	def get_current_streak(self, habit_id):
+		return self._habit_service.get_current_streak(habit_id=habit_id)
 
 
 	"""GOAL RELATED METHODS"""

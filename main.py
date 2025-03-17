@@ -36,31 +36,8 @@ def signal_handler(sig, frame):
 	print('You pressed Ctrl+C, doei!')
 	sys.exit(0)
 
-# def seed()
-# #seed data here
-
-
-def main():
-	database = MariadbConnection()
-	user_repository = UserRepository(database)
-	user_service = UserService(user_repository)
-	habit_repository = HabitRepository(database, user_repository)
-	habit_service = HabitService(habit_repository)
-	goal_repository = GoalRepository(database, habit_repository)
-	goal_service = GoalService(goal_repository, habit_service)
-	progress_repository = ProgressesRepository(database, goal_repository)
-	progress_service = ProgressesService(progress_repository, goal_service)
-	reminder_service = ReminderService(goal_service=goal_service)
-	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository) #not sure if we need habit stuff here
-	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service, progress_service=progress_service) #not sure if we need habit stuff here
-	
-	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service, analytics_service=analytics_service)
-	habit_tracker_orchestrator = HabitOrchestrator(habit_tracker_facade=habit_tracker_facade)
-	habit_controller = HabitController(habit_tracker_facade=habit_tracker_facade, habit_tracker_orchestrator=habit_tracker_orchestrator)
-	
-
-	#--------SEED---------
-
+#we ll only pass habitcontroller eventually, just for now pass the associated services
+def seed(habit_controller: HabitController, goal_service: GoalService, progress_service: ProgressesService):
 	test_user = habit_controller.create_user(f'Testuser{random.random()}', 35, "Male", "user")
 	test_user_id = test_user["user_id"]
 
@@ -72,7 +49,6 @@ def main():
 	]
 
 	created_habits = []
-	#self, habit_name, habit_action, habit_periodicity_type, habit_user_id, habit_streak=None, habit_periodicity_value=None):
 	for habit_name, habit_action, habit_periodicity_type in habits_to_create:
 		habit_periodicity_value = 1.0 if habit_periodicity_type == 'daily' else 7.0
 		new_habit = habit_controller.create_a_habit_with_validation(
@@ -98,9 +74,11 @@ def main():
 		habit_id = habit["habit_id"]
 
 		current_date = thirty_days_ago
+		goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
+
 		while current_date <= now:
 			if random.random() < 0.7:
-				goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
+				# goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
 				print(f"{goal_id} is the goal_id")
 				if goal_id and current_date.weekday() != 6:  #not sunday for instance
 					progress_service.create_progress(
@@ -113,10 +91,46 @@ def main():
 						progress_description="Auto seeded progress",
 						occurence_date=current_date
 					)
-				#update the related habits streak to the progress streak
-			current_date += datetime.timedelta(days=1)	
+			current_date += datetime.timedelta(days=1)
+			last_progress_streak = habit_controller.get_last_progress_entry(goal_id=goal_id[0]) #streak entry
+			print(f"{last_progress_streak} is last progress now")
+			if last_progress_streak:
+				print(f"{last_progress_streak[6]} is the current streak")
+				current_streak = habit_controller.get_current_streak(habit_id=habit_id)[0]
+				updated_streak = last_progress_streak[6]
+				print(f"current streak {current_streak}, updated streak {updated_streak}")
 
+				# print(f"{updated_streak} is the updated streak")
+				updated_habit = habit_controller.update_habit_streak(habit_id=habit_id, updated_streak_value=updated_streak)
+		
 	print("SEEDING IS COMPLETED")	
+#seed data here
+
+
+def main():
+	#--------INIT---------
+	database = MariadbConnection()
+	user_repository = UserRepository(database)
+	user_service = UserService(user_repository)
+	habit_repository = HabitRepository(database, user_repository)
+	habit_service = HabitService(habit_repository)
+	goal_repository = GoalRepository(database, habit_repository)
+	goal_service = GoalService(goal_repository, habit_service)
+	progress_repository = ProgressesRepository(database, goal_repository)
+	progress_service = ProgressesService(progress_repository, goal_service)
+	reminder_service = ReminderService(goal_service=goal_service)
+	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository) #not sure if we need habit stuff here
+	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service, progress_service=progress_service) #not sure if we need habit stuff here
+	
+	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service, analytics_service=analytics_service)
+	habit_tracker_orchestrator = HabitOrchestrator(habit_tracker_facade=habit_tracker_facade)
+	habit_controller = HabitController(habit_tracker_facade=habit_tracker_facade, habit_tracker_orchestrator=habit_tracker_orchestrator)
+	
+
+	#--------SEED---------
+	seed(habit_controller=habit_controller, goal_service=goal_service, progress_service=progress_service)
+	
+	#--------CLI----------
 	cli = CLI(controller=habit_controller)
 	cli.run()
 

@@ -301,7 +301,22 @@ class HabitRepository:
 				return []
 			
 			return habits #no rows updated but also no error found
-	
+		
+
+	@handle_habit_repository_errors
+	def get_current_streak(self, habit_id):
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_streak FROM habits WHERE habit_id = %s;"
+			cursor.execute(query, (habit_id,))
+			streak = cursor.fetchall()
+
+			if not streak:
+				dummy_id_holder = -1
+				raise HabitNotFoundError(dummy_id_holder)
+
+			return streak[0]
+
+
 	@handle_habit_repository_errors
 	def get_habit_by_id(self, habit_id):
 		'''
