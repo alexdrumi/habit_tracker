@@ -69,7 +69,7 @@ class AnalyticsRepository:
 				analytics_id_idx = 0
 				return result[analytics_id_idx]
 			else:
-				raise AnalyticsNotFoundError(f"Analytics for habit with id {habit_id} is not found.")
+				raise AnalyticsNotFoundError(f"Analytics for habit with habit id: {habit_id} is not found.")
 
 
 	@handle_analytics_repository_errors
@@ -101,7 +101,7 @@ class AnalyticsRepository:
 				self._db._connection.commit()
 
 				if cursor.rowcount == 0: #shouldnt be the case by now
-					raise AnalyticsNotFoundError(f"Analytics for habit with analytiacs {analytics_id} is not found.")
+					raise AnalyticsNotFoundError(f"Analytics for habit with analyticsid: {analytics_id} is not found.")
 
 				return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 
@@ -113,7 +113,7 @@ class AnalyticsRepository:
 			cursor.execute(query, (analytics_id,))
 			self._db._connection.commit()
 			if cursor.rowcount == 0:
-				raise AnalyticsNotFoundError(f"Analytics for habit with id {analytics_id} is not found.")
+				raise AnalyticsNotFoundError(f"Analytics for habit with id analyticsid: {analytics_id} is not found.")
 			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
 
 
@@ -129,7 +129,7 @@ class AnalyticsRepository:
 			if result:
 				return result
 			else:
-				raise AnalyticsNotFoundError(f"Analytics is not found.")
+				raise AnalyticsNotFoundError(f"Longest streak has not been found.")
 
 
 	@handle_analytics_repository_errors
@@ -143,7 +143,7 @@ class AnalyticsRepository:
 			if result:
 				return result
 			else:
-				raise AnalyticsNotFoundError(f"Analytics is not found.")
+				raise AnalyticsNotFoundError(f"Same periodicity types have not been found.")
 
 
 	@handle_analytics_repository_errors
@@ -157,7 +157,7 @@ class AnalyticsRepository:
 			if result:
 				return result
 			else:
-				raise AnalyticsNotFoundError(f"Analytics is not found.")
+				raise AnalyticsNotFoundError(f"Currently tracked habits are not found.")
 
 	@handle_analytics_repository_errors
 	def longest_streak_for_habit(self, habit_id):
@@ -169,7 +169,7 @@ class AnalyticsRepository:
 		if result:
 			return result
 		else:
-			raise AnalyticsNotFoundError(f"Analytics is not found.")
+			raise AnalyticsNotFoundError(f"Longest streak for habit with id: {habit_id} is not found.")
 
 
 	# #https://mariadb.com/kb/en/json_arrayagg/ , otherwise I would have split calls in the layers above. This is gonna be a simple loop
