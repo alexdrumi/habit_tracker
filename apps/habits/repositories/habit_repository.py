@@ -10,11 +10,15 @@ class HabitRepositoryError(Exception):
 	def __init__(self, message="An unexpected error occurred in habit repository."):
 		super().__init__(message)
 
+
+
 class HabitNotFoundError(HabitRepositoryError):
 	"""Raised when a habit is not found."""
 	def __init__(self, habit_id):
 		message = f"Habit not found with ID: {habit_id}"
 		super().__init__(message)
+
+
 
 class HabitAlreadyExistError(HabitRepositoryError):
 	"""Raised when creating habit fails due to a already existing entry."""
@@ -22,11 +26,15 @@ class HabitAlreadyExistError(HabitRepositoryError):
 		message = f"Habit '{habit_name}' already exists for user with id: {habit_user_id}"
 		super().__init__(message)
 
+
+
 class HabitPeriodicityTypeError(HabitRepositoryError):
 	"""Raised when a habit periodicity type is not found."""
 	def __init__(self, habit_id):
 		message = f"Habit periodicity type for habit with ID: {habit_id} is not found."
 		super().__init__(message)
+
+
 
 def handle_habit_repository_errors(f):
 	"""Decorator to clean up and handle errors in habit repository methods."""
@@ -53,17 +61,22 @@ class HabitRepository:
 		self._db = database
 		self._user_repository = user_repository
 
+
+
 	@handle_habit_repository_errors
 	def validate_a_habit(self, habit_id):
-		'''
-		Validates a habit id.
+		"""
+		Checks if a habit with the given ID exists.
 
 		Args:
-			user_id (int): ID of the habit.
+			habit_id (int): The habit’s ID.
 
 		Returns:
 			int: The validated habit ID.
-		'''
+
+		Raises:
+			HabitNotFoundError: If the habit is not found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT habit_id FROM habits WHERE habit_id = %s"  
 			cursor.execute(query, (habit_id,))
@@ -72,19 +85,28 @@ class HabitRepository:
 			if not result:
 				raise HabitNotFoundError(habit_id)
 			return result[0]
-			
+
+
 
 	@handle_habit_repository_errors
 	def create_a_habit(self, habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id):
-		'''
-		Create a habit in the habits table.
+		"""
+		Inserts a new habit record into the database.
 
 		Args:
-			(str, str, int, str, int, int): The name, action, streak, periodicity type, periodicity value, habit user id of the habit.
-		
+			habit_name (str): Name of the habit.
+			habit_action (str): Description or action the habit represents.
+			habit_streak (int): Initial streak value (often 0).
+			habit_periodicity_type (str): Type (e.g., 'daily', 'weekly').
+			habit_periodicity_value (int): Numeric frequency (e.g., 1 for daily).
+			habit_user_id (int): ID of the user who owns this habit.
+
 		Returns:
-			Dict: Entire habit entity except the habit periodicity value.
-		'''
+			dict: The newly created habit’s data.
+
+		Raises:
+			HabitAlreadyExistError: If a duplicate record is found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			#duplicate check?
 			duplicate_check_query = "SELECT habit_id FROM habits WHERE habit_name = %s AND habit_user_id = %s"
@@ -107,24 +129,30 @@ class HabitRepository:
 			}
 
 
+
 	@handle_habit_repository_errors
 	def update_habit_field(self, habit_id, habit_field_name, habit_field_value):
-		'''
-		Updates one or more habit fields.
+		"""
+		Updates a specific field for the given habit.
 
 		Args:
-			(int, str, int): The id, habit field name, habit field value of the habit.
-		
+			habit_id (int): ID of the habit to update.
+			habit_field_name (str): The column name to update.
+			habit_field_value (Any): The new value for that column.
+
 		Returns:
-			Int: Amount of rows updated.
-		'''
-		#against sql injection
+			int: Number of rows affected by the update.
+
+		Raises:
+			HabitNotFoundError: If the habit does not exist.
+			ValueError: If attempting to update a disallowed field.
+		"""
+		#against sql injection? In the future I have to guard also in other repos.
 		allowed_fields = {
 			"habit_name", "habit_action", "habit_streak",
 			"habit_periodicity_type", "habit_periodicity_value", "habit_user_id"
 		}
 
-		#this prevents nasty SQL injections. .format() is essentialy the same as f''
 		if habit_field_name not in allowed_fields:
 			raise ValueError(f"Invalid habit field to update.")
 		
@@ -148,8 +176,23 @@ class HabitRepository:
 			self._db._connection.commit() #modifies data thus have to commit
 			return cursor.rowcount
 
+
+
+
 	@handle_habit_repository_errors
 	def get_periodicity_type(self, habit_id):
+		"""
+		Retrieves the periodicity type (e.g., 'daily') for a given habit.
+
+		Args:
+			habit_id (int): The habit’s ID.
+
+		Returns:
+			tuple: The periodicity type, for example ('daily',).
+
+		Raises:
+			HabitPeriodicityTypeError: If the periodicity type is not found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query =  "SELECT habit_periodicity_type FROM habits WHERE habit_id = %s"
 			cursor.execute(query, (habit_id,))
@@ -161,17 +204,22 @@ class HabitRepository:
 				raise HabitPeriodicityTypeError(habit_id=habit_id)
 
 
+
 	@handle_habit_repository_errors
 	def get_habit_id(self, user_name, habit_name):
-		'''
-		Gets the habit id based on user ID and habit name.
+		"""
+		Retrieves a habit ID based on user name and habit name.
 
 		Args:
-			(int, str): The user id and related habit_name.
-		
+			user_name (str): The user’s name.
+			habit_name (str): The habit’s name.
+
 		Returns:
-			Int: Habit ID.
-		'''
+			int: The habit ID.
+
+		Raises:
+			HabitNotFoundError: If no matching habit is found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			user_id = self._user_repository.get_user_id(user_name=user_name)
 			query = "SELECT habit_id from habits WHERE (habit_user_id = %s AND habit_name = %s)"
@@ -179,20 +227,26 @@ class HabitRepository:
 			
 			habit_id = cursor.fetchone()
 			if not habit_id:
-				raise HabitNotFoundError(habit_id) #doesnt this throw none or so?
-			return habit_id[0] #id
+				raise HabitNotFoundError(habit_id)
+			return habit_id[0]
+
+
 
 	@handle_habit_repository_errors		
 	def delete_a_habit(self, habit_id, goal_id):
-		'''
-		Deletes a habit based on habit_id.
+		"""
+		Deletes a habit and its dependent goals/progress records.
 
 		Args:
-			int: The id of the habit wished to be deleted.
-		
+			habit_id (int): The ID of the habit to delete.
+			goal_id (int): The ID of the goal tied to that habit (for removing progress).
+
 		Returns:
-			Int: Amount of rows affected.
-		'''
+			int: Number of rows affected (ideally 1 if success).
+
+		Raises:
+			HabitNotFoundError: If the habit does not exist.
+		"""
 		self._db._connection.autocommit = False
 		#ifautocommit is enabled, each delete statement in the function would be immediately committed to the database before  the next statement.
 		try: #not sure how else to solve this because the decorator already has a try block but we need to reset autocommit
@@ -217,34 +271,26 @@ class HabitRepository:
 					raise HabitNotFoundError(habit_id)
 
 				self._db._connection.commit() #if all deletions passed, commit
-				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+				return cursor.rowcount
 
 		finally:
 			self._db._connection.autocommit = True #allow autocommit again
 
-	# def soft_delete_habit(self, habit_id):
-	# 	'''
-	# 	Soft deletes a habit based on habit_id.
 
-	# 	Args:
-	# 		int: The id of the habit wished to be deleted.
-		
-	# 	Returns:
-	# 		Int: Amount of rows affected.
-	# 	'''
-	# 	with self._db._connection.cursor() as cursor:
-	# 		query = "UPDATE habits SET deleted_at = NOW() WHERE habit_id = %s;"
-	# 		cursor.execute(query, (habit_id,))
-	# 		self._db._connection.commit()
-
-	# 		if cursor.rowcount == 0:
-	# 			raise HabitNotFoundError(habit_id)
-	# 		return cursor.rowcount
 
 	def delete_habit_physical_preserving_progress(self, habit_id, goal_id):
 		"""
-		Physically remove a habit, also removing its goals but preserving any progress records
-		(by setting goal_id_id = NULL).
+		Deletes a habit record but preserves existing progress (sets goal_id_id to NULL).
+
+		Args:
+			habit_id (int): The habit’s ID.
+			goal_id (int): The goal’s ID used to set progress records to NULL.
+
+		Returns:
+			int: Number of rows affected by the deletion.
+
+		Raises:
+			HabitNotFoundError: If the habit does not exist.
 		"""
 		with self._db._connection.cursor() as cursor:
 			self._db._connection.autocommit = False
@@ -281,17 +327,17 @@ class HabitRepository:
 			finally:
 				self._db._connection.autocommit = True #not sure how else can i escape this one
 
+
+
 	@handle_habit_repository_errors
 	def get_all_habits(self):
-		'''
-		Gets information about all habits in the database.
+		"""
+		Retrieves all habit records.
 
-		Args:
-			None (self)
-		
 		Returns:
-			list(tuple): Habit entities with their associated columns.
-		'''
+			list: A list of tuples, each containing habit fields
+			(e.g., habit_id, habit_name, habit_action, habit_user_id), or an empty list.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
 			cursor.execute(query)
@@ -300,34 +346,52 @@ class HabitRepository:
 			if not habits:
 				return []
 			
-			return habits #no rows updated but also no error found
+			return habits
 		
+
 
 	@handle_habit_repository_errors
 	def get_current_streak(self, habit_id):
+		"""
+		Retrieves the current streak for a specific habit.
+
+		Args:
+			habit_id (int): The habit ID.
+
+		Returns:
+			tuple: Contains the streak value (e.g., (5,) for a streak of 5).
+
+		Raises:
+			HabitNotFoundError: If the habit is not found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT habit_streak FROM habits WHERE habit_id = %s;"
 			cursor.execute(query, (habit_id,))
 			streak = cursor.fetchall()
 
 			if not streak:
-				dummy_id_holder = -1
+				dummy_id_holder = -1 #gotta come up with a better version here eventually
 				raise HabitNotFoundError(dummy_id_holder)
 
 			return streak[0]
 
 
+
+
 	@handle_habit_repository_errors
 	def get_habit_by_id(self, habit_id):
-		'''
-		Gets all information about a specific habit in the database. Acts like an in memory object for facade.
+		"""
+		Fetches all details of a single habit by its ID.
 
 		Args:
-			int: habit_id
-		
+			habit_id (int): The habit ID.
+
 		Returns:
-			dict: habit_id, habit_name, habit_streak, habit_periodicity_type
-		'''
+			list: A list of rows (tuples) with full habit data.
+
+		Raises:
+			HabitNotFoundError: If no matching habit is found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
 			cursor.execute(query)
@@ -337,18 +401,23 @@ class HabitRepository:
 				dummy_id_holder = -1
 				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
 			
-			return habits #no rows updated but also no error found
-	
+			return habits
+
+
+	@handle_habit_repository_errors
 	def get_goal_of_habit(self, habit_id):
-		'''
-		Get the related goal_id for a habit.
+		"""
+		Retrieves the goal(s) associated with a specific habit.
 
 		Args:
-			int: habit_id
-		
+			habit_id (int): The habit ID.
+
 		Returns:
-			int: goal_id
-		'''
+			list: A list of goals tied to the habit.
+
+		Raises:
+			HabitNotFoundError: If no goals or habit are found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT goal_id FROM goals WHERE habit_id_id = %s;"
 			cursor.execute(query, habit_id)
@@ -358,4 +427,4 @@ class HabitRepository:
 				dummy_id_holder = -1
 				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
 			
-			return goal #no rows updated but also no error found
+			return goal

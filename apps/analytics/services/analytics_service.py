@@ -30,6 +30,29 @@ class AnalyticsService:
 
 
 	def validate_analytics(self, action, habit_id=None, analytics_id=None, times_completed=None, streak_length=None, last_completed_at=None):
+		"""
+		Validates input parameters for analytics-related actions such as creating, updating, or deleting analytics records.
+
+		Args:
+			action (str): 
+				The action to perform. Must be one of ["create", "update", "delete"].
+			habit_id (int, optional): 
+				The unique identifier of the habit associated with the analytics record.
+			analytics_id (int, optional): 
+				The unique identifier of the analytics record.
+			times_completed (int, optional): 
+				The total number of times the habit has been completed.
+			streak_length (int, optional): 
+				The current streak length of consecutive habit completions.
+			last_completed_at (datetime, optional): 
+				Timestamp of the last habit completion. Optional, defaults to None.
+
+		Raises:
+			ValueError: 
+				- If the action provided is not one of the allowed values ("create", "update", "delete").
+				- If required fields (analytics_id, habit_id, times_completed, streak_length) are missing or invalid based on the action.
+				- If times_completed or streak_length values are outside the allowed range (0 to 365).
+		"""
 		if action not in ["create", "update", "delete"]:
 			raise ValueError(f"Invalid action '{action}'. Allowed: create, update, delete.")
 

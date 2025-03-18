@@ -10,15 +10,28 @@ from apps.goals.domain.goal_factory import build_goal_subject
 
 class HabitOrchestrator:
 	"""Handles multi-step workflows if facade deems that necessary."""
-
 	def __init__(self, habit_tracker_facade: HabitTrackerFacadeInterface): #fix circular dependency
 		self._habit_facade = habit_tracker_facade
+
+
 
 	#in case we need chained services, we do that from here. For now we keep the create habit in the service also doing validation. 
 	#at this point we dont know how much orchestration is needed, in the future probably this will be extended.
 	#Facade can keep interacting with single services, and in case its chainedm, we call orchestrator.
 	#(orchestrator will still call single facade services but with input check, chained logic BUT NO CIRCULAR DEPENDENCY
 	def create_a_habit_with_validation(self, habit_name, habit_action, habit_periodicity_type, user_id):
+		"""
+		Creates a new habit after validating the associated user.
+
+		Args:
+			habit_name (str): Name of the habit.
+			habit_action (str): Action or behavior for the habit.
+			habit_periodicity_type (str): Periodicity (e.g., 'daily', 'weekly').
+			user_id (int): ID of the user who will own this habit.
+
+		Returns:
+			dict: Newly created habit data, including habit ID and other details.
+		"""
 		validated_user_id = self._habit_facade.validate_user_by_id(int(user_id))
 		# if existing_habit:
 		# 	return existing_habit
@@ -27,7 +40,25 @@ class HabitOrchestrator:
 		return new_habit
 
 
+
 	def complete_a_habit(self, habit_id, goal_id):
+		"""
+		Marks a habit as complete, updating streaks and progress.
+
+		Validates that both habit and goal exist, then retrieves
+		the habit’s periodicity type to determine how much to
+		increment Key Value Indicators (KVI) and the streak.
+
+		Args:
+			habit_id (int): The habit’s ID.
+			goal_id (int): The goal’s ID linked to the habit.
+
+		Returns:
+			None or Any: Returns early if it’s too early to tick
+			the habit, otherwise executes completion logic. The
+			actual return can be None or a custom result depending
+			on the implementation.
+		"""
 		#we check whether habit exists
 		validated_habit_id = self._habit_facade.validate_a_habit(habit_id=int(habit_id))
 
@@ -68,20 +99,27 @@ class HabitOrchestrator:
 			goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
 
 
+
 	def fetch_ready_to_tick_goals_of_habits(self):
-		#some validaiton here maybe		
+		"""
+		Identifies which goals are ready to be incremented (ticked).
+
+		Pulls all goals, checks their last progress occurrence date,
+		and decides if they are tickable based on daily or weekly
+		intervals.
+
+		Returns:
+			list: A list of goals (or combined habit-goal structures)
+			that are eligible for increment based on their schedule.
+		"""
 		#now call either a service via the habit facade goal service which filters this available goals data
 		#or call straight a service->repo which just gives back a filtered data.
 		all_goals = self._habit_facade._goal_service.query_all_goals()
 
 		all_goals_with_date = {}
 		for goal in all_goals:
-			#dict key will be goal id
 			all_goals_with_date[goal["goal_id"]] = goal
-			#get last progress associated with that goal_id
 			last_entry = self._habit_facade.get_last_progress_entry_associated_with_goal_id(goal_id=int(goal['goal_id']))
-			
-			#assign the occurence date is there was one, otherwise 0
 			if len(last_entry) != 0:
 				all_goals_with_date[goal["goal_id"]]["occurence_date"] = last_entry["occurence_date"]
 			else:
@@ -114,7 +152,7 @@ class HabitOrchestrator:
 			elif target_kvi == 7:
 				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
 					print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
-				elif last_tick_week <  current_week: #wouldnt this case it to be tickable every day?
+				elif last_tick_week < current_week:
 					print(f'Goal is ticked last week thus, its tickable now!')
 					tickable_goals_and_habits.append(v)
 				else:
@@ -123,13 +161,25 @@ class HabitOrchestrator:
 		return tickable_goals_and_habits
 
 
+
 	def delete_a_habit(self, habit_id):
+		"""
+		Deletes a habit record, preserving any associated progress.
+
+		Validates the habit and retrieves its associated goal ID,
+		then calls the facade to physically remove the habit while
+		keeping progress records intact.
+
+		Args:
+			habit_id (int): The ID of the habit to delete.
+
+		Returns:
+			Any: Result of the delete operation.
+		"""
 		validated_habit_id = self._habit_facade.validate_a_habit(habit_id)
 		goal_id = self._habit_facade.query_goal_of_a_habit(habit_id=validated_habit_id)
-		
-		# print(goal_id)
-		#if goal id, otherwise there is a problem
-		deleted = self._habit_facade.delete_habit_physical_preserving_progress(habit_id=validated_habit_id, goal_id=int(goal_id[0]))
 
+		deleted = self._habit_facade.delete_habit_physical_preserving_progress(habit_id=validated_habit_id, goal_id=int(goal_id[0]))
+		return deleted
 
 
