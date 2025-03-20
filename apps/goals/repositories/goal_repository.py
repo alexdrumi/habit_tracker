@@ -186,6 +186,36 @@ class GoalRepository:
 
 
 
+	def get_goal_entity_by_goal_id(self, goal_id):
+		"""
+		Fetches a goal entity matching the provided goal and habit IDs.
+
+		Args:
+			goal_id (int): The goal’s ID.
+
+		Returns:
+			dict: Goal information including name, KVI values, and streak.
+
+		Raises:
+			GoalNotFoundError: If the goal does not exist.
+		"""
+		with self._db._connection.cursor() as cursor:
+			# "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s";
+			# query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
+			query = "SELECT goal_id, goal_name, target_kvi_value, current_kvi_value FROM goals WHERE goal_id = %s;"
+			cursor.execute(query, (goal_id,))
+			result = cursor.fetchone()
+			if result:
+				return {
+					'goal_id': result[0],
+					'goal_name': result[1],
+					'target_kvi': result[2],
+					'current_kvi': result[3],
+				}
+			else:
+				raise GoalNotFoundError(goal_id)
+
+
 	@handle_goal_repository_errors
 	def get_current_kvi(self, goal_id):
 		"""

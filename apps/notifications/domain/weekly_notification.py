@@ -3,30 +3,42 @@ from apps.goals.domain.goal_subject import GoalSubject
 from apps.progresses.domain.progress_dto import ProgressHistoryDTO
 from datetime import datetime, timedelta
 
+
+
 class WeeklyNotificationStrategy(NotificationStrategy):
-	# def before_deadline_message(self, progress_data: ProgressHistoryDTO):
-	# 	now = datetime.now()
-
-	# 	print(now)
-	# 	if progress_data.last_updated_time == None:
-	# 		return "NO MESSAGE HERE"
-	# 	dto_to_dict = progress_data.to_dict()
-	# 	dict_keys = dto_to_dict.keys()
-	# 	last_updated_time = dto_to_dict.get('last_updated_time')
-	# 	time_difference = now - last_updated_time
-	# 	if time_difference < timedelta(weeks=1):
-	# 		return f"You have {timedelta(weeks=1) - time_difference} left!"
-	# 	return None
-
-
+	"""
+	A concrete notification strategy for weekly habits. This strategy
+	defines how to generate messages when a user completes or fails to
+	complete a weekly habit on time.
+	"""
 	def on_completion_message(self, progress_data: ProgressHistoryDTO):
-		# now = datetime.now()
+		"""
+		Generates a congratulatory message upon successful weekly habit completion.
 
+		Args:
+			progress_data (ProgressHistoryDTO): Contains information about the current streak,
+				distance from the target, and the last occurrence time.
+
+		Returns:
+			str or None: A congratulatory message if the streak is non-zero. Otherwise None.
+		"""
 		streak = progress_data.to_dict().get('streak')
 		if streak != 0:
 			return f"Congratulations, you have completed a daily habit with, your current streak is {streak}"
 
+
+
 	def on_expired_message(self, progress_data: ProgressHistoryDTO):
+		"""
+		Generates a reminder message if the user missed a weekly habit completion deadline.
+
+		Args:
+			progress_data (ProgressHistoryDTO): Contains information about the current streak,
+				distance from the target, and the last occurrence time.
+
+		Returns:
+			str or None: A message indicating that the habit streak has been reset. Otherwise None.
+		"""
 		streak = progress_data.to_dict().get('streak')
 
 		if streak == 0:

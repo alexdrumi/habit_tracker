@@ -133,6 +133,23 @@ class GoalService:
 
 
 
+	#slightly ugly and ambiguous name but will change it.
+	def get_goal_entity_by_goal_id(self, goal_id):
+		"""
+		Retrieves comprehensive goal data (including streak and names) purely by goal id.
+
+		Args:
+			goal_id (int): The goal’s ID.
+
+		Returns:
+			dict: Goal entity with fields like 'goal_name', 'target_kvi',
+			'current_kvi', and 'streak'.
+		"""
+		goal_entity = self._repository.get_goal_entity_by_goal_id(goal_id=goal_id)
+		return goal_entity
+
+
+
 	@handle_log_service_exceptions
 	def create_a_goal(self, goal_name, habit_id, target_kvi_value, current_kvi_value, goal_description):
 		"""

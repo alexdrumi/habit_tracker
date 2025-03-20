@@ -4,9 +4,10 @@ from datetime import datetime, timedelta
 # if TYPE_CHECKING:
 # 	from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.facades.habit_tracker_facade import HabitTrackerFacadeInterface
-
 from apps.goals.domain.goal_subject import GoalSubject
 from apps.goals.domain.goal_factory import build_goal_subject
+
+import click
 
 class HabitOrchestrator:
 	"""Handles multi-step workflows if facade deems that necessary."""
@@ -87,13 +88,14 @@ class HabitOrchestrator:
 			now = datetime.now()
 			difference = now - goal_subject._goal_data['last_occurence']
 			waiting_time = timedelta(hours=24) - difference #incorrect caltulation for now
-			print(f"It is too early to tick this habit, you have to wait {waiting_time} hours.")
+			# print(f"It is too early to tick this habit, you have to wait {waiting_time} hours.")
+			click.echo(click.style(f"\nIt is too early to tick this habit. You need to wait {waiting_time} hours before you can tick it again.", fg="red", bold=True))
 			return
 		
 		elif goal_subject.is_expired() == True:
 			self._habit_facade.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=0)
 			goal_subject.reset_progress()
-		
+
 		else:
 			self._habit_facade.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
 			goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
@@ -135,7 +137,7 @@ class HabitOrchestrator:
 			target_kvi = v['target_kvi_value']
 
 			if last_tick is None:
-				print('Tickable, thus we can return goal and habit id.')
+				print('\n\n\nTickable, thus we can return goal and habit id.')
 				tickable_goals_and_habits.append(v)
 				continue 
 
@@ -144,19 +146,22 @@ class HabitOrchestrator:
 			last_tick_year = last_tick.year #hypothetically, which year..
 			if target_kvi == 1:
 				if (now.date() - timedelta(days=2)) <= last_tick.date() and last_tick.date() < (now.date() - timedelta(days=1)):
-					print(f'Goal {k} is a daily goal and was last ticked {time_since_last_tick.days} days ago, tickable')
+					# print(f'Goal {k} is a daily goal and was last ticked {time_since_last_tick.days} days ago, tickable')
 					tickable_goals_and_habits.append(v)
 				else:
-					print(f'Goal {k} is not tickable')
+					# print(f'Goal {k} is not tickable')
+					pass
 			
 			elif target_kvi == 7:
 				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
-					print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
+					# print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
+					pass
 				elif last_tick_week < current_week:
-					print(f'Goal is ticked last week thus, its tickable now!')
+					# print(f'Goal is ticked last week thus, its tickable now!')
 					tickable_goals_and_habits.append(v)
 				else:
-					print(f'Goal {k} was ticked this week, not yet tickable')
+					pass
+					# print(f'Goal {k} was ticked query_goal_of_a_habit')
 
 		return tickable_goals_and_habits
 

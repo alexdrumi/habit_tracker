@@ -47,17 +47,21 @@ class UserRepository:
 		self._db = database
 
 
+
 	@handle_user_repository_errors
 	def validate_user_by_name(self, user_name):
-		'''
-		Validates whether a user with user_name exists in the database.
+		"""
+		Checks if a user with the given name exists in the database.
 
 		Args:
-			user_name (str): The username to be checked.
+			user_name (str): The username to look up.
 
 		Returns:
-			int: THe user ID if the user exists.
-		'''
+			int: The user's ID if found.
+
+		Raises:
+			UserNotFoundError: If no user with this name exists.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query_user = "SELECT user_id from app_users WHERE user_name = %s;"
 			cursor.execute(query_user, (user_name,))
@@ -69,17 +73,22 @@ class UserRepository:
 			user_id_idx = 0
 			return result_user[user_id_idx]
 
+
+
 	@handle_user_repository_errors
 	def validate_user_by_id(self, user_id):
-		'''
-		Validates whether a user with user_id exists in the database.
+		"""
+		Checks if a user with the given ID exists in the database.
 
 		Args:
-			user_id (int): The user id to be checked.
+			user_id (int): The ID of the user.
 
 		Returns:
-			int: The user ID if the user exists.
-		'''
+			int: The user ID if found.
+
+		Raises:
+			UserNotFoundError: If no user with this ID exists.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query_user = "SELECT user_id from app_users WHERE user_id = %s;"
 			cursor.execute(query_user, (user_id,))
@@ -92,17 +101,21 @@ class UserRepository:
 			return result_user[user_id_idx]
 
 
+
 	@handle_user_repository_errors
 	def create_a_role(self, user_role):
-		'''
-		Create a user role in the app_users_roles table. ID will be used as a foreign key in app_user.
+		"""
+		Creates a user role in the `app_users_role` table if it does not already exist.
 
 		Args:
-			user_role (str): The name of the user role (admin, user, bot).
+			user_role (str): The role name (e.g. 'admin', 'user', 'bot').
 
 		Returns:
-			int: The id of existing or newly created role. To be used as a foreign key in app_users.
-		'''
+			int: The ID of the role, either existing or newly created.
+
+		Raises:
+			RoleCreationError: If the insertion fails for any reason.
+		"""
 		with  self._db._connection.cursor() as cursor:
 			query = "SELECT user_role from app_users_role WHERE user_role = %s"
 			cursor.execute(query, (user_role,))
@@ -126,19 +139,26 @@ class UserRepository:
 			#double roles should be ok?
 			# except IntegrityError as ierror:
 			# 	raise
-		
+
+
 
 	@handle_user_repository_errors
 	def create_a_user(self, user_name, user_age, user_gender, user_role):
-		'''
-		Create a user in the app_users table.
+		"""
+		Inserts a new user record into the `app_users` table.
 
 		Args:
-			(str, int, str, str): The name, age, gender and role of the user.
-		
+			user_name (str): The name of the user.
+			user_age (int): The age of the user.
+			user_gender (str): The gender of the user.
+			user_role (str): The role string (e.g. 'admin', 'user', 'bot').
+
 		Returns:
-			a dict (int, str, str): The id, user_name, user_role of the created_user.
-		'''
+			dict: A dictionary containing the new user's 'user_id', 'user_name', and 'user_role'.
+
+		Raises:
+			AlreadyExistError: If a user with the same name already exists (handled by decorator).
+		"""
 		with self._db._connection.cursor() as cursor:
 			user_role_id = self.create_a_role(user_role)
 			try:
@@ -154,17 +174,22 @@ class UserRepository:
 			except IntegrityError as ierror:
 				raise
 
+
+
 	@handle_user_repository_errors
 	def delete_a_user(self, user_id):
-		'''
-		Delete a user from the app_users table.
+		"""
+		Deletes a user from the database, as well as their related habits (if any).
 
 		Args:
-			user_id (int): ID of the user.
+			user_id (int): The ID of the user to delete.
 
 		Returns:
-			int: Number of rows effected by deletion.
-		'''
+			int: The number of rows affected by the deletion from `app_users`.
+
+		Raises:
+			UserNotFoundError: If the user doesn't exist.
+		"""
 		try:
 			self._db._connection.autocommit = False
 			with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
@@ -186,18 +211,24 @@ class UserRepository:
 
 
 
-
 	@handle_user_repository_errors
 	def update_a_user(self, user_name, user_age=None, user_gender=None, user_role=None):
-		'''
-		Update a user from the app_users table.
+		"""
+		Updates a user's information in the `app_users` table.
+		Fields that are None are not updated.
 
 		Args:
-			(str, int, str, str): The new name, new age, new gender and new role of the user.
-		
+			user_name (str): The existing username (used for the WHERE clause).
+			user_age (int, optional): The new age.
+			user_gender (str, optional): The new gender.
+			user_role (str, optional): The new role.
+
 		Returns:
-			int: Number of rows effected by update.
-		'''
+			int: Number of rows affected by the update.
+
+		Raises:
+			UserNotFoundError: If no user is found with the given user_name.
+		"""
 		#will eventually correct this with dict and list comprehension prob
 		updated_cols = []
 		updated_vals = []
@@ -240,15 +271,18 @@ class UserRepository:
 
 	@handle_user_repository_errors
 	def get_user_id(self, user_name):
-		'''
-		Get the user_id based on a user_name.
+		"""
+		Retrieves a user's ID based on their username.
 
 		Args:
-			user_name (str): The name of the user.
-		
+			user_name (str): The user's name.
+
 		Returns:
-			int: The ID of the user.
-		'''
+			int: The user's ID.
+
+		Raises:
+			UserNotFoundError: If no user is found with this name.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query =  "SELECT user_id from app_users WHERE user_name = %s"
 			cursor.execute(query, (user_name,))
@@ -263,15 +297,13 @@ class UserRepository:
 
 	@handle_user_repository_errors
 	def query_all_user_data(self):
-		'''
-		Requests all user data. 
+		"""
+		Retrieves all users from the `app_users` table.
 
-		Args:
-			None
-		
 		Returns:
-			dict(list): every user data with their user_id and related habit_id, goal_id
-		'''
+			list: A list of tuples, each containing user_id and user_name. 
+					An empty list if no users are found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT user_id, user_name FROM app_users;"
 			cursor.execute(query)
@@ -281,23 +313,18 @@ class UserRepository:
 				return result
 			else:
 				return []
-	
 
-	#user id, user name, habit_id, habit_name, habit_action
-	#oders->habits
-	#customers->users
-	#SELECT app_users.user_name, app_users.user_id, habits.habit_id, habits.habit_name, habits.habit_action FROM habits INNER JOIN app_users ON habits.habit_user_id=app_users.user_id;
+
 	@handle_user_repository_errors
 	def query_user_and_related_habits(self): #INNER JOIN
-		'''
-		Requests all users who have associated habits data. 
+		"""
+		Retrieves a joined list of users and their associated habits.
 
-		Args:
-			None
-		
 		Returns:
-			dict(list): every user data with their user_name, user_id, habit_id, habit_name, habit_action
-		'''
+			list: A list of tuples containing
+					(user_name, user_id, habit_id, habit_name, habit_action).
+					An empty list if no users or habits are found.
+		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT app_users.user_name, app_users.user_id, habits.habit_id, habits.habit_name, habits.habit_action FROM habits INNER JOIN app_users ON habits.habit_user_id=app_users.user_id;"
 			cursor.execute(query)

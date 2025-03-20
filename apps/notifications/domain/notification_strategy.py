@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class NotificationStrategy(ABC):
+	"""
+	An abstract base class that defines the interface for different
+	notification strategies. Any custom notification strategy should 
+	implement these methods.
+	"""
 	# @abstractmethod
 	# def before_deadline_message(self, goal_subject):
 	# 	pass
