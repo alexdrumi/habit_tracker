@@ -118,7 +118,7 @@ class HabitTrackerFacadeInterface(ABC):
 		pass
 
 
-
+	@abstractmethod
 	def query_goal_of_a_habit(self, habit_id):
 		pass
 

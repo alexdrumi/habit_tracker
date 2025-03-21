@@ -116,29 +116,18 @@ class UserRepository:
 		Raises:
 			RoleCreationError: If the insertion fails for any reason.
 		"""
-		with  self._db._connection.cursor() as cursor:
-			query = "SELECT user_role from app_users_role WHERE user_role = %s"
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT user_role FROM app_users_role WHERE user_role = %s;"
 			cursor.execute(query, (user_role,))
-			role = cursor.fetchone() #can be only one entry here, more efficient than fetchall()
-			
+			role = cursor.fetchone()
 			if role:
-				role_id_idx = 0
-				return role[role_id_idx]
-			
-			# try:
-				#if role doesnt exist
+				return role[0]
+			#insert the new role.since user_role is the primary key, return it directly
 			query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
 			cursor.execute(query, (user_role,))
-
-			if cursor.rowcount == 0:
-				raise RoleCreationError()
-
 			self._db._connection.commit()
-			return cursor.lastrowid #id we need to creating users
+			return user_role 
 
-			#double roles should be ok?
-			# except IntegrityError as ierror:
-			# 	raise
 
 
 

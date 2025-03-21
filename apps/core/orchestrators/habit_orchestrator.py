@@ -136,6 +136,7 @@ class HabitOrchestrator:
 			last_tick = v['occurence_date']
 			target_kvi = v['target_kvi_value']
 
+			print(f"{last_tick} is the last tick here")
 			if last_tick is None:
 				print('\n\n\nTickable, thus we can return goal and habit id.')
 				tickable_goals_and_habits.append(v)

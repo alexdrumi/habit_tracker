@@ -59,7 +59,6 @@ class HabitController:
 			dict: A structured representation of users and their related habits.
 		"""
 		return self._facade.query_user_and_related_habits()
-	
 
 
 
@@ -272,3 +271,45 @@ class HabitController:
 			dict or None: The last recorded progress data, if any.
 		"""
 		return self._facade.get_last_progress_entry(goal_id=goal_id)
+
+
+
+	def query_goal_of_a_habit(self, habit_id):
+		"""
+		Retrieves a single goal for a habit, currently one is expected.
+
+		Args:
+			habit_id (int): The habit's ID.
+
+		Returns:
+			Any: The associated goal's data.
+		"""
+		return self._facade.query_goal_of_a_habit(habit_id=habit_id)
+
+
+
+	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value,  goal_name, habit_name, current_streak=None, progress_description=None, occurence_date=None):
+		"""
+		Creates a new progress record for a specific goal.
+
+		Args:
+			goal_id (int): ID of the goal.
+			current_kvi_value (float): Current KVI progress being recorded.
+			distance_from_target_kvi_value (float): Remaining distance to the target KVI.
+			goal_name (str): Name of the goal.
+			habit_name (str): Name of the associated habit.
+			current_streak (int, optional): Current streak value. Defaults to None.
+			progress_description (str, optional): Additional details about the progress. Defaults to None.
+			occurence_date (datetime, optional): Timestamp of when progress occurred. Defaults to None.
+
+		Returns:
+			dict: Data of the newly created progress entry.
+		"""
+		return self._facade.create_progress(goal_id=goal_id, 
+			current_kvi_value=current_kvi_value,
+			distance_from_target_kvi_value=distance_from_target_kvi_value, 
+			goal_name=goal_name,
+			habit_name=habit_name,
+			current_streak=current_streak,
+			progress_description=progress_description,
+			occurence_date=occurence_date)

@@ -1,6 +1,10 @@
 import sys
 import os
 import django
+import click
+import datetime
+import random
+import argparse
 
 #for correct import path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,17 +33,38 @@ from apps.analytics.repositories.analytics_repository import AnalyticsRepository
 from apps.analytics.services.analytics_service import AnalyticsService
 from cli import CLI
 
-import click
-import datetime
-import random
-import argparse
+
 
 def signal_handler(sig, frame):
+	"""
+	A handler function triggered when the user presses Ctrl+c (SIGINT).
+	Prints a dutch farewell message and exits the application gracefully.
+
+	Args:
+		sig (int): The signal number that triggered this handler (e.g., SIGINT).
+		frame (FrameType): The current stack frame (unused here).
+
+	Returns:
+		None
+	"""
 	print('You pressed Ctrl+C, doei!')
 	sys.exit(0)
 
+
+
 #we ll only pass habitcontroller eventually, just for now pass the associated services
-def seed(habit_controller: HabitController, goal_service: GoalService, progress_service: ProgressesService):
+def seed(habit_controller: HabitController):
+	"""
+	Seeds the database with a test user, several habits, and associated goals.
+	Also generates progress records for those habits randomly over the last 30 days.
+
+	Args:
+		habit_controller (HabitController): A controller handling user/habit creation and updates.
+
+		
+	Returns:
+		None
+	"""
 	click.echo(click.style("\n--- AS REQUESTED, STARTING DATABASE SEEDING PROCESS---", fg="green", bold=True))
 
 	test_user = habit_controller.create_user(f'Testuser{random.random()}', 35, "Male", "user")
@@ -73,7 +98,7 @@ def seed(habit_controller: HabitController, goal_service: GoalService, progress_
 			current_kvi_value=0.0, 
 			goal_description=goal_description)
 
-	#generate random data in the last 30 days
+	#generate random data in the last 30 days, we could extend this for a longer period
 	now = datetime.datetime.now()
 	thirty_days_ago = now - datetime.timedelta(days = 30)
 
@@ -82,13 +107,13 @@ def seed(habit_controller: HabitController, goal_service: GoalService, progress_
 		habit_id = habit["habit_id"]
 
 		current_date = thirty_days_ago
-		goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
+		goal_id = habit_controller.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
 
 		while current_date <= now:
 			if random.random() < 0.7:
 				# goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
 				if goal_id and current_date.weekday() != 6:  #not sunday for instance
-					progress_service.create_progress(
+					habit_controller.create_progress(
 						goal_id=goal_id[0],
 						current_kvi_value=1.0, #should be +1 each time to be honest, we ll see
 						distance_from_target_kvi_value=0.0,
@@ -107,7 +132,16 @@ def seed(habit_controller: HabitController, goal_service: GoalService, progress_
 	
 	click.echo(click.style("\n---SEEDING COMPLETED. DATABASE HAS BEEN POPULATED WITH DATA FOR 30 DAYS.---", fg="green", bold=True))
 
+
+
 def init_parser():
+	"""
+	Initializes an argument parser for optional CLI arguments, 
+	such as a `--seed` flag to pre-populate the database.
+
+	Returns:
+		argparse.Namespace: Parsed arguments with a `seed` attribute (boolean).
+	"""
 	parser = argparse.ArgumentParser(description="Habit Tracker CLI")
 	parser.add_argument(
 		'--seed',
@@ -115,6 +149,8 @@ def init_parser():
 		help="Seed the database with sample data, in case you would need it."
 	)
 	return parser.parse_args()
+
+
 
 def main():
 
@@ -142,7 +178,7 @@ def main():
 
 	#--------SEED---------
 	if args.seed:
-		seed(habit_controller=habit_controller, goal_service=goal_service, progress_service=progress_service)
+		seed(habit_controller=habit_controller)
 
 	#--------CLI----------
 	cli = CLI(controller=habit_controller)

@@ -21,13 +21,25 @@ def signal_handler(sig, frame):
 	sys.exit(0)
 
 
+
 class CLI:
 	def __init__(self, controller: HabitController):
 		self._controller = controller
 
+
+
 	def display_users(self, all_users):
+		"""
+		Displays a list of user records in a formatted fashion.
+
+		Args:
+			all_users (list): A list of tuples or records, where each contains
+				user information (e.g., (user_id, user_name)).
+
+		Returns:
+			None
+		"""
 		click.echo(click.style("\n---ALL USERS---", fg="cyan", bold=True))
-		
 		if not all_users:
 			click.echo("No users found.")
 			return
@@ -38,17 +50,27 @@ class CLI:
 
 
 	def display_habits(self, habits):
+		"""
+		Displays a list of habit records in a tabular format.
+
+		Args:
+			habits (list): A list of tuples containing habit data. Each tuple
+				is expected in the format (habit_id, habit_name, habit_action, user_id, ...)
+
+		Returns:
+			None
+		"""
 		click.echo(click.style("\n---LIST OF ALL HABITS---", fg="cyan", bold=True))
 
 		if len(habits) == 0:
-			print(click.style("There are currently no habits tracked. Create a first one!", fg="green", bold=True))
+			click.echo(click.style("There are currently no habits tracked. Create a first one!", fg="green", bold=True))
 			return
 
-		print("\n" + "-" * 80)
-		print(click.style(f"{'Habit ID':<10} {'User ID':<10} {'Habit Name':<20} {'Action':<30}", fg="green", bold=True))
-		print("-" * 80)
+		separator = "-" * 80
+		click.echo("\n" + separator)
+		click.echo(click.style(f"{'Habit ID':<10} {'User ID':<10} {'Habit Name':<20} {'Action':<30}", fg="green", bold=True))
+		click.echo(separator)
 
-		#pretty display
 		for habit in habits:
 			print(
 				click.style(f"{habit[0]:<10}", fg="yellow", bold=True) +
@@ -56,14 +78,23 @@ class CLI:
 				click.style(f"{habit[1]:<20}", fg="white", bold=True) +
 				click.style(f"{habit[2]:<30}", fg="magenta")
 			)
+		click.echo(separator)
 
-		print("-" * 80)
 
 
 	#pretty ddisplay ll be needed for thisone as well
 	def display_goals_and_habits(self, goals_and_habits):
-		click.echo(click.style("\n---GOALS AND THEIR ASSOCIATED HABITS---", fg="cyan", bold=True))
+		"""
+		Displays goal and habit associations in a structured format.
 
+		Args:
+			goals_and_habits (list): A list of tuples, each containing 
+				goal and habit data (e.g., (goal_name, goal_id, habit_id, habit_name)).
+
+		Returns:
+			None
+		"""
+		click.echo(click.style("\n---GOALS AND THEIR ASSOCIATED HABITS---", fg="cyan", bold=True))
 		if not goals_and_habits:
 				click.echo("No goals and associated habits have been found.")
 
@@ -71,10 +102,22 @@ class CLI:
 			click.echo(f"\nGoal Name: {click.style(data[0], fg='green', bold=True)}\n"
 						f"Goal ID: {data[1]}\n"
 						f"Habit Name: {click.style(data[3], fg='yellow', bold=True)}\n"
-						f"Habit ID: {data[2]}")
+						f"Habit ID: {data[2]}"
+			)
 
-		
+
+
 	def display_same_periodicity_type_habits(self, habits):
+		"""
+		Displays a grouping of habits by their periodicity type (e.g., daily or weekly).
+
+		Args:
+			habits (list): A list of tuples, where each tuple might be 
+				structured like (periodicity_type, habit_count, habit_list_string).
+
+		Returns:
+			None
+		"""
 		if not habits:
 			click.echo(click.style("No habits found by periodicity grouping.", fg="green", bold=True))
 			return
@@ -84,13 +127,14 @@ class CLI:
 			habit_list = habit_type[2]   #concatted string
 
 			#header
-			print("\n" + "-" * 80)
-			print(click.style(f" Habits with periodicity type: {periodicity.upper()} ", fg="green", bold=True))
-			print("\n" + "-" * 80)
+			separator = "-" * 80
+
+			click.echo("\n" + separator)
+			click.echo(click.style(f" Habits with periodicity type: {periodicity.upper()} ", fg="green", bold=True))
+			click.echo("\n" + separator)
 
 			#split into individual habit list
 			all_habits = habit_list.split(',')
-
 			for habit in all_habits:
 				habit_details = habit.split(':')
 				habit_id = habit_details[0].strip()
@@ -101,10 +145,22 @@ class CLI:
 					click.style(" | Habit Name: ", fg="yellow", bold=True) + 
 					click.style(habit_name, fg="white", bold=True)
 				)
-		print("\n" + "-" * 80)
+		click.echo("\n" + separator)
+
 
 
 	def display_tickable_habits(self, goals):
+		"""
+		Displays a list of 'tickable' habits and their associated goals.
+
+		Args:
+			goals (list): A list of dictionaries. Each dict might contain
+				keys like 'habit_id', 'goal_id', 'goal_name', 'target_kvi_value',
+				'current_kvi_value', and 'occurence_date'.
+
+		Returns:
+			None
+		"""
 		click.echo(click.style("\n---TICKABLE HABITS AND THEIR ASSOCIATED GOALS---", fg="cyan", bold=True))
 		if not goals:
 			click.echo("No tickable habits found.")
@@ -124,6 +180,8 @@ class CLI:
 				occurence_date_str = occurence_date.strftime("%Y-%m-%d %H:%M:%S")
 
 			#eventually we could even place these in one single print call, also the rest above
+			separator = "-" * 80
+
 			click.echo(
 				f"\n{click.style('Habit ID:', fg='yellow', bold=True)} {habit_id}\n"
 				f"{click.style('Goal ID:', fg='yellow', bold=True)} {goal_id}\n"
@@ -131,23 +189,35 @@ class CLI:
 				f"{click.style('Target KVI:', fg='yellow', bold=True)} {target_kvi_value}\n"
 				f"{click.style('Current KVI:', fg='yellow', bold=True)} {current_kvi_value}\n"
 				f"{click.style('Last Ticked:', fg='yellow', bold=True)} {occurence_date_str}\n"
-				+ "-" * 80
+				+ separator
 			)
 
 
+
 	def display_tracked_habits(self, habits):
+		"""
+		Displays habits that currently have a streak greater than zero (tracked habits).
+
+		Args:
+			habits (list): A list of tuples, each presumably containing 
+				(habit_id, habit_name, streak, periodicity_type).
+
+		Returns:
+			None
+		"""
 		click.echo(click.style("\n---CURRENTLY TRACKED HABITS (WITH AT LEAST ONE TIME TICKED HABITS)---", fg="cyan", bold=True))
 		if not habits:
 			click.echo(click.style("\nNo habits are currently being tracked.", fg="red", bold=True))
 			return
 
-		click.echo("\n" + "-" * 80)
+		separator = "-" * 80
+
+		click.echo("\n" + separator)
 		click.echo(click.style(" Currently tracked habits ", fg="green", bold=True))
-		click.echo("-" * 80)
+		click.echo(separator)
 
 		for habit in habits:
 			habit_id, habit_name, streak, periodicity = habit
-
 			click.echo(
 				click.style("Habit ID: ", fg="yellow", bold=True) + 
 				click.style(str(habit_id), fg="green") + 
@@ -157,20 +227,22 @@ class CLI:
 				click.style(str(streak), fg="magenta") +
 				click.style(" | Periodicity: ", fg="yellow", bold=True) + 
 				click.style(periodicity.capitalize(), fg="blue", bold=True)
-			)  
-
-		click.echo("-" * 80)
+			)
+		click.echo(separator)
 
 
 
 	def display_menu(self):
+		"""
+		Prints the main menu of available options in the CLI.
+		"""
 		click.echo("\nMain menu:")
 		click.echo("1, Create a new user")
-		# click.echo("2, Delete a user")
+		# click.echo("2, Delete a user") -> later, we probably will use this
 		click.echo("3, Get all user info")
 		click.echo("4, Create a habit for a certain user")
 		click.echo("5, List all habits")
-		# click.echo("6, Delete a certain habit")
+		# click.echo("6, Delete a certain habit") -> later, we probably will use this
 		click.echo("7, List goals with associated habits")
 		click.echo("8, Complete a habit/goal")
 		click.echo("9, Get longest habit streak")
@@ -178,14 +250,38 @@ class CLI:
 		click.echo("11, Get currently tracked habits")
 		click.echo("12, Get longest ever streak for habit")
 
+
+
 	def prompt_for_valid_integer(self, message):
+		"""
+		Prompts the user for an integer input, repeating if the user
+		provides an invalid (non-digit) answer.
+
+		Args:
+			message (str): The prompt displayed to the user.
+
+		Returns:
+			int: A valid integer entered by the user.
+		"""
 		while True:
 			value = click.prompt(message, type=str).strip()
 			if value.isdigit():
 				return int(value)
 			click.echo(click.style("Invalid input. Please enter a valid integer.", fg="red", bold=True))
 
+
+
 	def prompt_for_choice(self, message, choices):
+		"""
+		Prompts the user for a choice from a predefined list of valid options.
+
+		Args:
+			message (str): The prompt to display to the user.
+			choices (list): A list of valid string choices.
+
+		Returns:
+			str: The choice selected by the user, guaranteed to be in `choices`.
+		"""
 		while True:
 			value = click.prompt(message, type=str).strip()
 			if value in choices:
@@ -197,6 +293,11 @@ class CLI:
 
 
 	def option_1_create_user(self):
+		"""
+		CLI flow to create a new user. Prompts the user for information 
+		such as name, age, gender, and role, then calls the controller 
+		to create the user.
+		"""
 		click.echo(click.style("\n[Option 1] Create a new user", fg="cyan", bold=True))
 		click.pause()
 
@@ -205,7 +306,7 @@ class CLI:
 		user_gender = click.prompt("Enter user gender:")
 		user_role = click.prompt("Enter user role:")
 
-		#this layer puts the propagated errors from the layers beneath to the CLI 
+		#this layer displays the propagated errors from the layers beneath to the CLI 
 		try:
 			user = self._controller.create_user(user_name, user_age, user_gender, user_role)
 			click.echo(click.style("User created successfully:\n", fg="green", bold=True) + str(user))
@@ -228,8 +329,10 @@ class CLI:
 
 
 
-
 	def option_3_query_all_user_data(self):
+		"""
+		Retrieves and displays all user data from the controller layer.
+		"""
 		click.echo(click.style("\n[Option 3] Get all user info", fg="cyan", bold=True))
 		click.pause()
 
@@ -242,6 +345,10 @@ class CLI:
 
 
 	def option_4_create_new_habit(self):
+		"""
+		CLI flow to create a new habit for a specific user. 
+		It also creates an associated goal for that habit.
+		"""
 		click.echo(click.style("\n[Option 4] Create a habit for a certain user", fg="cyan", bold=True))
 		click.pause()
 
@@ -264,13 +371,15 @@ class CLI:
 			click.echo(click.style("\n=New Habit and associated Goal created successfully!", fg="green", bold=True))
 			click.echo(click.style(f"\nHabit ID: {new_habit['habit_id']}", fg="yellow"))
 			click.echo(click.style(f"Goal ID: {new_goal['goal_id']}\n", fg="yellow"))
-		
 		except Exception as error:
 			click.echo(click.style(f"Error while creating a new habit and its associated goal: {error}", fg="red", bold=True))
 
 
 
 	def option_5_get_all_habits(self):
+		"""
+		Retrieves and displays all habits currently in the system.
+		"""
 		click.echo(click.style("\n[Option 5] List all habits", fg="cyan", bold=True))
 		click.pause()
 
@@ -296,6 +405,9 @@ class CLI:
 
 
 	def option_7_list_all_goals_with_habits(self):
+		"""
+		Retrieves and displays all goals along with their associated habits.
+		"""
 		click.echo(click.style("\n[Option 7] List goals with associated habits", fg="cyan", bold=True))
 		click.pause()
 
@@ -308,9 +420,15 @@ class CLI:
 
 
 	def option_8_complete_habit(self):
+		"""
+		CLI flow that allows the user to mark a habit as completed/ticked.
+		Lists possible goals/habits first, then prompts for IDs, 
+		and calls the controller to finalize completion.
+		"""
 		click.echo(click.style("\n[Option 8] Complete a habit (tick a goal)", fg="cyan", bold=True))
 		click.pause()
 
+		#display current goals and habits to  see the list of possibilities
 		self.option_7_list_all_goals_with_habits() #gotta form this a bit prettier
 
 		try:
@@ -327,12 +445,14 @@ class CLI:
 
 
 	def option_9_longest_streak_in_database(self):
+		"""
+		Displays the habit with the longest current streak among all users.
+		"""
 		click.echo(click.style("\n[Option 9] Longest Habit Streak in the Database", fg="cyan", bold=True))
 		click.pause()
 
 		try:
 			result = self._controller.calculate_longest_streak()
-
 			if result:
 				#we can style it like this also for the rest
 				click.echo(click.style("\nHabit with the longest current streak:", fg="green", bold=True))
@@ -345,7 +465,11 @@ class CLI:
 			click.echo(click.style(f"Error while querying the longest streak: {error}", fg="red", bold=True))
 
 
+
 	def option_10_same_habit_periodicity(self):
+		"""
+		Groups and displays habits by their periodicity type (daily/weekly).
+		"""
 		click.echo(click.style("\n[Option 10] Group habits by periodicity", fg="cyan", bold=True))
 		click.pause()
 		
@@ -356,7 +480,11 @@ class CLI:
 			click.echo(click.style(f"Error while grouping habits by periodicity: {error}", fg="red", bold=True))
 
 
+
 	def option_11_get_currently_tracked_habits(self):
+		"""
+		Retrieves and displays habits that have an active streak (streak > 0).
+		"""
 		click.echo(click.style("\n[Option 11] Get currently tracked habits", fg="cyan", bold=True))
 		click.pause()
 
@@ -369,6 +497,9 @@ class CLI:
 
 
 	def option_12_get_longest_ever_streak_for_habit(self):
+		"""
+		Prompts for a habit ID and displays the longest recorded streak for that habit.
+		"""
 		click.echo(click.style("\n[Option 12] Get the longest ever streak for a habit", fg="cyan", bold=True))
 		click.pause()
 		
@@ -387,6 +518,11 @@ class CLI:
 
 	
 	def run(self):
+		"""
+		The main event loop for the CLI. Registers a signal handler for Ctrl+c,
+		checks for pending goals, displays the menu, and routes user choices
+		to the appropriate option handlers.
+		"""
 		signal.signal(signal.SIGINT, signal_handler)
 		self._controller.get_pending_goals()
 
@@ -398,7 +534,7 @@ class CLI:
 				self.option_1_create_user() 
 				
 			# if choice == 2:
-			# 	self.option_2_delete_user() #WE CANT DELETE USER ATM because of foreign key issues
+			# 	self.option_2_delete_user() #foreign key issues atm
 
 			if choice == 3:
 				self.option_3_query_all_user_data()

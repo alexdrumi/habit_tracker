@@ -5,7 +5,7 @@ set -e
 
 #define project name and virtual environment directory
 # PROJECT_NAME="backend"
-VENV_DIR="../venv"
+VENV_DIR="venv" #this is for the makefile (root)
 
 # echo "Setting up the Django project '$PROJECT_NAME' in a virtual environment."
 
@@ -37,7 +37,7 @@ fi
 #install required libraries
 echo "Installing required libraries..."
 pip install --upgrade pip
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 
 
 echo "Setup complete. Activate the virtual environment using 'source $VENV_DIR/bin/activate'."
