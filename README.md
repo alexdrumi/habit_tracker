@@ -66,12 +66,6 @@ The Habit Tracker CLI is designed with modularity, testability, and maintainabil
 - All interaction with MariaDB are via repositories, implemented with raw SQL queries.
 
 
-
-## Screenshots
-![Example screenshot](./data/www/screenshot.png)
-
-
-
 ## Setup
 Requirements are:
 - Docker
