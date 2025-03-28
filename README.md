@@ -101,5 +101,9 @@ Requirements are:
    ```bash
    python main.py --seed
 
+2. **Run the test suite:**
+   ```bash
+   pytest apps/
+
 
 ## Sources
