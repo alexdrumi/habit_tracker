@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/alexdrumi/webserv">
-    <img src="data/www/webserver.jpg" alt="MNE EEG Logo" width="550" height="250">
+    <img src="habit_tracker.jpg" alt="Habit Tracker Logo" width="640" height="480">
   </a>
 </div>
 
@@ -21,7 +21,18 @@ A Habit Tracker CLI application built with Django that leverages OOP and design 
 
 
 ## General Information
-Habit Tracker CLI is a command-line application that helps users monitor and improve their daily habits. It uses Django as its backend framework and implements object-oriented design patterns—such as the repository, service, and controller patterns—to ensure the code is modular, testable, and maintainable. The project allows you to:<br>
+
+
+Habit Tracker CLI is a command-line application designed to help users effectively monitor, track, and improve their daily habits. Built with Django as the backend framework, this project emphasizes a clean, scalable architecture through the use of Object-Oriented Design Patterns, including:
+
+**Controller Pattern**: Manages user requests, delegating tasks to the Facade for simple operations and Orchestrator for complex workflows.<br>
+**Factory Pattern**: Constructs domain-specific objects like GoalSubject, ensuring consistency and clean object creation.<br>
+**Observer Pattern**: Reacts to state changes of habits for dynamic decision-making.<br>
+**Facade Pattern**: Provides a simplified interface for routine operations, hiding subsystem complexity.<br>
+**Orchestrator Pattern**: Coordinates complex, chained tasks involving validation, streak updating, and KVI management.<br>
+**Singleton Pattern**: Ensures a single instance of key components, such as the database connection manager, to maintain consistency.<br>
+
+The project allows you to:<br>
 
 - Create, update, and delete user accounts.<br>
 - Set up daily or weekly habits..<br>
@@ -29,7 +40,11 @@ Habit Tracker CLI is a command-line application that helps users monitor and imp
 - Track progress with timestamps and streak calculations.
 - Generate reminders and perform basic analytics.
 
-.<br>
+
+
+The Habit Tracker CLI is designed with modularity, testability, and maintainability in mind, providing a solid foundation for future enhancements, including potential integration with machine learning analysis for user behavior insights.
+
+<br>
 
 
 ## Technologies Used
@@ -106,4 +121,9 @@ Requirements are:
    pytest apps/
 
 
-## Sources
+## Media
+
+**Demo GIFs:**
+
+- **Training Process:**  
+  ![Training Process](assets/training_1.gif)
