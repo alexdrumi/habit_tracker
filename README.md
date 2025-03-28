@@ -125,5 +125,5 @@ Requirements are:
 
 **Demo GIFs:**
 
-- **Training Process:**  
-  ![Training Process](assets/training_1.gif)
+- **Example workflow:**  
+  ![Workflow](assets/habit_workflow.gif)
