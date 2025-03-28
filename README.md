@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/alexdrumi/webserv">
-    <img src="habit_tracker.jpg" alt="Habit Tracker Logo" width="640" height="480">
+    <img src="assets/habit_tracker.jpg" alt="Habit Tracker Logo" width="640" height="480">
   </a>
 </div>
 
