@@ -122,7 +122,7 @@ class UserRepository:
 			role = cursor.fetchone()
 			if role:
 				return role[0]
-			#insert the new role.since user_role is the primary key, return it directly
+			#insert the new role.since user_role is the primary key thenreturn it directly
 			query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
 			cursor.execute(query, (user_role,))
 			self._db._connection.commit()
