@@ -79,6 +79,16 @@ class HabitController:
 		Returns:
 			dict: Details about the newly created habit.
 		"""
+
+		''' this comes from the underlying repository
+		return {
+						'habit_id': cursor.lastrowid,
+						'habit_action': habit_action,
+						'habit_streak': habit_streak,
+						'habit_periodicity_type': habit_periodicity_type,
+						'habit_user_id': habit_user_id,
+					}
+		'''
 		return self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
 
 

@@ -39,6 +39,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from apps.core.api import router as core_router
 from apps.users.api import router as users_router
+from apps.habits.api import router as habit_router
+
 app = FastAPI(title="Habit Tracker API", version="0.1")
 # app.include_router(user_router)
 #https://fastapi.tiangolo.com/tutorial/cors/#use-corsmiddleware
@@ -52,6 +54,7 @@ app.add_middleware( #for now, but this will eventually kill log in etc, cookies
 
 app.include_router(core_router)
 app.include_router(users_router)
+app.include_router(habit_router)
 
 @app.get("/")
 def root():

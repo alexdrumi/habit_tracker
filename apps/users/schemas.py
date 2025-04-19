@@ -1,9 +1,8 @@
-from typing import Literal, Union
+from typing import Literal, Union, Annotated
+from pydantic import BaseModel, Field
 
-from typing import Annotated
 
-from pydantic import BaseModel, Field, schema_json_of
-
+#class UserRole(str: Enum): #we could potentionally change the role to an ENUM?
 
 class UserCreate(BaseModel):
     user_name: str = Field(..., example="Beno")
