@@ -1,5 +1,8 @@
 from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
+from apps.users.utils.mappers import map_to_user_read_schema
+from apps.users.schemas import UserRead, UserCreate
+from typing import List
 
 
 class HabitController:
@@ -40,14 +43,15 @@ class HabitController:
 
 
 
-	def query_all_users(self):
+	def query_all_users(self) -> List[UserRead]:
 		"""
 		Retrieves all users stored in the system.
 
 		Returns:
-			dict: A dictionary (or similar structure) containing all user data.
+			dict: A list of UserRead pydantic schemas for API response.
 		"""
-		return self._facade.query_all_user_data()
+		raw_users = self._facade.query_all_user_data()
+		return [map_to_user_read_schema(user) for user in raw_users]
 
 
 

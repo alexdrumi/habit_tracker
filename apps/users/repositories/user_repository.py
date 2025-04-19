@@ -294,7 +294,7 @@ class UserRepository:
 					An empty list if no users are found.
 		"""
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT user_id, user_name FROM app_users;"
+			query = "SELECT user_id, user_name, user_age, user_role_id FROM app_users;"
 			cursor.execute(query)
 			result = cursor.fetchall()
 

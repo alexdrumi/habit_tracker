@@ -1,10 +1,3 @@
-from typing import Literal, Union
-
-from typing import Annotated
-
-from pydantic import BaseModel, Field, schema_json_of
-
-
 class UserCreate(BaseModel):
     user_name: str = Field(..., example="Beno")
     user_age: int = Field(..., ge=1, le=110, example=30)

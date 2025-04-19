@@ -17,12 +17,14 @@ from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 from apps.analytics.repositories.analytics_repository import AnalyticsRepository
 from apps.analytics.services.analytics_service import AnalyticsService
 
+from functools import lru_cache
 
 
 router = APIRouter(
 	prefix="/api",
 	tags = ["Habit_tracker_API"]
 )
+
 
 def get_database():
 	database = MariadbConnection()
@@ -31,8 +33,8 @@ def get_database():
 	except ValueError as e:
 		raise HTTPException(status_code=422, detail=str(e))
 
-
-
+#only triggered in the first request, then reuse it. Prefer this to a singleton for now
+@lru_cache
 def create_habit_controller(database = Depends(get_database)) -> HabitController:
 	user_repository = UserRepository(database)
 	user_service = UserService(user_repository)
@@ -62,87 +64,142 @@ def create_habit_controller(database = Depends(get_database)) -> HabitController
 	return habit_controller
 
 
-#crete user
-@router.post("/create_user", status_code=status.HTTP_201_CREATED)
-def create_user(
-	user_name: str,
-	user_age: int,
-	user_gender: str,
-	user_role: str,
-	ctrl: HabitController = Depends(create_habit_controller)):
+#---USERS---
+# @router.post("/create_user", status_code=status.HTTP_201_CREATED)
+# def create_user(
+# 	user_name: str,
+# 	user_age: int,
+# 	user_gender: str,
+# 	user_role: str,
+# 	ctrl: HabitController = Depends(create_habit_controller)):
 
-	try:
-		return ctrl.create_user(user_name, user_age, user_gender, user_role)
-	except ValueError as error:
-		raise HTTPException(status_code=422, detail=str(error))
+# 	try:
+# 		return ctrl.create_user(user_name, user_age, user_gender, user_role)
+# 	except ValueError as error:
+# 		raise HTTPException(status_code=422, detail=str(error))
 
 
 #query all user data
-@router.get("/query_all_users", status_code=status.HTTP_200_OK)
-def query_all_users(ctrl: HabitController = Depends(create_habit_controller)):
+# @router.get("/query_all_users", status_code=status.HTTP_200_OK)
+# def query_all_users(ctrl: HabitController = Depends(create_habit_controller)):
+# 	try:
+# 		return ctrl.query_all_users()
+# 	except Exception as error:
+# 		raise HTTPException(status_code=400, detail=str(error))
+
+
+#---HABITS---
+#create a habit
+@router.post("/create_a_new_habit", status_code=status.HTTP_201_CREATED)
+def create_new_habit(
+	habit_name: str,
+	habit_action: str,
+	user_id: int,
+	habit_periodicity_type: int,
+	habit_goal_name: str,
+	habit_goal_description: str,
+	ctrl: HabitController = Depends(create_habit_controller)):
+
+	periodicity_type = 'daily' if int(habit_periodicity_type) == 1 else 'weekly'
+	target_kvi_val = 1.0 if periodicity_type == 'daily' else 7.0
+
 	try:
-		return ctrl.query_all_users()
+		new_habit = ctrl.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
+		new_goal = ctrl.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=habit_goal_description)
+		
+	except Exception as error:
+		raise HTTPException(status_code=422, detail=str(error))
+
+
+
+#get all the habits
+@router.get("/get_all_habits")
+def get_all_habits(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		all_habits = ctrl.get_all_habits()
+		return all_habits
 	except Exception as error:
 		raise HTTPException(status_code=400, detail=str(error))
 
 
-#create a habit
-@router.post("/create_a_new_habit", status_code=status.HTTP_201_CREATED):
-	def option_4_create_new_habit(
-	habit_name: str,
-	habit_action: str,
-	user_id: int,
-	periodicity_type: str,
-	ctrl: HabitController = Depends(create_habit_controller)):):
+#list goals and habits
+@router.get("/get_goals_and_habits")
+def list_all_goals_with_habits(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		goals_and_related_habits = ctrl.query_goals_and_related_habits()
+		return goals_and_related_habits
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
+#get list of tickable habits
+@router.get("/list_tickable_habits")
+def fetch_ready_to_tick_goals(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		tickable_habits_and_goals = ctrl.fetch_ready_to_tick_goals_of_habits()
+		return tickable_habits_and_goals
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
-	def option_4_create_new_habit(self):
-		"""
-		CLI flow to create a new habit for a specific user. 
-		It also creates an associated goal for that habit.
-		"""
-		click.echo(click.style("\n[Option 4] Create a habit for a certain user", fg="cyan", bold=True))
-		click.pause()
-
-		click.echo(click.style("\nStep 1: Habit Basic Information", fg="yellow", bold=True))
-		habit_name = click.prompt(click.style("Enter the habit name", fg="white", bold=True), type=str)
-		habit_action = click.prompt(click.style("Enter the habit action", fg="white", bold=True), type=str)
-		user_id = self.prompt_for_valid_integer(click.style("Enter the user ID for whom this habit is being created", fg="white", bold=True))
-		habit_periodicity_type = self.prompt_for_choice(
-			click.style("Select the periodicity type (1 for DAILY, 2 for WEEKLY)", fg="white", bold=True),
-			['1', '2'])
-	
-		periodicity_type = 'daily' if int(habit_periodicity_type) == 1 else 'weekly'
-		target_kvi_val = 1.0 if periodicity_type == 'daily' else 7.0
-		habit_goal_name = click.prompt(click.style("Enter the name of the goal associated with this habit", fg="white", bold=True), type=str).strip()
-		habit_goal_description = click.prompt(click.style("Describe the goal", fg="white", bold=True), type=str).strip()
-	
+#tick a habit
+@router.post("/complete_habit")
+def complete_habit(
+	habit_id: int,
+	goal_id: int,
+	ctrl: HabitController = Depends(create_habit_controller)):
 		try:
-			new_habit = self._controller.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
-			new_goal = self._controller.create_a_goal(goal_name=habit_goal_name, habit_id=new_habit['habit_id'], target_kvi_value=target_kvi_val, current_kvi_value=0.0, goal_description=habit_goal_description)
-			click.echo(click.style("\n=New Habit and associated Goal created successfully!", fg="green", bold=True))
-			click.echo(click.style(f"\nHabit ID: {new_habit['habit_id']}", fg="yellow"))
-			click.echo(click.style(f"Goal ID: {new_goal['goal_id']}\n", fg="yellow"))
+			ctrl.complete_a_habit(int(habit_id), int(goal_id))
 		except Exception as error:
-			click.echo(click.style(f"Error while creating a new habit and its associated goal: {error}", fg="red", bold=True))
+			raise HTTPException(status_code=422, detail=str(error))
 
 
 
+#---ANALYTICS---
+#get longest streak in database
+@router.get("/get_longest_streak")
+def longest_streak_in_database(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		result = ctrl.calculate_longest_streak()
+		return result
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
 
+#get the same habit per types
+@router.get("/get_same_habit_periodicity")
+def same_habit_periodicity(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		result = ctrl.get_same_periodicity_type_habits()
+		return result
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
 
+#get currently tracked habits
+@router.get("/get_currently_tracked_habits")
+def currently_tracked_habits(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		result = ctrl.get_currently_tracked_habits()
+		return result
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
 
-
-
-
-
+#get longest streak ever for a habit
+@router.get("/get_longest_ever_streak")
+def get_longest_ever_streak_for_habit(
+	habit_id:int, 
+	ctrl: HabitController = Depends(create_habit_controller)):
+	#we should call option 5, get all habits for this, then offer to select a habit id
+	try:
+		result =  ctrl.longest_streak_for_habit(habit_id=habit_id)
+		return result
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
 
