@@ -3,6 +3,8 @@ from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 from apps.users.utils.mappers import map_to_user_read_schema
 from apps.habits.utils.mappers import map_to_habit_read_schema
 from apps.goals.utils.mappers import map_to_goals_and_habits_read_schema
+from apps.analytics.utils.mappers import map_to_habit_analytics_schema
+map_to_habit_analytics_schema
 from apps.users.schemas import UserRead, UserCreate
 from apps.habits.schemas import HabitRead, HabitCreate
 from typing import List
@@ -217,7 +219,10 @@ class HabitController:
 		Returns:
 			list of tuples: The habit_id, habit_name, habit_streak of the longest streak.
 		"""
-		return self._facade.calculate_longest_streak()
+		raw_streaks = self._facade.calculate_longest_streak()
+		# result = [map_to_habit_analytics_schema(streak) for streak in raw_streaks]
+		# CONTINUE FROM HERE
+		return raw_streaks
 
 
 

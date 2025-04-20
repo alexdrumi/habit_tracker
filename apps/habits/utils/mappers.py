@@ -1,5 +1,6 @@
 from apps.habits.schemas import PeriodicityType, HabitCreate, HabitRead
 
+
 def map_to_habit_read_schema(habit_info: dict) -> HabitRead:
 	if habit_info is None or len(habit_info) == 0:
 		return
@@ -16,3 +17,4 @@ def map_to_habit_read_schema(habit_info: dict) -> HabitRead:
 	habit_user_id=int(habit_info['habit_user_id']),
 	)
 	return read_schema
+

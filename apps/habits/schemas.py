@@ -31,3 +31,9 @@ class HabitRead(BaseModel): #so these are basically DTO s, what HTTP expects fro
 class HabitSummary(BaseModel):
     habit_id: int
     habit_name: str
+
+
+class HabitAnalytics(BaseModel):
+    habit_id: int
+    habit_name: str
+    habit_streak: int

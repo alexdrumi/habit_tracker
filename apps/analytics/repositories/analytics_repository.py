@@ -202,6 +202,7 @@ class AnalyticsRepository:
 			
 			cursor.execute(query)
 			result = cursor.fetchone()
+
 			#no commit needed, nothing changed
 			if result:
 				return result
