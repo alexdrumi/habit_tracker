@@ -2,6 +2,7 @@ from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 from apps.users.utils.mappers import map_to_user_read_schema
 from apps.habits.utils.mappers import map_to_habit_read_schema
+from apps.goals.utils.mappers import map_to_goals_and_habits_read_schema
 from apps.users.schemas import UserRead, UserCreate
 from apps.habits.schemas import HabitRead, HabitCreate
 from typing import List
@@ -115,15 +116,18 @@ class HabitController:
 
 
 
-	def get_all_habits(self):
+	def get_all_habits(self) -> List[HabitRead]:
 		"""
 		Retrieves all habits in the system.
 
 		Returns:
 			list: A list of habit entries.
 		"""
-		return self._facade.get_all_habits()
-
+		"SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
+		raw_habits = self._facade.get_all_habits()
+		print(raw_habits)
+		return [map_to_habit_read_schema(habit) for habit in raw_habits]
+		 
 
 
 	def delete_a_habit(self, habit_id):
@@ -172,7 +176,8 @@ class HabitController:
 		Returns:
 			list: A list of goals that are eligible for completion updates.
 		"""
-		return self._facade.fetch_ready_to_tick_goals_of_habits()
+		raw_goals = self._facade.fetch_ready_to_tick_goals_of_habits()
+		return [map_to_goals_and_habits_read_schema(goal) for goal in raw_goals]
 
 
 

@@ -202,7 +202,7 @@ class GoalService:
 		Fetches goals joined with related habit data.
 
 		Returns:
-			list: A list of tuples containing goal and habit information.
+			list: A list of dicts containing goal and habit information.
 		"""
 		inner_joined_goals_and_related_habits = self._repository.query_goals_and_related_habits()
 		return inner_joined_goals_and_related_habits

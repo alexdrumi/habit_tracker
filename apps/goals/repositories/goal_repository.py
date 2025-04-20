@@ -325,7 +325,7 @@ class GoalRepository:
 		Returns:
 			list: A list of tuples containing goal and habit fields, or empty list of none is found.
 		"""
-		with self._db._connection.cursor() as cursor:
+		with self._db._connection.cursor(dictionary=True) as cursor:
 			query = "SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON goals.habit_id_id = habits.habit_id;"
 			cursor.execute(query)
 

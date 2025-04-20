@@ -164,6 +164,7 @@ class HabitOrchestrator:
 					pass
 					# print(f'Goal {k} was ticked query_goal_of_a_habit')
 
+		print(f"{tickable_goals_and_habits} ARE THE TICKABLE GOALS AND HABITS IN THE ORCHESTRATOR")
 		return tickable_goals_and_habits
 
 

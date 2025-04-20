@@ -20,8 +20,14 @@ class HabitCreate(BaseModel):
 
 
 class HabitRead(BaseModel): #so these are basically DTO s, what HTTP expects from both client and server side
+    habit_name: str
     habit_id: int
     habit_action: str
     habit_streak: int
     habit_periodicity_type: str
     habit_user_id: int
+
+
+class HabitSummary(BaseModel):
+    habit_id_id: int
+    habit_name: str

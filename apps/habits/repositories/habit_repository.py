@@ -121,6 +121,7 @@ class HabitRepository:
 			cursor.execute(query, (habit_name, habit_action, habit_streak, habit_periodicity_type, habit_periodicity_value, habit_user_id))
 			self._db._connection.commit()
 			return {
+				'habit_name': habit_name,
 				'habit_id': cursor.lastrowid,
 				'habit_action': habit_action,
 				'habit_streak': habit_streak,
@@ -338,16 +339,15 @@ class HabitRepository:
 			list: A list of tuples, each containing habit fields
 			(e.g., habit_id, habit_name, habit_action, habit_user_id), or an empty list.
 		"""
-		with self._db._connection.cursor() as cursor:
-			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
+		with self._db._connection.cursor(dictionary=True) as cursor:
+			query = "SELECT habit_name, habit_id, habit_action, habit_streak, habit_periodicity_type, habit_user_id FROM habits;"
 			cursor.execute(query)
 			habits = cursor.fetchall()
-				
+			
 			if not habits:
 				return []
 			
 			return habits
-		
 
 
 	@handle_habit_repository_errors
