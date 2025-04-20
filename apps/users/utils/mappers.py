@@ -9,5 +9,3 @@ def map_to_user_read_schema(user_info: tuple) -> UserRead:
 		user_role =  user_info[3]
 	)
 	return read_schema
-
-

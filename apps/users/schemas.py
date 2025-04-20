@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 
 #class UserRole(str: Enum): #we could potentionally change the role to an ENUM?
-
 class UserCreate(BaseModel):
     user_name: str = Field(..., example="Beno")
     user_age: int = Field(..., ge=1, le=110, example=30)

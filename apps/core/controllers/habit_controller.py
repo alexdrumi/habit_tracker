@@ -1,9 +1,10 @@
 from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
 from apps.users.utils.mappers import map_to_user_read_schema
+from apps.habits.utils.mappers import map_to_habit_read_schema
 from apps.users.schemas import UserRead, UserCreate
+from apps.habits.schemas import HabitRead, HabitCreate
 from typing import List
-
 
 class HabitController:
 	def __init__(self, habit_tracker_facade: HabitTrackerFacadeImpl, habit_tracker_orchestrator: HabitOrchestrator):
@@ -12,7 +13,7 @@ class HabitController:
 
 
 
-	def create_user(self, user_name, user_age, user_gender, user_role):
+	def create_user(self, user_name, user_age, user_gender, user_role) -> UserRead:
 		"""
 		Creates a new user.
 
@@ -23,9 +24,11 @@ class HabitController:
 			user_role (str): The user's role (e.g., "admin" or "participant").
 
 		Returns:
-			dict: Information about the newly created user.
+			UserReadSchema: Information about the newly created user.
 		"""
-		return self._facade.create_user(user_name, user_age, user_gender, user_role)
+		new_user = self._facade.create_user(user_name, user_age, user_gender, user_role)
+		return map_to_user_read_schema(new_user)
+
 
 
 
@@ -48,7 +51,7 @@ class HabitController:
 		Retrieves all users stored in the system.
 
 		Returns:
-			dict: A list of UserRead pydantic schemas for API response.
+			UserReadSchemas: A list of UserRead pydantic schemas for API response.
 		"""
 		raw_users = self._facade.query_all_user_data()
 		return [map_to_user_read_schema(user) for user in raw_users]
@@ -66,7 +69,7 @@ class HabitController:
 
 
 
-	def create_a_habit_with_validation(self, habit_name, habit_action, periodicity_type, user_id):
+	def create_a_habit_with_validation(self, habit_name, habit_action, periodicity_type, user_id) -> HabitRead:
 		"""
 		Creates a new habit, ensuring the user is valid.
 
@@ -77,11 +80,11 @@ class HabitController:
 			user_id (int): The ID of the user who owns this habit.
 
 		Returns:
-			dict: Details about the newly created habit.
+			HabitReadSchema: Details about the newly created habit.
 		"""
 
 		''' this comes from the underlying repository
-		return {
+					return {
 						'habit_id': cursor.lastrowid,
 						'habit_action': habit_action,
 						'habit_streak': habit_streak,
@@ -89,7 +92,8 @@ class HabitController:
 						'habit_user_id': habit_user_id,
 					}
 		'''
-		return self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
+		new_habit = self._facade.create_a_habit_with_validation(habit_name, habit_action, periodicity_type, user_id)
+		return map_to_habit_read_schema(new_habit)
 
 
 

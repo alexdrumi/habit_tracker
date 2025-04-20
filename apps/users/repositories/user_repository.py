@@ -157,7 +157,8 @@ class UserRepository:
 				return {
 					'user_id': cursor.lastrowid,
 					'user_name': user_name,
-					'user_role': user_role
+					'user_role': user_role,
+					'user_age': user_age
 				}
 	
 			except IntegrityError as ierror:

@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 class PeriodicityType(str, Enum):
-    daily = 'daily',
+    daily = 'daily'
     weekly = 'weekly'
     # 3 = 'monthyl'
     def set_default_kvi(self) -> float: #we can already assign a kvi by default here

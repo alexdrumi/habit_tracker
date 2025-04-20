@@ -16,11 +16,12 @@ def create_user(
 	payload: UserCreate,
 	ctrl: HabitController = Depends(create_habit_controller)):
 
-	try:
+	try: #mapping happens in the controller
 		return ctrl.create_user(payload.user_name, 
 						  payload.user_age, 
 						  payload.user_gender, 
 						  payload.user_role)
+		
 	except ValueError as error:
 		raise HTTPException(status_code=422, detail=str(error))
 
