@@ -123,13 +123,13 @@ def create_new_habit(
 
 
 #list goals and habits
-@router.get("/get_goals_and_habits")
-def list_all_goals_with_habits(ctrl: HabitController = Depends(create_habit_controller)):
-	try:
-		goals_and_related_habits = ctrl.query_goals_and_related_habits()
-		return goals_and_related_habits
-	except Exception as error:
-		raise HTTPException(status_code=400, detail=str(error))
+# @router.get("/get_goals_and_habits")
+# def list_all_goals_with_habits(ctrl: HabitController = Depends(create_habit_controller)):
+# 	try:
+# 		goals_and_related_habits = ctrl.query_goals_and_related_habits()
+# 		return goals_and_related_habits
+# 	except Exception as error:
+# 		raise HTTPException(status_code=400, detail=str(error))
 
 
 # #get list of tickable habits
@@ -142,16 +142,16 @@ def list_all_goals_with_habits(ctrl: HabitController = Depends(create_habit_cont
 # 		raise HTTPException(status_code=400, detail=str(error))
 
 
-#tick a habit
-@router.post("/complete_habit")
-def complete_habit(
-	habit_id: int,
-	goal_id: int,
-	ctrl: HabitController = Depends(create_habit_controller)):
-		try:
-			ctrl.complete_a_habit(int(habit_id), int(goal_id))
-		except Exception as error:
-			raise HTTPException(status_code=422, detail=str(error))
+# #tick a habit
+# @router.post("/complete_habit")
+# def complete_habit(
+# 	habit_id: int,
+# 	goal_id: int,
+# 	ctrl: HabitController = Depends(create_habit_controller)):
+# 		try:
+# 			ctrl.complete_a_habit(int(habit_id), int(goal_id))
+# 		except Exception as error:
+# 			raise HTTPException(status_code=422, detail=str(error))
 
 
 

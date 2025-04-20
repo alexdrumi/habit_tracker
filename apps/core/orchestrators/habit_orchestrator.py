@@ -89,7 +89,7 @@ class HabitOrchestrator:
 			difference = now - goal_subject._goal_data['last_occurence']
 			waiting_time = timedelta(hours=24) - difference #incorrect caltulation for now
 			# print(f"It is too early to tick this habit, you have to wait {waiting_time} hours.")
-			click.echo(click.style(f"\nIt is too early to tick this habit. You need to wait {waiting_time} hours before you can tick it again.", fg="red", bold=True))
+			# click.echo(click.style(f"\nIt is too early to tick this habit. You need to wait {waiting_time} hours before you can tick it again.", fg="red", bold=True))
 			return
 		
 		elif goal_subject.is_expired() == True:
@@ -136,9 +136,8 @@ class HabitOrchestrator:
 			last_tick = v['occurence_date']
 			target_kvi = v['target_kvi_value']
 
-			print(f"{last_tick} is the last tick here")
+
 			if last_tick is None:
-				print('\n\n\nTickable, thus we can return goal and habit id.')
 				tickable_goals_and_habits.append(v)
 				continue 
 
@@ -163,8 +162,6 @@ class HabitOrchestrator:
 				else:
 					pass
 					# print(f'Goal {k} was ticked query_goal_of_a_habit')
-
-		print(f"{tickable_goals_and_habits} ARE THE TICKABLE GOALS AND HABITS IN THE ORCHESTRATOR")
 		return tickable_goals_and_habits
 
 

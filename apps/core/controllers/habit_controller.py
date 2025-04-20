@@ -125,7 +125,6 @@ class HabitController:
 		"""
 		"SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
 		raw_habits = self._facade.get_all_habits()
-		print(raw_habits)
 		return [map_to_habit_read_schema(habit) for habit in raw_habits]
 		 
 
@@ -151,7 +150,10 @@ class HabitController:
 		Returns:
 			dict: A structured mapping of goals and their related habit information.
 		"""
-		return self._facade.query_goals_and_related_habits()
+		#"SELECT goal_name, goal_id, habit_id_id, habit_name from goals INNER JOIN habits ON goals.habit_id_id = habits.habit_id;"
+		raw_goals_and_habits = self._facade.query_goals_and_related_habits()
+		# print(f'{raw_goals_and_habits} IS RAW GOALS AND HABITS')
+		return [map_to_goals_and_habits_read_schema(goal_and_habit) for goal_and_habit in raw_goals_and_habits]
 
 
 
@@ -178,6 +180,7 @@ class HabitController:
 		"""
 		raw_goals = self._facade.fetch_ready_to_tick_goals_of_habits()
 		return [map_to_goals_and_habits_read_schema(goal) for goal in raw_goals]
+		
 
 
 

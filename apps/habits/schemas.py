@@ -29,5 +29,5 @@ class HabitRead(BaseModel): #so these are basically DTO s, what HTTP expects fro
 
 
 class HabitSummary(BaseModel):
-    habit_id_id: int
+    habit_id: int
     habit_name: str
