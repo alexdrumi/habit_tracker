@@ -157,13 +157,13 @@ def create_new_habit(
 
 #---ANALYTICS---
 #get longest streak in database
-# @router.get("/get_longest_streak")
-# def longest_streak_in_database(ctrl: HabitController = Depends(create_habit_controller)):
-# 	try:
-# 		result = ctrl.calculate_longest_streak()
-# 		return result
-# 	except Exception as error:
-# 		raise HTTPException(status_code=400, detail=str(error))
+@router.get("/get_longest_streak")
+def longest_streak_in_database(ctrl: HabitController = Depends(create_habit_controller)):
+	try:
+		result = ctrl.calculate_longest_streak()
+		return result
+	except Exception as error:
+		raise HTTPException(status_code=400, detail=str(error))
 
 
 
