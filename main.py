@@ -10,37 +10,37 @@ import argparse
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 #ensure that we can locate the apps 
-sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, "backend"))
 
 #setuop the config otherwise cli doesnt see the modules
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from apps.database.database_manager import MariadbConnection
-from apps.users.repositories.user_repository import UserRepository
-from apps.users.services.user_service import UserService
-from apps.habits.repositories.habit_repository import HabitRepository
-from apps.habits.services.habit_service import HabitService
-from apps.goals.repositories.goal_repository import GoalRepository
-from apps.goals.services.goal_service import GoalService
-from apps.progresses.repositories.progress_repository import ProgressesRepository
-from apps.progresses.services.progress_service import ProgressesService
-from apps.reminders.services.reminder_service import ReminderService
-from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
-from apps.core.controllers.habit_controller import HabitController
-from apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
-from apps.analytics.repositories.analytics_repository import AnalyticsRepository
-from apps.analytics.services.analytics_service import AnalyticsService
+from backend.apps.database.database_manager import MariadbConnection
+from backend.apps.users.repositories.user_repository import UserRepository
+from backend.apps.users.services.user_service import UserService
+from backend.apps.habits.repositories.habit_repository import HabitRepository
+from backend.apps.habits.services.habit_service import HabitService
+from backend.apps.goals.repositories.goal_repository import GoalRepository
+from backend.apps.goals.services.goal_service import GoalService
+from backend.apps.progresses.repositories.progress_repository import ProgressesRepository
+from backend.apps.progresses.services.progress_service import ProgressesService
+from backend.apps.reminders.services.reminder_service import ReminderService
+from backend.apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
+from backend.apps.core.controllers.habit_controller import HabitController
+from backend.apps.core.orchestrators.habit_orchestrator import HabitOrchestrator
+from backend.apps.analytics.repositories.analytics_repository import AnalyticsRepository
+from backend.apps.analytics.services.analytics_service import AnalyticsService
 
 from cli import CLI
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apps.core.api import router as core_router
-from apps.users.api import router as users_router
-from apps.habits.api import router as habit_router
-from apps.goals.api import router as goal_router
-from apps.analytics.api import router as analytics_router
+from backend.apps.core.api import router as core_router
+from backend.apps.users.api import router as users_router
+from backend.apps.habits.api import router as habit_router
+from backend.apps.goals.api import router as goal_router
+from backend.apps.analytics.api import router as analytics_router
 
 app = FastAPI(title="Habit Tracker API", version="0.1")
 #app.include_router(user_router)
@@ -218,4 +218,12 @@ def main():
 
 	
 if __name__ == '__main__':
-	main()
+	# main()
+	import uvicorn
+
+	uvicorn.run(
+		"main:app",         #"<module>:<app_instance>"
+		host="0.0.0.0",     #listen on all interfaces (for docker for now)
+		port=8000,
+		reload=True,        #dev mode
+	)

@@ -32,18 +32,24 @@
 # CMD ["scripts/entrypoint.sh"]
 
 
-
 FROM python:3.13-slim-bookworm
 
+#install os packages needed to build mysqlclient
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       build-essential \
+       default-libmysqlclient-dev \
+       pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /apps
+WORKDIR /app
 
-COPY requirements.txt . 
-
+# copy & install Python deps
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# copy your code
 COPY apps ./apps
 
 EXPOSE 8000
-
 CMD ["bash", "../scripts/entrypoint.sh"]

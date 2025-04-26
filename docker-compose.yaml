@@ -1,81 +1,18 @@
-# version: '3.8'
-
-# #---MariaDB service---
-# services:
-#   mariadb:
-#     container_name: mariadb
-#     build:
-#       context: .
-#       dockerfile: dockerfiles/Dockerfile.mariadb
-#     restart: always
-#     env_file:
-#       - .env
-#     ports:
-#       - "5000:3306"
-#     volumes:
-#       - database_prod:/var/lib/mysql
-#       #- ./init.sql:/docker-entrypoint-initdb.d/init.sql->could write a grant all privileges on habit and test habit to bmajor in prod
-#     healthcheck:
-#       #select 1 checks if the db is operational, client is mariadb not mysql
-#       test: ["CMD-SHELL", "mariadb -u root -p${MARIADB_ROOT_PASSWORD} -e 'SELECT 1' || exit 1"]
-#       start_period: "30s"  #wWait 20 seconds before starting health checks, usually its fine
-#       interval: "5s"
-#       timeout: "20s"
-#       retries: 5
-#     networks:
-#       - habit_network
-
-# #---Django service---
-#   django:
-#     container_name: django
-#     build:
-#       context: . #look for dockerfile in the current directory
-#       dockerfile: dockerfiles/Dockerfile.django #when using docker-compose up --build, it calls this file
-#     env_file:
-#       - .env
-#     ports:
-#       - "8000:8000"
-#     volumes: #remove this from production and use the dockerfile copy commands
-#       - .:/app #maps the host dir to the /app in the container, for dev, later copy backend folder
-#     depends_on: 
-#       mariadb:
-#         condition: service_healthy
-#     networks:
-#       - habit_network
-
-# volumes:
-#   database_prod:
-
-# networks:
-#   habit_network:
-#     driver: bridge
-
-
-
 version: '3.8'
 services:
   mariadb:
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile.mariadb
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MARIADB_DATABASE}
-    ports:
-      - "5000:3306"
+    image: mariadb:10.9
+    env_file: .env
+    ports: ["5000:3306"]
     volumes:
-      - database_prod:/var/lib/mysql
+      - db_data:/var/lib/mysql
 
   backend:
     build:
       context: ./backend
       dockerfile: ../dockerfiles/Dockerfile.backend
-    env_file:
-      - .env
-    volumes:
-      - ./backend/app:/app/app    # live-reload code
-    ports:
-      - "8000:8000"
+    env_file: .env
+    ports: ["8000:8000"]
     depends_on:
       - mariadb
 
@@ -84,12 +21,13 @@ services:
       context: ./frontend
       dockerfile: ../dockerfiles/Dockerfile.frontend
     volumes:
-      - ./frontend/src:/usr/src/app/src
+      - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
-    ports:
-      - "3000:3000"
+    ports: ["5173:5173"] #vite default
     environment:
-      CHOKIDAR_USEPOLLING: "true"
+      - CHOKIDAR_USEPOLLING=true #could also include it in the .env file
+      #Creating a .env file with CHOKIDAR_USEPOLLING=true worked for me (see stackoverflow.com/a/43281575/470749 and create-react-app.dev/docs/troubleshooting and stackoverflow.com/a/57691204/470749 ) – 
+    command: npm run dev
 
 volumes:
-  database_prod:
+  db_data:

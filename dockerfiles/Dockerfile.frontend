@@ -1,10 +1,13 @@
 FROM node:18-alpine
 
-
 WORKDIR /usr/src/app
+
+#copy lockfile + package.json first so Docker layer-caches installs
 COPY package*.json ./
-RUN npm install
+
+RUN npm install           #now package.json exists this ll  succeed
 
 COPY . .
+
 EXPOSE 3000
-CMD ["nom", "start"]
+CMD ["npm", "start"]

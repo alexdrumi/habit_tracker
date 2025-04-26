@@ -3,7 +3,7 @@ import os
 import environ
 
 from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 # MARIADB_ROOT_PASSWORD=gc51cFzuxfAWr9DkROHzFgkrQnZDWxIuNrNNOIIWadA
 # MARIADB_DATABASE=habit
