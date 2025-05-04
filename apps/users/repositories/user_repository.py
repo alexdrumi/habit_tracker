@@ -7,16 +7,23 @@ class UserRepositoryError(Exception):
 	def __init__(self, message="An unexpected error occured in user repository."):
 		super().__init__(message)
 
+
+
 class UserNotFoundError(UserRepositoryError):
 	'''Exception raised when user is not found.'''
 	def __init__(self, user_name_or_id):
 		message = f"User is not found with user name/id: {user_name_or_id}"
 		super().__init__(message)
 
+
+
+
 class RoleCreationError(UserRepositoryError):
 	'''Exception raised when role creation failes.'''
 	def __init__(self, message= "Failed to create a role."):
 		super().__init__(message)
+
+
 
 class AlreadyExistError(UserRepositoryError):
 	'''Exception raised when user creation failes, e.g.: duplicate input.'''
@@ -24,14 +31,17 @@ class AlreadyExistError(UserRepositoryError):
 		message = f"User already found with user name:  {user_name}. Create user with another name."
 		super().__init__(message)
 
+
+
 def handle_user_repository_errors(f):
-	'''A decorator to make exceptions of database errors cleaner.'''
+	'''A decorator to make exceptions in database errors cleaner.'''
 	def exception_wrapper(self, *args, **kwargs):
 		try: #all functions, create, delete etc wil be wrapped in this try block, not sure how to pass already exist error username or id
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			raise AlreadyExistError(user_name=args[0]) from ierror #id is args[0]
+			user_identifier = args[0] if args else "unknown"
+			raise AlreadyExistError(user_identifier) from ierror #id is args[0]
 		except UserRepositoryError as urerror:
 			raise urerror
 		except Exception as error:
@@ -150,19 +160,15 @@ class UserRepository:
 		"""
 		with self._db._connection.cursor() as cursor:
 			user_role_id = self.create_a_role(user_role)
-			try:
-				query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
-				cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
-				self._db._connection.commit()
-				return {
-					'user_id': cursor.lastrowid,
-					'user_name': user_name,
-					'user_role': user_role
-				}
+			query = "INSERT INTO app_users(user_name, user_age, user_gender, user_role_id, created_at) VALUES (%s, %s, %s, %s, NOW());"
+			cursor.execute(query, (user_name, user_age, user_gender, user_role_id))
+			self._db._connection.commit()
+			return {
+				'user_id': cursor.lastrowid,
+				'user_name': user_name,
+				'user_role': user_role
+			}
 	
-			except IntegrityError as ierror:
-				raise
-
 
 
 	@handle_user_repository_errors
@@ -189,7 +195,6 @@ class UserRepository:
 				#then the user
 				query = "DELETE FROM app_users WHERE user_id = %s"
 				cursor.execute(query, (user_id,))
-				self._db._connection.commit()
 
 				if cursor.rowcount == 0:
 					raise UserNotFoundError(user_id)

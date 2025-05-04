@@ -2,7 +2,7 @@ from apps.users.repositories.user_repository import UserRepository, UserReposito
 import logging
 
 def handle_log_service_exceptions(f):
-	'''A decorator to log exceptions of in the service layer.'''
+	'''A decorator to log exceptions in the service layer.'''
 	def exception_wrapper(self, *args, **kwargs):
 		try: #all functions, create, delete etc wil be wrapped in this try block, not sure how to pass already exist error username or id
 			return f(self, *args, **kwargs)
@@ -40,7 +40,6 @@ class UserService:
 			ValueError: If any field fails validation checks.
 		"""
 		if is_update == False: #if its create
-			print(f"{user_age}, {user_gender}, {user_role}")
 			if user_age is None or user_gender is None or user_role is None:
 				raise ValueError("Fields needed for creating a user: user_age, user_gender, user_role.")
 
@@ -107,7 +106,7 @@ class UserService:
 			ValueError: If input validation fails.
 			UserNotFoundError: If the user doesn't exist.
 		"""
-		self._validate_user_input(user_name, user_age, user_gender, user_role, True)
+		self._validate_user_input(user_name=user_name, user_age=user_age, user_gender=user_gender, user_role=user_role, is_update=True)
 		
 		updated_count = self._repository.update_a_user(user_name, user_age, user_gender, user_role)
 		return updated_count
@@ -207,7 +206,7 @@ class UserService:
 
 
 	@handle_log_service_exceptions
-	def query_all_user_data(self) -> dict: #maybe list of dicts?
+	def query_all_user_data(self) -> list: #maybe list of dicts?
 		"""
 		Retrieves all users from the database (user_id, user_name).
 
@@ -220,7 +219,7 @@ class UserService:
 
 
 	@handle_log_service_exceptions
-	def quary_user_and_related_habits(self) -> dict:
+	def query_user_and_related_habits(self) -> list:
 		"""
 		Retrieves all users and their associated habits using an INNER JOIN.
 

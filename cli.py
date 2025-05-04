@@ -249,6 +249,8 @@ class CLI:
 		click.echo("10, Get habits by same periodicity type")
 		click.echo("11, Get currently tracked habits")
 		click.echo("12, Get longest ever streak for habit")
+		click.echo("13, Exit program")
+
 
 
 
@@ -516,7 +518,16 @@ class CLI:
 			click.echo(click.style(f"Error while querying the longest streak ever: {error}", fg="red", bold=True))
 
 
+
+	def option_13_exit_program(self):
+		"""
+		Exciting program with status code 0.
+		"""
+		click.echo(click.style(f"Exciting program, good bye!", fg="green", bold=True))
+		sys.exit(0)
 	
+
+
 	def run(self):
 		"""
 		The main event loop for the CLI. Registers a signal handler for Ctrl+c,
@@ -565,3 +576,6 @@ class CLI:
 
 			if choice == 12:
 				self.option_12_get_longest_ever_streak_for_habit()
+
+			if choice == 13:
+				self.option_13_exit_program()

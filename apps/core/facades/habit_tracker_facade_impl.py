@@ -89,7 +89,7 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		Returns:
 			dict: A structured mapping of users to their habits.
 		"""
-		return self._user_service.quary_user_and_related_habits()
+		return self._user_service.query_user_and_related_habits()
 
 
 
