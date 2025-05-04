@@ -35,7 +35,6 @@ class HabitService:
 			raise ValueError("Invalid habit action. It must be a non-empty string.")
 		
 		if not isinstance(habit_user_id, int) or habit_user_id <= 0:
-			print(f"the type of userid here in the validation is: { type(habit_user_id)}, and the value is : {habit_user_id}")
 			raise ValueError("Invalid user ID. It must be a positive integer. See list (option 3) for users for available user IDs.")
 
 		valid_periodicity_types = {"DAILY", "WEEKLY"} 
@@ -122,7 +121,6 @@ class HabitService:
 
 
 
-	#I should make eventually an update habit which is not only updating the habit streak value, but using the general call 'habit field'
 	def update_habit_streak(self, habit_id, updated_streak_value):
 		"""
 		Updates the streak count of a habit.
@@ -194,9 +192,7 @@ class HabitService:
 		"""
 		if not isinstance(updated_value, int) or not (1 <= updated_value <= 30):
 			raise ValueError("Invalid periodicity value. It must be an integer between 1 and 30.")
-		if not isinstance(habit_id, int) or habit_id <= 0:
-			raise ValueError("Invalid habit_id. It must be a positive integer.")
-		
+
 		habit_id = self.get_habit_id(user_name, habit_name)
 		updated_habit_rows = self._repository.update_habit_field(habit_id, 'habit_periodicity_value', updated_value)
 		return updated_habit_rows
@@ -204,7 +200,7 @@ class HabitService:
 
 
 	@handle_log_service_exceptions
-	def get_habit_id(self, user_id, habit_name):
+	def get_habit_id(self, user_name, habit_name):
 		"""
 		Retrieves the ID of a habit by user and habit name.
 
@@ -219,10 +215,11 @@ class HabitService:
 			ValueError: If user_id is invalid or habit_name is not a string.
 			HabitNotFoundError: If the habit is not found.
 		"""
-		if not isinstance(user_id,int) or not isinstance(habit_name, str) or user_id <= 0 :
-			raise ValueError("Invalid input value. It must be an integer for used_id and a str for habit_name.")
+		print(f"HABIT NAME IS: {habit_name}, USERNAME IS: {user_name}")
+		if not isinstance(habit_name, str) or not isinstance(user_name, str):
+			raise ValueError("Invalid input value. It must be a string for user_name and a str for habit_name.")
 		
-		habit_id = self._repository.get_habit_id(user_id, habit_name)
+		habit_id = self._repository.get_habit_id(user_name, habit_name)
 		return habit_id
 
 

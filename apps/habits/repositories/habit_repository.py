@@ -43,7 +43,9 @@ def handle_habit_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			raise HabitAlreadyExistError(habit_name=args[0], habit_user_id=args[-1]) from ierror
+			name = args[0] if len(args) >= 1 else "<unknown>"
+			user_id = args[-1] if len(args) >= 1 else "<unknown>" #shouldn this be len args>2?
+			raise HabitAlreadyExistError(name, user_id) from ierror
 		except HabitRepositoryError as herror:
 			raise herror
 		except Exception as error:
@@ -295,15 +297,6 @@ class HabitRepository:
 		with self._db._connection.cursor() as cursor:
 			self._db._connection.autocommit = False
 			try:
-				#find all goals referencing this habit
-				#find_goals_query = "SELECT goal_id FROM goals WHERE habit_id_id = %s
-				#cursor.execute(find_goals_query, (habit_id,))
-				#goals = cursor.fetchall()  #[(24,), (25,)..]
-				
-				# if goals:
-				# 	goal_ids = [str(g[0]) for g in goals]  # e.g., ['24','25']
-
-				#goal_id_id=NULL in progresses for these goals
 				set_null_query = f"UPDATE progresses SET goal_id_id = NULL WHERE goal_id_id = %s;"
 				cursor.execute(set_null_query, (goal_id, ))
 
@@ -393,8 +386,8 @@ class HabitRepository:
 			HabitNotFoundError: If no matching habit is found.
 		"""
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits;"
-			cursor.execute(query)
+			query = "SELECT habit_id, habit_name, habit_action, habit_user_id FROM habits WHERE habit_id = %s;"
+			cursor.execute(query, (habit_id, ))
 			habits = cursor.fetchall()
 				
 			if not habits:
@@ -420,7 +413,7 @@ class HabitRepository:
 		"""
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT goal_id FROM goals WHERE habit_id_id = %s;"
-			cursor.execute(query, habit_id)
+			cursor.execute(query, (habit_id, ))
 			goal = cursor.fetchall()
 				
 			if not goal:
