@@ -363,8 +363,8 @@ class HabitRepository:
 			streak = cursor.fetchall()
 
 			if not streak:
-				dummy_id_holder = -1 #gotta come up with a better version here eventually
-				raise HabitNotFoundError(dummy_id_holder)
+				# dummy_id_holder = -1 #gotta come up with a better version here eventually
+				raise HabitNotFoundError(habit_id)
 
 			return streak[0]
 
