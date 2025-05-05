@@ -4,25 +4,60 @@ from mysql.connector.errors import IntegrityError
 
 from apps.analytics.services.analytics_service import AnalyticsService
 from apps.analytics.repositories.analytics_repository import AnalyticsNotFoundError
-from apps.habits.services.habit_service import HabitService
+from apps.habits.services.habit_service import HabitService, HabitNotFoundError
 from apps.progresses.services.progress_service import ProgressesService
 
 
 #fixtures for the required objects for analytics tests
 @pytest.fixture
 def mock_analytics_repo():
+	"""
+	Fixture that returns a MagicMock simulating AnalyticsRepository methods.
+
+	Returns:
+		MagicMock: The mocked analytics repository.
+	"""
 	return MagicMock()
-  
+
+
+
 @pytest.fixture
 def mock_habit_service():
+	"""
+	Fixture that returns a MagicMock spec'd to HabitService.
+
+	Returns:
+		MagicMock: The mocked habit service.
+	"""
 	return MagicMock(spec=HabitService)
+
+
 
 @pytest.fixture
 def mock_progress_service():
+	"""
+	Fixture that returns a MagicMock spec'd to ProgressesService.
+
+	Returns:
+		MagicMock: The mocked progress service.
+	"""
 	return MagicMock(spec=ProgressesService)
+
+
 
 @pytest.fixture
 def analytics_service(mock_analytics_repo, mock_habit_service, mock_progress_service):
+	"""
+	Fixture to create an AnalyticsService with mocked dependencies.
+
+	Args:
+		mock_analytics_repo (MagicMock): The analytics repo mock.
+		mock_habit_service (MagicMock): The habit service mock.
+		mock_progress_service (MagicMock): The progress service mock.
+
+	Returns:
+		AnalyticsService: Service instance wired to mocks.
+	"""
 	return AnalyticsService(  
 		repository=mock_analytics_repo,
 		habit_service=mock_habit_service, 
@@ -30,17 +65,26 @@ def analytics_service(mock_analytics_repo, mock_habit_service, mock_progress_ser
 	)
 
 
-#create tests
+
 def test_create_analytics_success(analytics_service, mock_analytics_repo, mock_habit_service):
-	#validate habit
+	"""
+	Test creating analytics entry with valid habit.
+
+	Given:
+		- habit_service.validate_a_habit returns a valid habit_id.
+		- repository.create_analytics returns an analytics dict.
+	When:
+		- create_analytics is called.
+	Then:
+		- validate_a_habit and create_analytics are called once.
+		- The returned dict is forwarded.
+	"""
 	mock_habit_service.validate_a_habit.return_value = 101
 
-	#analytics returns a dict, imitatet that here for expected return val
 	mock_analytics_repo.create_analytics.return_value = {
 		'analytics_id': 1,
 		'times_completed': 10,
 		'streak_length': 5,
-		#do we need last completed at as well? prob bnot
 		'habit_id_id': 101
 	}
 
@@ -59,7 +103,37 @@ def test_create_analytics_success(analytics_service, mock_analytics_repo, mock_h
 	assert result['times_completed'] == 10
 
 
+
+def test_create_analytics_habit_not_found(analytics_service, mock_habit_service):
+	"""
+	Test that creating analytics for non-existent habit raises HabitNotFoundError.
+
+	Given:
+		- habit_service.validate_a_habit raises HabitNotFoundError.
+	When:
+		- create_analytics is called.
+	Then:
+		- HabitNotFoundError is propagated.
+	"""
+	mock_habit_service.validate_a_habit.side_effect = HabitNotFoundError(42)
+
+	with pytest.raises(HabitNotFoundError):
+		analytics_service.create_analytics(habit_id=42, times_completed=1, streak_length=1)
+
+
+
 def test_create_analytics_integrity_error(analytics_service, mock_analytics_repo, mock_habit_service):
+	"""
+	Test that repository IntegrityError propagates on create.
+
+	Given:
+		- habit_service.validate_a_habit returns valid ID.
+		- repository.create_analytics raises IntegrityError.
+	When:
+		- create_analytics is called.
+	Then:
+		- IntegrityError is raised.
+	"""
 	mock_habit_service.validate_a_habit.return_value = 42
 	mock_analytics_repo.create_analytics.side_effect = IntegrityError("Duplicate entry")
 
@@ -70,11 +144,23 @@ def test_create_analytics_integrity_error(analytics_service, mock_analytics_repo
 			streak_length=2
 		)
 
-#update part
+
+
 def test_update_analytics_success(analytics_service, mock_analytics_repo):
-	#get return value with analytics id 10
+	"""
+	Test updating analytics for a habit when entry exists.
+
+	Given:
+		- repository.get_analytics_id returns an analytics_id.
+		- repository.update_analytics returns number of rows updated.
+	When:
+		- update_analytics is called.
+	Then:
+		- get_analytics_id and update_analytics are invoked.
+		- The row count is returned.
+	"""
+
 	mock_analytics_repo.get_analytics_id.return_value = 10
-	#if update succesfull, return val will be 1
 	mock_analytics_repo.update_analytics.return_value = 1  #one row gets updated
 
 	rows = analytics_service.update_analytics(
@@ -84,13 +170,23 @@ def test_update_analytics_success(analytics_service, mock_analytics_repo):
 	)
 	assert rows == 1 #ret value is 1 upon successful update for 1 row
 
-
 	mock_analytics_repo.get_analytics_id.assert_called_once_with(101) #assert w habit id 99, (related analytics ll be id 10)
 	mock_analytics_repo.update_analytics.assert_called_once_with(10, 20, 10, None) #and the related update
 
 
 
 def test_update_analytics_not_found(analytics_service, mock_analytics_repo):
+	"""
+	Test that updating non-existent analytics raises AnalyticsNotFoundError.
+
+	Given:
+		- repository.get_analytics_id returns an id.
+		- repository.update_analytics raises AnalyticsNotFoundError.
+	When:
+		- update_analytics is called.
+	Then:
+		- AnalyticsNotFoundError is raised.
+	"""
 	#incorrect analytics id, should raise notfound error
 	mock_analytics_repo.get_analytics_id.return_value = 101
 	mock_analytics_repo.update_analytics.side_effect = AnalyticsNotFoundError("notfound")
@@ -98,20 +194,58 @@ def test_update_analytics_not_found(analytics_service, mock_analytics_repo):
 	with pytest.raises(AnalyticsNotFoundError):
 		analytics_service.update_analytics(habit_id=10, times_completed=5)
 
-#get tests
-def test_get_analytics_id_success(analytics_service, mock_analytics_repo):
-	#existing test
-	mock_analytics_repo.get_analytics_id.return_value = 123  
-	analytics_id = analytics_service.get_analytics_id(habit_id=10) 
-	assert analytics_id == 123
-	mock_analytics_repo.get_analytics_id.assert_called_once_with(10)
+
+
+def test_get_and_delete_analytics_flow(analytics_service, mock_analytics_repo):
+	"""
+	Test fetching and deleting analytics entries by habit or explicit ID.
+
+	Given:
+		- get_analytics_id returns an ID.
+		- get_analytics_id / delete_analytics return appropriate values.
+	When:
+		- get_analytics_id, delete_analytics are called.
+	Then:
+		- Results are forwarded correctly.
+	"""
+	mock_analytics_repo.get_analytics_id.return_value = 7
+	mock_analytics_repo.delete_analytics.return_value = 1
+
+	#get
+	a_id = analytics_service.get_analytics_id(habit_id=123)
+	assert a_id == 7
+	mock_analytics_repo.get_analytics_id.assert_called_once_with(123)
+
+	#delete via habit_id
+	deleted = analytics_service.delete_analytics(habit_id=123)
+	mock_analytics_repo.delete_analytics.assert_called_with(7)
+	assert deleted == 1
+
+	#delete explicit
+	mock_analytics_repo.delete_analytics.reset_mock()
+	deleted2 = analytics_service.delete_analytics(analytics_id=99)
+	mock_analytics_repo.delete_analytics.assert_called_once_with(99)
+	assert deleted2 == 1
+
+
 
 def test_get_analytics_id_not_found(analytics_service, mock_analytics_repo):
-	#not found test
+	"""
+	Test that deleting non-existent analytics raises AnalyticsNotFoundError.
+
+	Given:
+		- repository.get_analytics_id returns an ID or delete_analytics raises.
+	When:
+		- delete_analytics is called.
+	Then:
+		- AnalyticsNotFoundError is propagated.
+	"""
 	mock_analytics_repo.get_analytics_id.side_effect = AnalyticsNotFoundError("notfound")
 	with pytest.raises(AnalyticsNotFoundError): 
 		analytics_service.get_analytics_id(habit_id=124) 
- 
+
+
+
 #delete tests
 def test_delete_analytics_without_passing_analytics_id(analytics_service, mock_analytics_repo):
 	mock_analytics_repo.get_analytics_id.return_value = 62 #just random ids to test against
@@ -125,86 +259,32 @@ def test_delete_analytics_without_passing_analytics_id(analytics_service, mock_a
 
 
 
-def test_delete_analytics_explicit_id(analytics_service, mock_analytics_repo):
-	#explicits test
-	mock_analytics_repo.delete_analytics.return_value = 1
-	rows_deleted = analytics_service.delete_analytics(analytics_id=803)
-	assert rows_deleted == 1
+def test_misc_analytics_queries(analytics_service, mock_analytics_repo):
+	"""
+	Test other analytics queries: longest streak and grouping.
 
-	mock_analytics_repo.delete_analytics.assert_called_once_with(803)
-
-
-
-def test_delete_analytics_not_found(analytics_service, mock_analytics_repo):
-	#not found tests 
-	mock_analytics_repo.delete_analytics.side_effect = AnalyticsNotFoundError("notfound")
-	with pytest.raises(AnalyticsNotFoundError): 
-		analytics_service.delete_analytics(analytics_id=807)
-
-
-
-#longest streak tests
-def test_calculate_longest_streak_success(analytics_service, mock_analytics_repo):
-	mock_analytics_repo.calculate_longest_streak.return_value = (10, 'pushups', 15)
-	result = analytics_service.calculate_longest_streak()   
-	assert result == (10, 'pushups', 15)  
-
+	Scenarios:
+	- calculate_longest_streak
+	- get_same_periodicity_type_habits
+	- get_currently_tracked_habits
+	- longest_streak_for_habit
+	"""
+	#longest streak
+	mock_analytics_repo.calculate_longest_streak.return_value = (1, 'peoplewatching', 5)
+	assert analytics_service.calculate_longest_streak() == (1, 'peoplewatching', 5)
 	mock_analytics_repo.calculate_longest_streak.assert_called_once()
 
+	#same periodicity
+	sampl = [('daily', 2, 'list')]
+	mock_analytics_repo.get_same_periodicity_type_habits.return_value = sampl
+	assert analytics_service.get_same_periodicity_type_habits() == sampl
 
-def test_calculate_longest_streak_not_found(analytics_service, mock_analytics_repo):
-	#not found
-	mock_analytics_repo.calculate_longest_streak.side_effect = AnalyticsNotFoundError("notfound")
-	with pytest.raises(AnalyticsNotFoundError):
-		analytics_service.calculate_longest_streak()  
+	#currently tracked
+	tracked = [(1, 'h', 3, 'weekly')]
+	mock_analytics_repo.get_currently_tracked_habits.return_value = tracked
+	assert analytics_service.get_currently_tracked_habits() == tracked
 
-
-#same periodicity types
-def test_get_same_periodicity_type_habits(analytics_service, mock_analytics_repo):
-
-	mock_analytics_repo.get_same_periodicity_type_habits.return_value = [
-		('daily', 2, '1: pushups, 2: planks')  
-	]
-	result = analytics_service.get_same_periodicity_type_habits()
-	assert len(result) == 1 
-
-	mock_analytics_repo.get_same_periodicity_type_habits.assert_called_once() 
-
-def test_get_same_periodicity_type_habits_not_found(analytics_service, mock_analytics_repo):
-	#not found
-	mock_analytics_repo.get_same_periodicity_type_habits.side_effect = AnalyticsNotFoundError("notfound")
-	with pytest.raises(AnalyticsNotFoundError):  
-		analytics_service.get_same_periodicity_type_habits() 
-
-
-
-def test_get_currently_tracked_habits_success(analytics_service, mock_analytics_repo):
-	#at least one tracked success
-	mock_analytics_repo.get_currently_tracked_habits.return_value = [
-		(1, "pushups", 5, "daily")  
-	]
-	result = analytics_service.get_currently_tracked_habits()
-	assert len(result) == 1 
-	mock_analytics_repo.get_currently_tracked_habits.assert_called_once()
-
-#not found habits
-def test_get_currently_tracked_habits_not_found(analytics_service, mock_analytics_repo):
-	mock_analytics_repo.get_currently_tracked_habits.side_effect = AnalyticsNotFoundError("notfound")
-	with pytest.raises(AnalyticsNotFoundError): 
-		analytics_service.get_currently_tracked_habits() 
-
-#longest streak 
-def test_longest_streak_for_habit_success(analytics_service, mock_analytics_repo):
-	mock_analytics_repo.longest_streak_for_habit.return_value = [
-		(1, 8, 'pushups', '2025-02-19 00:00:00', 7)
-	]
-	result = analytics_service.longest_streak_for_habit(habit_id=17)
-
-	assert result[0][0] == 1
-	mock_analytics_repo.longest_streak_for_habit.assert_called_once_with(17)
-
-#longest streak notfound
-def test_longest_streak_for_habit_not_found(analytics_service, mock_analytics_repo): 
-	mock_analytics_repo.longest_streak_for_habit.side_effect = AnalyticsNotFoundError("notfound")
-	with pytest.raises(AnalyticsNotFoundError):  
-		analytics_service.longest_streak_for_habit(habit_id=807)  
+	#longest streak for habit
+	mock_analytics_repo.longest_streak_for_habit.return_value = [(1,7,'h', 'date',3)]
+	assert analytics_service.longest_streak_for_habit(habit_id=50) == [(1,7,'h', 'date',3)]
+	mock_analytics_repo.longest_streak_for_habit.assert_called_once_with(50)

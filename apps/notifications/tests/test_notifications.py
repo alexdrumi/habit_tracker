@@ -1,83 +1,82 @@
 import pytest
-from unittest.mock import patch, MagicMock
-
-from apps.notifications.domain.notification_strategy import NotificationStrategy
-from apps.notifications.domain.notification_observer import NotificationObserver
+from datetime import datetime, timedelta
+import click
 from apps.notifications.domain.daily_notification import DailyNotificationStrategy
 from apps.notifications.domain.weekly_notification import WeeklyNotificationStrategy
+from apps.notifications.domain.notification_observer import NotificationObserver
 from apps.progresses.domain.progress_dto import ProgressHistoryDTO
 
-# #abstract method should not be possible to implement directly.
-# def test_notification_strategy_cannot_instantiate():
-# 	with pytest.raises(TypeError):
-# 		NotificationStrategy()
-
-# #DAILY NOTIFICATION TESTS
-# def test_daily_notification_strategy_on_completion():
-# 	strategy = DailyNotificationStrategy()
-# 	progress_data = ProgressHistoryDTO(last_updated_time=None, distance_from_goal_kvi=5, streak=3)
-# 	msg = strategy.on_completion_message(progress_data)
-
-# 	assert "Congratulations" in msg
-# 	assert "streak is 3" in msg
 
 
-# def test_daily_notification_strategy_on_expired():
-# 	strategy = DailyNotificationStrategy()
-# 	progress_data = ProgressHistoryDTO(last_updated_time=None, distance_from_goal_kvi=5, streak=0)
-# 	msg = strategy.on_expired_message(progress_data)
-
-# 	assert "You have missed the previous deadline" in msg
-
-
-# #WEEKLY NOTIFICATION TESTS
-# def test_weekly_notification_strategy_on_completion():
-# 	strategy = WeeklyNotificationStrategy()
-# 	progress_data = ProgressHistoryDTO(last_updated_time=None, distance_from_goal_kvi=5, streak=2)
-# 	msg = strategy.on_completion_message(progress_data)
-# 	assert "Congratulations" in msg
-# 	assert "streak is 2" in msg
-
-# def test_weekly_notification_strategy_on_expired():
-# 	strategy = WeeklyNotificationStrategy()
-# 	progress_data = ProgressHistoryDTO(last_updated_time=None, distance_from_goal_kvi=11, streak=0)
-# 	msg = strategy.on_expired_message(progress_data)
-# 	assert "You have missed the previous deadline" in msg
+@pytest.fixture
+def make_dto():
+	"""Factory for ProgressHistoryDTO with given streak and age."""
+	def factory(streak, days_ago=0):
+		last = datetime.now() - timedelta(days=days_ago)
+		return ProgressHistoryDTO(
+			last_updated_time=last,
+			distance_from_goal=0.0,
+			streak=streak
+		)
+	return factory
 
 
-# #OBSERVER LOGIC
-# #https://pytest-with-eric.com/mocking/mocking-vs-patching/
-# @patch("builtins.print")
-# def test_notification_observer_daily(mock_print):
+
+# @pytest.mark.parametrize("Strategy", [DailyNotificationStrategy, WeeklyNotificationStrategy])
+# def test_strategy_completion_and_expiry(Strategy, make_dto):
 # 	"""
-# 	Checks that notification observer uses daily strategy, prints msg on completion message
+# 	Both daily & weekly strategies:
+# 	  - should return a !None completion message when streak > 0
+# 	  - should return a !None expired message when streak == 0
+# 	  - should return None for the opposite case
 # 	"""
-# 	observer = NotificationObserver(notification_stragety="daily")
-# 	#progress dto to the notification observers update method
-# 	sample_data = {
-# 		'last_occurence': None,
-# 		'target_kvi': 10,
-# 		'current_kvi': 2,
-# 		'streak': 1,   # triggers on_completion message
-# 	}
-# 	observer.update(sample_data)
+# 	strategy = Strategy()
 
-	
-# 	mock_print.assert_called()  #we only check that print was called, or we can parse call args
+# 	#completion
+# 	dto_pos = make_dto(streak=5, days_ago=1)
+# 	assert strategy.on_completion_message(dto_pos)  is not None
+# 	assert strategy.on_expired_message(dto_pos) is  None
 
-# @patch("builtins.print")
-# def test_notification_observer_weekly(mock_print):
+# 	#expiry
+# 	dto_zero = make_dto(streak=0, days_ago=100)
+# 	assert strategy.on_completion_message(dto_zero) is None
+# 	assert strategy.on_expired_message(dto_zero) is not None
+
+
+
+# def test_observer_prints_both(monkeypatch, capsys, make_dto):
 # 	"""
-# 	Checks that notification observer uses weekly strategy, prints msg on completion message
+# 	NotificationObs should pick the right strategy (dail or weekly)
+# 	and echo both completion and expired messages if present.
 # 	"""
-# 	observer = NotificationObserver(notification_stragety="weekly")
-# 	sample_data = {
-# 		'last_occurence': None,
-# 		'target_kvi': 10,
-# 		'current_kvi': 10,  
-# 		'streak': 0,   #triggers on_expired message
-# 	}
-# 	observer.update(sample_data)
+# 	#fake strategy that returns known strings
+# 	class FakeStrat:
+# 		def on_completion_message(self, dto): return "completion"
+# 		def on_expired_message(self, dto):    return "expired"
 
-# 	#confirm that print was called, it should print the weekly expired message
-# 	mock_print.assert_called()
+# 	#monkeypath mapping inside notobsrvr
+# 	monkeypatch.setattr( #https://docs.pytest.org/en/stable/how-to/monkeypatch.html
+# 		NotificationObserver, 
+# 		"_NotificationObserver__strat_map",  # force‐invisible private attr
+# 		{"daily": lambda: FakeStrat(), "weekly": lambda: FakeStrat()} #inline lambda is pretty
+# 	)
+
+# 	#patch click.echo to prefix messages to detecth themsa
+# 	outputs = []
+# 	monkeypatch.setattr(click, "echo", lambda msg: outputs.append(msg))
+
+# 	#test for both daily and weekly
+# 	for name in ("daily", "weekly"):
+# 		outputs.clear()
+# 		obs = NotificationObserver(name)
+# 		obs.update({
+# 			"last_occurence": datetime.now(),
+# 			"target_kvi": 1.0,
+# 			"current_kvi": 1.0,
+# 			"streak": 1
+# 		})
+# 		assert "completion" in "".join(outputs)
+# 		assert "expired" in "".join(outputs)
+
+
+  
