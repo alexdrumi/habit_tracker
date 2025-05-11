@@ -249,7 +249,8 @@ class CLI:
 		click.echo("10, Get habits by same periodicity type")
 		click.echo("11, Get currently tracked habits")
 		click.echo("12, Get longest ever streak for habit")
-		click.echo("13, Exit program")
+		click.echo("13, Calculate the average streak for all habits")
+		click.echo("14, Exit program")
 
 
 
@@ -519,7 +520,22 @@ class CLI:
 
 
 
-	def option_13_exit_program(self):
+	def option_13_calculate_average_streak(self):
+		"""
+		Calculates the average streak for all habits. Habits with no streaks are also included.
+		"""
+		click.echo(click.style("\n[Option 13] Get average streak across all habits.", fg="cyan", bold=True))
+
+		try:
+			result = self._controller.average_streaks()
+			click.echo(click.style(f"Average streak across all habits are: {result} times.", fg="yellow", bold=True))
+
+		except Exception as error:
+			click.echo(click.style(f"Error while querying the average streak: {error}", fg="red", bold=True))
+
+
+
+	def option_14_exit_program(self):
 		"""
 		Exciting program with status code 0.
 		"""
@@ -576,6 +592,9 @@ class CLI:
 
 			if choice == 12:
 				self.option_12_get_longest_ever_streak_for_habit()
-
+			
 			if choice == 13:
-				self.option_13_exit_program()
+				self.option_13_calculate_average_streak()
+
+			if choice == 14:
+				self.option_14_exit_program()

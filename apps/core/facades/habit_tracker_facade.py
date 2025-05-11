@@ -190,3 +190,7 @@ class HabitTrackerFacadeInterface(ABC):
 	@abstractmethod
 	def longest_streak_for_habit(self, habit_id):
 		pass
+
+	@abstractmethod
+	def average_streaks(self):
+		pass

@@ -545,3 +545,13 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 			list of tuples: The longest streak value for the specified habit from progresses table.
 		"""
 		return self._analytics_service.longest_streak_for_habit(habit_id)
+
+
+	def average_streaks(self):
+		"""
+		Calculates the average streak for all habits. Habits with no streaks are also included.
+
+		Returns:
+			float: The average amount of streaks across all habits.
+		"""
+		return self._analytics_service.average_streaks()

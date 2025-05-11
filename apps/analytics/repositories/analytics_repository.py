@@ -296,3 +296,28 @@ class AnalyticsRepository:
 
 
 	# #https://mariadb.com/kb/en/json_arrayagg/ , otherwise I would have split calls in the layers above. This is gonna be a simple loop
+	@handle_analytics_repository_errors
+	def get_habit_streaks(self):
+		"""
+		Fetches all current streak values from the habits table.
+
+		This method retrieves the `habit_streak` field for every habit.
+	
+		Returns:
+			list of tuples: Each tuple contains a single integer (habit_streak).
+
+		Raises:
+			AnalyticsNotFoundError: If there are no streak values present in the database.
+			IntegrityError: For database-level errors.
+			AnalyticsRepositoryError: For repository-level failures.
+			Exception: For any other unexpected exceptions.
+		"""
+		with self._db._connection.cursor() as cursor:
+			query = "SELECT habit_streak FROM habits;" #no need for WHERE habit_streak > 0;
+			cursor.execute(query, )
+
+			result = cursor.fetchall()
+			if result:
+				return result
+			else: #what happens if there are no streaks? it shouldnt throw an error. Result will be an empty list or tuple if no habits are found no?
+				raise AnalyticsNotFoundError(f"There are no streaks to be found.")

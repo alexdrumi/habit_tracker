@@ -231,6 +231,17 @@ class HabitController:
 
 
 
+	def average_streaks(self):
+		"""
+		Calculates the average streak for all habits. Habits with no streaks are also included.
+
+		Returns:
+			float: The average amount of streaks across all habits.
+		"""
+		return self._facade.average_streaks()
+
+	
+
 	def update_habit_streak(self, habit_id, updated_streak_value):
 		"""
 		Updates the streak count of a habit.

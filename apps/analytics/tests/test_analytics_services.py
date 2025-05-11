@@ -175,6 +175,44 @@ def test_update_analytics_success(analytics_service, mock_analytics_repo):
 
 
 
+def test_average_streaks_empty(analytics_service, mock_analytics_repo):
+	"""
+	Test calculating average streaks from nonexisting analytics records.
+
+	Given:
+		- repository.get_habit_streaks returns a list of tuples with streak values.
+	When:
+		- average_streaks is called.
+	Then:
+		- The correct average is computed and returned.
+	"""
+	mock_analytics_repo.get_habit_streaks.return_value = []
+
+	result = analytics_service.average_streaks()
+	assert result == 0.0
+	mock_analytics_repo.get_habit_streaks.assert_called_once()
+
+
+
+def test_average_streaks_success(analytics_service, mock_analytics_repo):
+	"""
+	Test calculating average streaks from existing analytics records.
+
+	Given:
+		- repository.get_habit_streaks returns a list of tuples with streak values.
+	When:
+		- average_streaks is called.
+	Then:
+		- The correct average is computed and returned.
+	"""
+	mock_analytics_repo.get_habit_streaks.return_value = [(2,), (4,), (6,)]
+
+	result = analytics_service.average_streaks()
+	assert result == 4.0
+	mock_analytics_repo.get_habit_streaks.assert_called_once()
+
+
+
 def test_update_analytics_not_found(analytics_service, mock_analytics_repo):
 	"""
 	Test that updating non-existent analytics raises AnalyticsNotFoundError.
@@ -261,9 +299,9 @@ def test_delete_analytics_without_passing_analytics_id(analytics_service, mock_a
 
 def test_misc_analytics_queries(analytics_service, mock_analytics_repo):
 	"""
-	Test other analytics queries: longest streak and grouping.
+	Test other analytics queries, e.g. longest streak and grouping.
 
-	Scenarios:
+	Cases:
 	- calculate_longest_streak
 	- get_same_periodicity_type_habits
 	- get_currently_tracked_habits

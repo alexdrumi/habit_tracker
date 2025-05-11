@@ -256,3 +256,30 @@ class AnalyticsService:
 		"""
 		result = self._repository.longest_streak_for_habit(habit_id)
 		return result
+
+
+	@handle_analytics_service_exceptions
+	def average_streaks(self):
+		"""
+		Calculates the average streak length across all tracked habits.
+
+		This method fetches all current streak values and returns the average
+		streak length across them. Useful for understanding user consistency
+		trends across the system.
+
+		Returns:
+			float: The average streak length. Returns 0.0 if no streak data is available, in case you start with an empty database.
+
+		Raises:
+			AnalyticsNotFoundError: If no streak data can be retrieved.
+			IntegrityError: For database integrity-related issues.
+			Exception: For any other unexpected errors in analytics service.
+		"""
+		all_streaks = self._repository.get_habit_streaks()
+		amount_of_habits = len(all_streaks)
+		total = 0
+
+		for streak in all_streaks:
+			total += streak[0]
+
+		return (total/amount_of_habits) if amount_of_habits else 0.0
