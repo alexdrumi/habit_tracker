@@ -124,8 +124,8 @@ class HabitOrchestrator:
 				all_goals_with_date[goal["goal_id"]]["occurence_date"] = None
 
 		now = datetime.now()
-		current_week = now.isocalendar()[1]
-		current_year = now.year
+		# current_week = now.isocalendar()[1]
+		# current_year = now.year
 		tickable_goals_and_habits = []
 
 		for k, v in all_goals_with_date.items():
@@ -137,18 +137,17 @@ class HabitOrchestrator:
 				continue 
 
 			time_since_last_tick = now - last_tick
-			last_tick_week = last_tick.isocalendar()[1] #week nr of last tick's week
-			last_tick_year = last_tick.year #hypothetically, which year..
+			
+			# last_tick_week = last_tick.isocalendar()[1] #week nr of last tick's week
+			# last_tick_year = last_tick.year #hypothetically, which year..not sure if we need these now
 			if target_kvi == 1:
-				if (now.date() - timedelta(days=2)) <= last_tick.date() and last_tick.date() < (now.date() - timedelta(days=1)):
+				if (timedelta(days=1) <= time_since_last_tick < timedelta(days=2)):
 					tickable_goals_and_habits.append(v)
 				else:
 					pass
 			
 			elif target_kvi == 7:
-				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
-					pass
-				elif last_tick_week < current_week:
+				if timedelta(days=7) <= time_since_last_tick < timedelta(days=14):
 					tickable_goals_and_habits.append(v)
 				else:
 					pass
