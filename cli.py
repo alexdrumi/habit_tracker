@@ -239,18 +239,18 @@ class CLI:
 		click.echo("\nMain menu:")
 		click.echo("1, Create a new user")
 		# click.echo("2, Delete a user") -> later, we probably will use this
-		click.echo("3, Get all user info")
-		click.echo("4, Create a habit for a certain user")
-		click.echo("5, List all habits")
+		click.echo("2, Get all user info")
+		click.echo("3, Create a habit for a certain user")
+		click.echo("4, List all habits")
 		# click.echo("6, Delete a certain habit") -> later, we probably will use this
-		click.echo("7, List goals with associated habits")
-		click.echo("8, Complete a habit/goal")
-		click.echo("9, Get longest habit streak")
-		click.echo("10, Get habits by same periodicity type")
-		click.echo("11, Get currently tracked habits")
-		click.echo("12, Get longest ever streak for habit")
-		click.echo("13, Calculate the average streak for all habits")
-		click.echo("14, Exit program")
+		click.echo("5, List goals with associated habits")
+		click.echo("6, Complete a habit/goal")
+		click.echo("7, Get longest habit streak")
+		click.echo("8, Get habits by same periodicity type")
+		click.echo("9, Get currently tracked habits")
+		click.echo("10, Get longest ever streak for habit")
+		click.echo("11, Calculate the average streak for all habits")
+		click.echo("12, Exit program")
 
 
 
@@ -304,15 +304,15 @@ class CLI:
 		click.echo(click.style("\n[Option 1] Create a new user", fg="cyan", bold=True))
 		click.pause()
 
-		user_name =  click.prompt("Enter user name:")
-		user_age =  click.prompt("Enter user age:")
-		user_gender = click.prompt("Enter user gender:")
-		user_role = click.prompt("Enter user role:")
+		user_name =  click.prompt("Enter user name")
+		user_age =  click.prompt("Enter user age")
+		user_gender = click.prompt("Enter user gender")
+		user_role = click.prompt("Enter user role")
 
 		#this layer displays the propagated errors from the layers beneath to the CLI 
 		try:
 			user = self._controller.create_user(user_name, user_age, user_gender, user_role)
-			click.echo(click.style("User created successfully:\n", fg="green", bold=True) + str(user))
+			click.echo(click.style(f"\nUser created successfully: \nuser_id:{user['user_id']}\nuser_name:{user['user_name']}\nuser_role:{user['user_role']}\n", fg="green", bold=True))
 		except Exception as error:
 			click.echo(click.style(f"Error creating user: {error}", fg="red", bold=True))
 
@@ -332,11 +332,11 @@ class CLI:
 
 
 
-	def option_3_query_all_user_data(self):
+	def option_2_query_all_user_data(self):
 		"""
 		Retrieves and displays all user data from the controller layer.
 		"""
-		click.echo(click.style("\n[Option 3] Get all user info", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 2] Get all user info", fg="cyan", bold=True))
 		click.pause()
 
 		try:
@@ -347,12 +347,12 @@ class CLI:
 
 
 
-	def option_4_create_new_habit(self):
+	def option_3_create_new_habit(self):
 		"""
 		CLI flow to create a new habit for a specific user. 
 		It also creates an associated goal for that habit.
 		"""
-		click.echo(click.style("\n[Option 4] Create a habit for a certain user", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 3] Create a habit for a certain user", fg="cyan", bold=True))
 		click.pause()
 
 		click.echo(click.style("\nStep 1: Habit Basic Information", fg="yellow", bold=True))
@@ -379,11 +379,11 @@ class CLI:
 
 
 
-	def option_5_get_all_habits(self):
+	def option_4_get_all_habits(self):
 		"""
 		Retrieves and displays all habits currently in the system.
 		"""
-		click.echo(click.style("\n[Option 5] List all habits", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 4] List all habits", fg="cyan", bold=True))
 		click.pause()
 
 		try:
@@ -407,11 +407,11 @@ class CLI:
 
 
 
-	def option_7_list_all_goals_with_habits(self):
+	def option_5_list_all_goals_with_habits(self):
 		"""
 		Retrieves and displays all goals along with their associated habits.
 		"""
-		click.echo(click.style("\n[Option 7] List goals with associated habits", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 5] List goals with associated habits", fg="cyan", bold=True))
 		click.pause()
 
 		try:
@@ -422,17 +422,17 @@ class CLI:
 
 
 
-	def option_8_complete_habit(self):
+	def option_6_complete_habit(self):
 		"""
 		CLI flow that allows the user to mark a habit as completed/ticked.
 		Lists possible goals/habits first, then prompts for IDs, 
 		and calls the controller to finalize completion.
 		"""
-		click.echo(click.style("\n[Option 8] Complete a habit (tick a goal)", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 6] Complete a habit (tick a goal)", fg="cyan", bold=True))
 		click.pause()
 
 		#display current goals and habits to  see the list of possibilities
-		self.option_7_list_all_goals_with_habits() #gotta form this a bit prettier
+		self.option_5_list_all_goals_with_habits() #gotta form this a bit prettier
 
 		try:
 			tickable_habits_and_goals = self._controller.fetch_ready_to_tick_goals_of_habits()
@@ -447,11 +447,11 @@ class CLI:
 
 
 
-	def option_9_longest_streak_in_database(self):
+	def option_7_longest_streak_in_database(self):
 		"""
 		Displays the habit with the longest current streak among all users.
 		"""
-		click.echo(click.style("\n[Option 9] Longest Habit Streak in the Database", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 7] Longest Habit Streak in the Database", fg="cyan", bold=True))
 		click.pause()
 
 		try:
@@ -469,11 +469,11 @@ class CLI:
 
 
 
-	def option_10_same_habit_periodicity(self):
+	def option_8_same_habit_periodicity(self):
 		"""
 		Groups and displays habits by their periodicity type (daily/weekly).
 		"""
-		click.echo(click.style("\n[Option 10] Group habits by periodicity", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 8] Group habits by periodicity", fg="cyan", bold=True))
 		click.pause()
 		
 		try:
@@ -484,11 +484,11 @@ class CLI:
 
 
 
-	def option_11_get_currently_tracked_habits(self):
+	def option_9_get_currently_tracked_habits(self):
 		"""
 		Retrieves and displays habits that have an active streak (streak > 0).
 		"""
-		click.echo(click.style("\n[Option 11] Get currently tracked habits", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 9] Get currently tracked habits", fg="cyan", bold=True))
 		click.pause()
 
 		try:
@@ -499,15 +499,15 @@ class CLI:
 
 
 
-	def option_12_get_longest_ever_streak_for_habit(self):
+	def option_10_get_longest_ever_streak_for_habit(self):
 		"""
 		Prompts for a habit ID and displays the longest recorded streak for that habit.
 		"""
-		click.echo(click.style("\n[Option 12] Get the longest ever streak for a habit", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 10] Get the longest ever streak for a habit", fg="cyan", bold=True))
 		click.pause()
 		
 		try:
-			self.option_5_get_all_habits()
+			self.option_4_get_all_habits()
 			habit_id = self.prompt_for_valid_integer("Select a habit id for its longest ever streak recorded")
 			result = self._controller.longest_streak_for_habit(habit_id)
 			if result:
@@ -520,11 +520,11 @@ class CLI:
 
 
 
-	def option_13_calculate_average_streak(self):
+	def option_11_calculate_average_streak(self):
 		"""
 		Calculates the average streak for all habits. Habits with no streaks are also included.
 		"""
-		click.echo(click.style("\n[Option 13] Get average streak across all habits.", fg="cyan", bold=True))
+		click.echo(click.style("\n[Option 11] Get average streak across all habits.", fg="cyan", bold=True))
 
 		try:
 			result = self._controller.average_streaks()
@@ -535,7 +535,7 @@ class CLI:
 
 
 
-	def option_14_exit_program(self):
+	def option_12_exit_program(self):
 		"""
 		Exciting program with status code 0.
 		"""
@@ -563,38 +563,38 @@ class CLI:
 			# if choice == 2:
 			# 	self.option_2_delete_user() #foreign key issues atm
 
+			if choice == 2:
+				self.option_2_query_all_user_data()
+
 			if choice == 3:
-				self.option_3_query_all_user_data()
+				self.option_3_create_new_habit()
 
 			if choice == 4:
-				self.option_4_create_new_habit()
-
-			if choice == 5:
-				self.option_5_get_all_habits()
+				self.option_4_get_all_habits()
 
 			# if choice == 6:
 			# 	self.option_6_delete_a_habit()
 
-			if choice == 7:
-				self.option_7_list_all_goals_with_habits()
+			if choice == 5:
+				self.option_5_list_all_goals_with_habits()
 
+			if choice == 6:
+				self.option_6_complete_habit()
+
+			if choice == 7:
+				self.option_7_longest_streak_in_database()
+			
 			if choice == 8:
-				self.option_8_complete_habit()
+				self.option_8_same_habit_periodicity()
 
 			if choice == 9:
-				self.option_9_longest_streak_in_database()
-			
-			if choice == 10:
-				self.option_10_same_habit_periodicity()
+				self.option_9_get_currently_tracked_habits()
 
+			if choice == 10:
+				self.option_10_get_longest_ever_streak_for_habit()
+			
 			if choice == 11:
-				self.option_11_get_currently_tracked_habits()
+				self.option_11_calculate_average_streak()
 
 			if choice == 12:
-				self.option_12_get_longest_ever_streak_for_habit()
-			
-			if choice == 13:
-				self.option_13_calculate_average_streak()
-
-			if choice == 14:
-				self.option_14_exit_program()
+				self.option_12_exit_program()

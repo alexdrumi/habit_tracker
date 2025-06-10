@@ -1,8 +1,5 @@
-from typing import TYPE_CHECKING
 from datetime import datetime, timedelta
 
-# if TYPE_CHECKING:
-# 	from apps.core.facades.habit_tracker_facade_impl import HabitTrackerFacadeImpl
 from apps.core.facades.habit_tracker_facade import HabitTrackerFacadeInterface
 from apps.goals.domain.goal_subject import GoalSubject
 from apps.goals.domain.goal_factory import build_goal_subject
@@ -13,7 +10,6 @@ class HabitOrchestrator:
 	"""Handles multi-step workflows if facade deems that necessary."""
 	def __init__(self, habit_tracker_facade: HabitTrackerFacadeInterface): #fix circular dependency
 		self._habit_facade = habit_tracker_facade
-
 
 
 	#in case we need chained services, we do that from here. For now we keep the create habit in the service also doing validation. 
@@ -136,9 +132,7 @@ class HabitOrchestrator:
 			last_tick = v['occurence_date']
 			target_kvi = v['target_kvi_value']
 
-			print(f"{last_tick} is the last tick here")
 			if last_tick is None:
-				print('\n\n\nTickable, thus we can return goal and habit id.')
 				tickable_goals_and_habits.append(v)
 				continue 
 
@@ -147,22 +141,17 @@ class HabitOrchestrator:
 			last_tick_year = last_tick.year #hypothetically, which year..
 			if target_kvi == 1:
 				if (now.date() - timedelta(days=2)) <= last_tick.date() and last_tick.date() < (now.date() - timedelta(days=1)):
-					# print(f'Goal {k} is a daily goal and was last ticked {time_since_last_tick.days} days ago, tickable')
 					tickable_goals_and_habits.append(v)
 				else:
-					# print(f'Goal {k} is not tickable')
 					pass
 			
 			elif target_kvi == 7:
 				if (last_tick_year < current_year) or (last_tick_week < current_week - 1):
-					# print(f'Goal {k} was last ticked more than 2 weeks ago, not tickable anymore.')
 					pass
 				elif last_tick_week < current_week:
-					# print(f'Goal is ticked last week thus, its tickable now!')
 					tickable_goals_and_habits.append(v)
 				else:
 					pass
-					# print(f'Goal {k} was ticked query_goal_of_a_habit')
 
 		return tickable_goals_and_habits
 
