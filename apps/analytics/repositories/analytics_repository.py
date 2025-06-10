@@ -201,10 +201,10 @@ class AnalyticsRepository:
 			query = "SELECT habit_id, habit_name, habit_streak FROM habits WHERE habit_streak = (SELECT MAX(habit_streak) FROM habits) ORDER BY habit_streak DESC;"
 			
 			cursor.execute(query)
-			result = cursor.fetchone()
+			result = cursor.fetchall()
 			#no commit needed, nothing changed
 			if result:
-				return result
+				return result[0]
 			else:
 				raise AnalyticsNotFoundError(f"Longest streak has not been found.")
 
