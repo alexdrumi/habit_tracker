@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from apps.goals.services.goal_service import GoalService
 from apps.goals.repositories.goal_repository import GoalRepository, GoalNotFoundError
 from apps.habits.services.habit_service import HabitService, HabitNotFoundError
-from apps.kvi_types.services.kvi_type_service import KviTypeService  #if needed here..
+from apps.kvi_types.services.kvi_type_service import KviTypeService
 from mysql.connector.errors import IntegrityError
 
 @pytest.fixture
@@ -16,7 +16,6 @@ def create_mock_goal_service():
 	"""
 	mock_goal_repo = MagicMock(spec=GoalRepository)
 	mock_habit_service = MagicMock(spec=HabitService)
-	# mock_kvi_service = MagicMock(spec=KviTypeService) in this version no kvi repo needed
 	return GoalService(repository=mock_goal_repo, habit_service=mock_habit_service)
 
 
@@ -43,8 +42,6 @@ def test_create_goal_success(create_mock_goal_service):
 		"habit_id": 3,
 		"kvi_type_id": 3
 	}
-	#create_mock_goal_service._habit_service.validate_a_habit.return_value = expected_goal["habit_id"]
-
 	create_mock_goal_service._repository.create_a_goal.return_value = expected_goal
 	goal = create_mock_goal_service.create_a_goal("Losing Weight", 3, 5.0, 0.0, "Lose 5kg over 2 months")
 
@@ -146,7 +143,5 @@ def test_create_goal_calls_validate_and_repository(create_mock_goal_service):
 
     create_mock_goal_service.create_a_goal("G1", 7, 2.0, 0.5, "desc")
 
-    #alidate called with 7
     create_mock_goal_service._habit_service.validate_a_habit.assert_called_once_with(7)
-    #repository called with same args
     create_mock_goal_service._repository.create_a_goal.assert_called_once_with("G1", 7, 2.0, 0.5, "desc")

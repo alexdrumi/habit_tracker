@@ -9,9 +9,6 @@ def handle_log_service_exceptions(f):
 	def exception_wrapper(*args, **kwargs):
 		try:
 			return f(*args, **kwargs)
-		# except (HabitAlreadyExistError, HabitRepositoryError) as specific_error:
-		# 	logging.error(f"Service error in {f.__name__}: {specific_error}")
-		# 	raise specific_error
 		except Exception as error:
 			logging.error(f"Service error in {f.__name__}: {error}")
 			raise error
@@ -48,7 +45,6 @@ class HabitService:
 		if habit_periodicity_value is not None:
 			if not isinstance(habit_periodicity_value, int) or not (1 <= habit_periodicity_value <= 30):
 				raise ValueError("Invalid periodicity value. It must be an integer between 1 and 30.")
-		#we could also write one validate for habit_action == UPDATE
 
 
 	@handle_log_service_exceptions
@@ -149,7 +145,7 @@ class HabitService:
 
 
 	@handle_log_service_exceptions
-	def update_habit_periodicity_type(self, user_name, habit_name, updated_type_value): #should type be updated? this should also automatically trigger value update no?
+	def update_habit_periodicity_type(self, user_name, habit_name, updated_type_value):
 		"""
 		Updates the periodicity type of a habit.
 
@@ -308,7 +304,7 @@ class HabitService:
 		if not isinstance(goal_id, int) or goal_id <= 0: 
 			raise ValueError(f"Invalid habit id: {goal_id}.")
 
-		validated_habit_id = self.validate_a_habit(habit_id) #prob we could call validation from orchestrator as well
+		validated_habit_id = self.validate_a_habit(habit_id)
 		deleted_count = self._repository.delete_a_habit(validated_habit_id, goal_id=goal_id)
 		return deleted_count
 

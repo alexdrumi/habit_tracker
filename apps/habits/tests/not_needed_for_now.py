@@ -4,12 +4,10 @@ from apps.habits.models import Habits
 from apps.users.models import AppUsers, AppUsersRoles
 
 
-#we could eventually rewrite the test suites with factory: https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
-
 @pytest.fixture
 def setup_roles():
 	'''Fixtures are how we prepare for a certain test, here setup the AppUsersRoles'''
-	AppUsersRoles.objects.all().delete() #clear test results from before
+	AppUsersRoles.objects.all().delete()
 	
 	roles = ['user', 'admin', 'bot']
 	for role in roles:
@@ -20,8 +18,7 @@ def setup_roles():
 
 @pytest.mark.django_db
 def test_create_valid_habit(setup_roles):
-	AppUsersRoles.objects.all().delete() #clear test results from before
-	# AppUsers.objects.all().delete() #before test clear all users? y
+	AppUsersRoles.objects.all().delete()
 	'''Test for creating a habit with valid parameters'''
 	test_user_role = AppUsersRoles.objects.create(user_role="user")
 	test_user = AppUsers.objects.create(
@@ -51,8 +48,7 @@ def test_create_valid_habit(setup_roles):
 
 @pytest.mark.django_db
 def test_create_too_long_habit_name():
-	AppUsersRoles.objects.all().delete() #clear test results from before
-	# AppUsers.objects.all().delete() #before test clear all users? y
+	AppUsersRoles.objects.all().delete()
 	'''Test for creating a habit with too long habit name'''
 	test_user_role = AppUsersRoles.objects.create(user_role="user")
 	test_user = AppUsers.objects.create(
@@ -77,8 +73,7 @@ def test_create_too_long_habit_name():
 
 @pytest.mark.django_db
 def test_create_empty_habit_name():
-	AppUsersRoles.objects.all().delete() #clear test results from before
-	# AppUsers.objects.all().delete() #before test clear all users? y
+	AppUsersRoles.objects.all().delete()
 	'''Test for creating a habit with empty habit name'''
 	test_user_role = AppUsersRoles.objects.create(user_role="user")
 	test_user = AppUsers.objects.create(

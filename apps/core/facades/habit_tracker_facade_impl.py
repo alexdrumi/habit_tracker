@@ -17,8 +17,7 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 		self._progress_service = progress_service
 		self._reminder_service = reminder_service
 		self._analytics_service = analytics_service
-		self._habit_orchestrator = HabitOrchestrator(self) #dependencty injection of facade interface (abstract class)
-
+		self._habit_orchestrator = HabitOrchestrator(self)
 
 
 	"""USER RELATED METHODS"""
@@ -142,7 +141,7 @@ class HabitTrackerFacadeImpl(HabitTrackerFacadeInterface):
 
 
 
-	def delete_a_habit_by_id(self, habit_id, goal_id): #we ll see if we actually need this
+	def delete_a_habit_by_id(self, habit_id, goal_id):
 		"""
 		Deletes a habit by ID, potentially requiring goal reference.
 

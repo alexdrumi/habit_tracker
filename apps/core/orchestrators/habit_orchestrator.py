@@ -8,14 +8,11 @@ import click
 
 class HabitOrchestrator:
 	"""Handles multi-step workflows if facade deems that necessary."""
-	def __init__(self, habit_tracker_facade: HabitTrackerFacadeInterface): #fix circular dependency
+	def __init__(self, habit_tracker_facade: HabitTrackerFacadeInterface):
 		self._habit_facade = habit_tracker_facade
 
 
-	#in case we need chained services, we do that from here. For now we keep the create habit in the service also doing validation. 
-	#at this point we dont know how much orchestration is needed, in the future probably this will be extended.
-	#Facade can keep interacting with single services, and in case its chainedm, we call orchestrator.
-	#(orchestrator will still call single facade services but with input check, chained logic BUT NO CIRCULAR DEPENDENCY
+
 	def create_a_habit_with_validation(self, habit_name, habit_action, habit_periodicity_type, user_id):
 		"""
 		Creates a new habit after validating the associated user.
@@ -30,9 +27,6 @@ class HabitOrchestrator:
 			dict: Newly created habit data, including habit ID and other details.
 		"""
 		validated_user_id = self._habit_facade.validate_user_by_id(int(user_id))
-		# if existing_habit:
-		# 	return existing_habit
-		
 		new_habit = self._habit_facade.create_a_habit(habit_name=habit_name, habit_action=habit_action, habit_periodicity_type=habit_periodicity_type, habit_user_id=validated_user_id)
 		return new_habit
 
@@ -56,22 +50,18 @@ class HabitOrchestrator:
 			actual return can be None or a custom result depending
 			on the implementation.
 		"""
-		#we check whether habit exists
 		validated_habit_id = self._habit_facade.validate_a_habit(habit_id=int(habit_id))
 
-		#check whether the goal exists
 		validated_goal_id = self._habit_facade.validate_a_goal(goal_id=int(goal_id))
 
-		#get the periodicity type for notification observer
 		habit_periodicity_type = self._habit_facade.get_habit_strategy(validated_habit_id)[0]
 		
-		#build goalsubject
 		goal_subject = build_goal_subject(
 			habit_id=validated_habit_id,
 			goal_id=validated_goal_id,
 			habit_periodicity_type = habit_periodicity_type,
-			goal_service=self._habit_facade._goal_service, #we could pass these as dependencies or only methods which we need?
-			progress_service=self._habit_facade._progress_service #we could pass these as dependencies or only methods which we need?
+			goal_service=self._habit_facade._goal_service,
+			progress_service=self._habit_facade._progress_service
 		)
 		
 		kvi_increment_amount = 1.0 if habit_periodicity_type == 'daily' else 7.0
@@ -83,8 +73,7 @@ class HabitOrchestrator:
 		if goal_subject.is_too_early() == True:
 			now = datetime.now()
 			difference = now - goal_subject._goal_data['last_occurence']
-			waiting_time = timedelta(hours=24) - difference #incorrect caltulation for now
-			# print(f"It is too early to tick this habit, you have to wait {waiting_time} hours.")
+			waiting_time = timedelta(hours=24) - difference
 			click.echo(click.style(f"\nIt is too early to tick this habit. You need to wait {waiting_time} hours before you can tick it again.", fg="red", bold=True))
 			return
 		
@@ -94,7 +83,7 @@ class HabitOrchestrator:
 
 		else:
 			self._habit_facade.update_habit_streak(habit_id=validated_habit_id, updated_streak_value=new_streak_amount)
-			goal_subject.increment_kvi(increment=kvi_increment_amount) #this adds the usual +1 but we can change it later for custom kvi
+			goal_subject.increment_kvi(increment=kvi_increment_amount)
 
 
 
@@ -110,8 +99,6 @@ class HabitOrchestrator:
 			list: A list of goals (or combined habit-goal structures)
 			that are eligible for increment based on their schedule.
 		"""
-		#now call either a service via the habit facade goal service which filters this available goals data
-		#or call straight a service->repo which just gives back a filtered data.
 		all_goals = self._habit_facade._goal_service.query_all_goals()
 
 		all_goals_with_date = {}
@@ -124,8 +111,6 @@ class HabitOrchestrator:
 				all_goals_with_date[goal["goal_id"]]["occurence_date"] = None
 
 		now = datetime.now()
-		# current_week = now.isocalendar()[1]
-		# current_year = now.year
 		tickable_goals_and_habits = []
 
 		for k, v in all_goals_with_date.items():
@@ -138,8 +123,6 @@ class HabitOrchestrator:
 
 			time_since_last_tick = now - last_tick
 			
-			# last_tick_week = last_tick.isocalendar()[1] #week nr of last tick's week
-			# last_tick_year = last_tick.year #hypothetically, which year..not sure if we need these now
 			if target_kvi == 1:
 				if (timedelta(days=1) <= time_since_last_tick < timedelta(days=2)):
 					tickable_goals_and_habits.append(v)

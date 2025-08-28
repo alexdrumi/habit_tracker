@@ -8,7 +8,6 @@ from apps.habits.services.habit_service import HabitService, HabitNotFoundError
 from apps.progresses.services.progress_service import ProgressesService
 
 
-#fixtures for the required objects for analytics tests
 @pytest.fixture
 def mock_analytics_repo():
 	"""
@@ -94,7 +93,6 @@ def test_create_analytics_success(analytics_service, mock_analytics_repo, mock_h
 		streak_length=5
 	)
 
-	#check that everything was called, once
 	mock_habit_service.validate_a_habit.assert_called_once_with(101)
 	mock_analytics_repo.create_analytics.assert_called_once_with(
 		10, 5, 101, last_completed_at=None
@@ -161,18 +159,17 @@ def test_update_analytics_success(analytics_service, mock_analytics_repo):
 	"""
 
 	mock_analytics_repo.get_analytics_id.return_value = 10
-	mock_analytics_repo.update_analytics.return_value = 1  #one row gets updated
+	mock_analytics_repo.update_analytics.return_value = 1
 
 	rows = analytics_service.update_analytics(
 		habit_id=101,
 		times_completed=20,
 		streak_length=10
 	)
-	assert rows == 1 #ret value is 1 upon successful update for 1 row
+	assert rows == 1
 
-	mock_analytics_repo.get_analytics_id.assert_called_once_with(101) #assert w habit id 99, (related analytics ll be id 10)
-	mock_analytics_repo.update_analytics.assert_called_once_with(10, 20, 10, None) #and the related update
-
+	mock_analytics_repo.get_analytics_id.assert_called_once_with(101)
+	mock_analytics_repo.update_analytics.assert_called_once_with(10, 20, 10, None)
 
 
 def test_average_streaks_empty(analytics_service, mock_analytics_repo):
@@ -225,7 +222,6 @@ def test_update_analytics_not_found(analytics_service, mock_analytics_repo):
 	Then:
 		- AnalyticsNotFoundError is raised.
 	"""
-	#incorrect analytics id, should raise notfound error
 	mock_analytics_repo.get_analytics_id.return_value = 101
 	mock_analytics_repo.update_analytics.side_effect = AnalyticsNotFoundError("notfound")
 
@@ -284,9 +280,8 @@ def test_get_analytics_id_not_found(analytics_service, mock_analytics_repo):
 
 
 
-#delete tests
 def test_delete_analytics_without_passing_analytics_id(analytics_service, mock_analytics_repo):
-	mock_analytics_repo.get_analytics_id.return_value = 62 #just random ids to test against
+	mock_analytics_repo.get_analytics_id.return_value = 62 
 	mock_analytics_repo.delete_analytics.return_value = 1 
 
 	rows_deleted = analytics_service.delete_analytics(habit_id=42)  
@@ -307,22 +302,18 @@ def test_misc_analytics_queries(analytics_service, mock_analytics_repo):
 	- get_currently_tracked_habits
 	- longest_streak_for_habit
 	"""
-	#longest streak
 	mock_analytics_repo.calculate_longest_streak.return_value = (1, 'peoplewatching', 5)
 	assert analytics_service.calculate_longest_streak() == (1, 'peoplewatching', 5)
 	mock_analytics_repo.calculate_longest_streak.assert_called_once()
 
-	#same periodicity
 	sampl = [('daily', 2, 'list')]
 	mock_analytics_repo.get_same_periodicity_type_habits.return_value = sampl
 	assert analytics_service.get_same_periodicity_type_habits() == sampl
 
-	#currently tracked
 	tracked = [(1, 'h', 3, 'weekly')]
 	mock_analytics_repo.get_currently_tracked_habits.return_value = tracked
 	assert analytics_service.get_currently_tracked_habits() == tracked
 
-	#longest streak for habit
 	mock_analytics_repo.longest_streak_for_habit.return_value = [(1,7,'h', 'date',3)]
 	assert analytics_service.longest_streak_for_habit(habit_id=50) == [(1,7,'h', 'date',3)]
 	mock_analytics_repo.longest_streak_for_habit.assert_called_once_with(50)

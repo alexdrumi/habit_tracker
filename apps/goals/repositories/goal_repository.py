@@ -5,16 +5,13 @@ from apps.users.services.user_service import UserService
 from apps.habits.repositories.habit_repository import HabitRepository, HabitNotFoundError
 from apps.kvi_types.repositories.kvi_type_repository import KviTypeRepository, KviTypesNotFoundError
 
-#from django.db import IntegrityError
 from mysql.connector.errors import IntegrityError
 
-#goal_name, habit_id, kvi_type_id, target_kvi_value, current_kvi_value, goal_description
 class GoalNotFoundError(Exception):
 	"""Custom exception raised when a user is not found."""
 	pass
 
 
-#baseclass
 class GoalRepositoryError(Exception):
 	def __init__(self, message="An unexpected error occurred in goal repository."):
 		super().__init__(message)
@@ -44,7 +41,6 @@ def handle_goal_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			#in create_a_habit the first argument is habit_name and last is habit_user_id?
 			raise GoalAlreadyExistError(goal_name=args[0], goal_user_id=args[-1]) from ierror
 		except GoalRepositoryError as herror:
 			raise herror
@@ -56,10 +52,9 @@ def handle_goal_repository_errors(f):
 
 
 class GoalRepository:
-	def __init__(self, database: MariadbConnection, habit_repository: HabitRepository): #, kvi_repository: KviTypeRepository
+	def __init__(self, database: MariadbConnection, habit_repository: HabitRepository):
 		self._db = database
 		self._habit_repository = habit_repository
-		# self._kvi_repository = kvi_repository
 
 
 
@@ -85,7 +80,6 @@ class GoalRepository:
 			if not current_value:
 				raise GoalNotFoundError(goal_id)
 			return current_value[0]
-	
 
 
 
@@ -118,8 +112,8 @@ class GoalRepository:
 				'current_kvi_value': current_kvi_value,
 				'goal_description': goal_description,
 				'habit_id_id': habit_id,
-				# 'kvi_type_id_id': kvi_type_id,
 			}
+
 
 
 	@handle_goal_repository_errors
@@ -137,7 +131,6 @@ class GoalRepository:
 		Raises:
 			GoalNotFoundError: If the goal is not found in the database.
 		"""
-		#we will validate the habit in the service layer so by this time it exists
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT goal_id FROM goals WHERE (goal_name = %s AND habit_id = %s)"
 			cursor.execute(query, (goal_name, habit_id))
@@ -166,8 +159,6 @@ class GoalRepository:
 			GoalNotFoundError: If the goal does not exist.
 		"""
 		with self._db._connection.cursor() as cursor:
-			# "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s";
-			# query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
 			query = "SELECT g.goal_id, g.goal_name, g.habit_id_id, h.habit_name, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s;"
 			cursor.execute(query, (goal_id, habit_id))
 			result = cursor.fetchone()
@@ -200,8 +191,6 @@ class GoalRepository:
 			GoalNotFoundError: If the goal does not exist.
 		"""
 		with self._db._connection.cursor() as cursor:
-			# "SELECT g.goal_id, g.habit_id_id, g.target_kvi_value, g.current_kvi_value, h.habit_streak FROM goals g JOIN habits h ON g.habit_id_id = h.habit_id WHERE g.goal_id = %s AND g.habit_id_id = %s";
-			# query = "SELECT goal_id, habit_id_id, target_kvi_value, current_kvi_value FROM goals WHERE (goal_id = %s AND habit_id_id = %s)"
 			query = "SELECT goal_id, goal_name, target_kvi_value, current_kvi_value FROM goals WHERE goal_id = %s;"
 			cursor.execute(query, (goal_id,))
 			result = cursor.fetchone()
@@ -233,7 +222,7 @@ class GoalRepository:
 		with self._db._connection.cursor() as cursor:
 			query = "SELECT current_kvi_value FROM goals WHERE goal_id = %s"
 			cursor.execute(query, (goal_id,))
-			result = cursor.fetchone() #later there migh be more goals (fetchall), for now will be one
+			result = cursor.fetchone()
 			if result:
 				return result[0]
 			else:
@@ -276,7 +265,7 @@ class GoalRepository:
 		if not updated_fields:
 			return 0
 
-		set_commands = ', '.join(updated_fields) #goal_name = %s, target_kvi_value = %s etc
+		set_commands = ', '.join(updated_fields)
 		updated_values.append(goal_id)
 
 		query = "UPDATE goals SET " + set_commands + " WHERE goal_id = %s;"
@@ -284,11 +273,10 @@ class GoalRepository:
 			cursor.execute(query, updated_values)
 			self._db._connection.commit()
 
-			if cursor.rowcount == 0: #if values are the same its also the case, thus this is incorrect
+			if cursor.rowcount == 0:
 				raise GoalNotFoundError(f"Goal with goal_id {goal_id} is not found.")
 
-			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
-
+			return cursor.rowcount
 
 
 	@handle_goal_repository_errors
@@ -405,7 +393,6 @@ class GoalRepository:
 
 
 
-	#this technically could be in the progresses service.
 	@handle_goal_repository_errors
 	def get_last_progress_entry_associated_with_goal_id(self, goal_id):
 		"""

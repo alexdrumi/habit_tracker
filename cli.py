@@ -4,13 +4,10 @@ import click
 import django
 import signal
 
-#for correct import path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-#ensure that we can locate the apps 
 sys.path.insert(0, BASE_DIR)
 
-#setuop the config otherwise cli doesnt see the modules
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
@@ -82,7 +79,6 @@ class CLI:
 
 
 
-	#pretty ddisplay ll be needed for thisone as well
 	def display_goals_and_habits(self, goals_and_habits):
 		"""
 		Displays goal and habit associations in a structured format.
@@ -123,17 +119,15 @@ class CLI:
 			return
 	
 		for habit_type in habits:
-			periodicity = habit_type[0]  #daily or weekly atm
-			habit_list = habit_type[2]   #concatted string
+			periodicity = habit_type[0]
+			habit_list = habit_type[2]
 
-			#header
 			separator = "-" * 80
 
 			click.echo("\n" + separator)
 			click.echo(click.style(f" Habits with periodicity type: {periodicity.upper()} ", fg="green", bold=True))
 			click.echo("\n" + separator)
 
-			#split into individual habit list
 			all_habits = habit_list.split(',')
 			for habit in all_habits:
 				habit_details = habit.split(':')
@@ -179,7 +173,6 @@ class CLI:
 			else:
 				occurence_date_str = occurence_date.strftime("%Y-%m-%d %H:%M:%S")
 
-			#eventually we could even place these in one single print call, also the rest above
 			separator = "-" * 80
 
 			click.echo(
@@ -238,11 +231,9 @@ class CLI:
 		"""
 		click.echo("\nMain menu:")
 		click.echo("1, Create a new user")
-		# click.echo("2, Delete a user") -> later, we probably will use this
 		click.echo("2, Get all user info")
 		click.echo("3, Create a habit for a certain user")
 		click.echo("4, List all habits")
-		# click.echo("6, Delete a certain habit") -> later, we probably will use this
 		click.echo("5, List goals with associated habits")
 		click.echo("6, Complete a habit/goal")
 		click.echo("7, Get longest habit streak")
@@ -309,26 +300,11 @@ class CLI:
 		user_gender = click.prompt("Enter user gender")
 		user_role = click.prompt("Enter user role")
 
-		#this layer displays the propagated errors from the layers beneath to the CLI 
 		try:
 			user = self._controller.create_user(user_name, user_age, user_gender, user_role)
 			click.echo(click.style(f"\nUser created successfully: \nuser_id:{user['user_id']}\nuser_name:{user['user_name']}\nuser_role:{user['user_role']}\n", fg="green", bold=True))
 		except Exception as error:
 			click.echo(click.style(f"Error creating user: {error}", fg="red", bold=True))
-
-
-
-	# def option_2_delete_user(self):
-	# 	click.echo("You selected option 2 - delete a user. ")
-	# 	click.pause()
-
-	# 	user_id =  click.prompt("Enter user id:")
-
-	# 	try:
-	# 		self._controller.delete_user(int(user_id)) #we could check for row count but it will throw an error anyway
-	# 		click.echo(f"User with user_id {user_id} deleted.")
-	# 	except Exception as error:
-	# 		click.echo(click.style(f"Error deleting user: {error}", fg="red", bold=True))
 
 
 
@@ -394,19 +370,6 @@ class CLI:
 
 
 
-	# def option_6_delete_a_habit(self):
-	# 	click.echo("You selected option 7 - delete a habit.")
-	# 	click.pause()
-
-	# 	habit_id = self.prompt_for_valid_integer("Enter the habit ID to delete.")
-	# 	try:
-	# 		deleted_amount = self._controller.delete_a_habit(int(habit_id)) #eventually we might change the deletes? As in, should it return the amount of rows it deleted?
-	# 		click.echo(f"\nDeleted habit with id {habit_id}")
-	# 	except Exception as error:
-	# 		click.echo(click.style(f"Error while deleting a habit: {error}", fg="red", bold=True))
-
-
-
 	def option_5_list_all_goals_with_habits(self):
 		"""
 		Retrieves and displays all goals along with their associated habits.
@@ -431,8 +394,7 @@ class CLI:
 		click.echo(click.style("\n[Option 6] Complete a habit (tick a goal)", fg="cyan", bold=True))
 		click.pause()
 
-		#display current goals and habits to  see the list of possibilities
-		self.option_5_list_all_goals_with_habits() #gotta form this a bit prettier
+		self.option_5_list_all_goals_with_habits()
 
 		try:
 			tickable_habits_and_goals = self._controller.fetch_ready_to_tick_goals_of_habits()
@@ -457,7 +419,6 @@ class CLI:
 		try:
 			result = self._controller.calculate_longest_streak()
 			if result:
-				#we can style it like this also for the rest
 				click.echo(click.style("\nHabit with the longest current streak:", fg="green", bold=True))
 				click.echo(click.style(f"  Habit Name: {result[1]}", fg="white"))
 				click.echo(click.style(f"  Habit ID: {result[0]}", fg="white"))
@@ -559,10 +520,7 @@ class CLI:
 
 			if choice == 1:
 				self.option_1_create_user() 
-				
-			# if choice == 2:
-			# 	self.option_2_delete_user() #foreign key issues atm
-
+			
 			if choice == 2:
 				self.option_2_query_all_user_data()
 
@@ -571,9 +529,6 @@ class CLI:
 
 			if choice == 4:
 				self.option_4_get_all_habits()
-
-			# if choice == 6:
-			# 	self.option_6_delete_a_habit()
 
 			if choice == 5:
 				self.option_5_list_all_goals_with_habits()

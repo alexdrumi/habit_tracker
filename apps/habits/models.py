@@ -2,28 +2,6 @@ from django.db import models
 from apps.users.models import AppUsers
 from django.db.models import UniqueConstraint
 
-# Create your models here.
-
-'''
-CREATE TABLE habits {
-	habit_id INT PRIMARY KEY,
-	habit_name VARCHAR(40),
-	user_id INT UNIQUE,
-	habit_action VARCHAR(80),
-	periodicity_type 
-}
-'''
-# Table habits {
-#   habit_id int [primary key]
-#   habit_name varchar
-#   user_id int
-#   created_at timestamp
-#   habit_action varchar
-#   habit_streak int
-#   habit_periodicity_type varchar  // e.g., 'day', 'week', etc.
-#   habit_periodicity_value int     // e.g., 1 for daily, 7 for weekly
-# }
-
 class ValidPeriodicityTypes(models.TextChoices):
 	DAILY = 'daily'
 	WEEKLY = 'weekly'
@@ -31,20 +9,20 @@ class ValidPeriodicityTypes(models.TextChoices):
 
 class Habits(models.Model):
 	habit_id = models.AutoField(primary_key=True)
-	habit_name = models.CharField(max_length=40, blank=False, null=False, unique=True) #could more habit be created w the same name? maybe if for different users  
+	habit_name = models.CharField(max_length=40, blank=False, null=False, unique=True)
 	habit_user = models.ForeignKey(
 		AppUsers,
-		on_delete=models.CASCADE, #delete the habit if the user is deleted
+		on_delete=models.CASCADE,
 		related_name="user_habits",
-		default=1 #default habituser id
+		default=1
 	)
 	habit_action = models.CharField(max_length=120, blank=False, null=False)
-	habit_streak = models.IntegerField(default=0) #should be 0 at initialization
-	habit_periodicity_type = models.CharField( #no need for complete different class just enum is enough
+	habit_streak = models.IntegerField(default=0)
+	habit_periodicity_type = models.CharField(
 		max_length=7,
 		choices=ValidPeriodicityTypes.choices
 	)
-	habit_periodicity_value = models.PositiveIntegerField(blank=True, null=True) #will be mapped automatically
+	habit_periodicity_value = models.PositiveIntegerField(blank=True, null=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
@@ -54,7 +32,7 @@ class Habits(models.Model):
 		]
 
 	def save(self, *args, **kwargs):
-		if not self.habit_name.strip(): #check for empty name or whitespaces etc
+		if not self.habit_name.strip():
 			raise ValueError("Habit name can not be empty or whitespace.")
 		
 		habit_periodicity_value_mapping = {

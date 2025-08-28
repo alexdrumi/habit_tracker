@@ -134,7 +134,6 @@ class DummyHabitRepository:
 
 
 	def get_goal_of_habit(self, habit_id):
-		#for integration, simulate that id is 1
 		if habit_id not in self.habits:
 			raise HabitNotFoundError(habit_id)
 		return 1

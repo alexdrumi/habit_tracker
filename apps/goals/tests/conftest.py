@@ -1,6 +1,3 @@
-#https://www.geeksforgeeks.org/conftest-in-pytest/
-#https://pytest-with-eric.com/pytest-best-practices/pytest-conftest/#Defining-Pytest-Fixtures-using-conftest-py
-
 import pytest
 from django.db.utils import DataError
 from apps.habits.models import Habits
@@ -11,7 +8,7 @@ from apps.kvi_types.models import KviTypes
 @pytest.fixture
 def setup_roles():
 	'''Fixtures are how we prepare for a certain test, here setup the AppUsersRoles'''
-	AppUsersRoles.objects.all().delete() #clear test results from before
+	AppUsersRoles.objects.all().delete()
 	
 	roles = ['user', 'admin', 'bot']
 	for role in roles:
@@ -23,7 +20,7 @@ def setup_roles():
 @pytest.fixture
 def setup_user(setup_roles):
 	'''Fixture to create a standard user.'''
-	AppUsersRoles.objects.all().delete() #clear test results from before
+	AppUsersRoles.objects.all().delete()
 	test_user_role = AppUsersRoles.objects.create(user_role="user")
 	test_user = AppUsers.objects.create(
 		user_name = "test_user_1",
@@ -55,6 +52,6 @@ def setup_kvi_type():
 	test_kvi_type = KviTypes.objects.create(
 		kvi_type_name = 'mood',
 		kvi_description = "Will track the quality of my mood.",
-		kvi_multiplier = 1.5 #how much will it effect the daily stats. Eg: steps = 1.0, mood = 1.6. Mood would have more weight for calculating how succesful a day was.
+		kvi_multiplier = 1.5
 	)
 	return test_kvi_type

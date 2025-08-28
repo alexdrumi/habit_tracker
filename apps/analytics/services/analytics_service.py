@@ -119,13 +119,10 @@ class AnalyticsService:
 			Exception: For any other unexpected errors in analytics service.
 		"""
 		
-		#get analytics id, if there is none this will raise an error
 		analytics_id = self._repository.get_analytics_id(habit_id)
 
-		#validate based on input
 		self.validate_analytics("update", habit_id=habit_id, analytics_id=analytics_id, times_completed=times_completed, streak_length=streak_length, last_completed_at=last_completed_at)
 		
-		#update analytics
 		updated_rows = self._repository.update_analytics(analytics_id, times_completed, streak_length, last_completed_at)
 		return updated_rows
 		
@@ -147,7 +144,6 @@ class AnalyticsService:
 			IntegrityError: For database integrity-related issues.
 			Exception: For any other unexpected errors in analytics service.
 		"""
-		#should we validate whether habit id exists first?
 		analytics_id = self._repository.get_analytics_id(habit_id)
 		return analytics_id
 

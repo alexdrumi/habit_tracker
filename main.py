@@ -6,13 +6,10 @@ import datetime
 import random
 import argparse
 
-#for correct import path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-#ensure that we can locate the apps 
 sys.path.insert(0, BASE_DIR)
 
-#setuop the config otherwise cli doesnt see the modules
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
@@ -52,7 +49,6 @@ def signal_handler(sig, frame):
 
 
 
-#we ll only pass habitcontroller eventually, just for now pass the associated services
 def seed(habit_controller: HabitController):
 	"""
 	Seeds the database with a test user, several habits, and associated goals.
@@ -98,7 +94,6 @@ def seed(habit_controller: HabitController):
 			current_kvi_value=0.0, 
 			goal_description=goal_description)
 
-	#generate random data in the last 30 days, we could extend this for a longer period
 	now = datetime.datetime.now()
 	thirty_days_ago = now - datetime.timedelta(days = 30)
 
@@ -107,24 +102,22 @@ def seed(habit_controller: HabitController):
 		habit_id = habit["habit_id"]
 
 		current_date = thirty_days_ago
-		goal_id = habit_controller.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
+		goal_id = habit_controller.query_goal_of_a_habit(habit_id=habit_id)
 
 		while current_date <= now:
 			if random.random() < 0.7:
-				# goal_id = goal_service.query_goal_of_a_habit(habit_id=habit_id) #maybe we can write a controller call for this
-				if goal_id and current_date.weekday() != 6:  #not sunday for instance
+				if goal_id and current_date.weekday() != 6:
 					habit_controller.create_progress(
 						goal_id=goal_id[0],
-						current_kvi_value=1.0, #should be +1 each time to be honest, we ll see
+						current_kvi_value=1.0,
 						distance_from_target_kvi_value=0.0,
-						# current_streak= 1, #+=1 compared to prev..
 						goal_name= f"fake_progress{random.random()}",
 						habit_name= f"name:{random.random()}",
 						progress_description="Auto seeded progress",
 						occurence_date=current_date
 					)
 			current_date += datetime.timedelta(days=1)
-		last_progress_streak = habit_controller.get_last_progress_entry(goal_id=goal_id[0]) #streak entry
+		last_progress_streak = habit_controller.get_last_progress_entry(goal_id=goal_id[0])
 		if last_progress_streak:
 			habit_controller.get_current_streak(habit_id=habit_id)[0]
 			updated_streak = last_progress_streak[6]
@@ -154,10 +147,8 @@ def init_parser():
 
 def main():
 
-	#--------PARSE--------
 	args = init_parser()
 
-	#--------INIT---------
 	database = MariadbConnection()
 	user_repository = UserRepository(database)
 	user_service = UserService(user_repository)
@@ -176,11 +167,9 @@ def main():
 	habit_controller = HabitController(habit_tracker_facade=habit_tracker_facade, habit_tracker_orchestrator=habit_tracker_orchestrator)
 	
 
-	#--------SEED---------
 	if args.seed:
 		seed(habit_controller=habit_controller)
 
-	#--------CLI----------
 	cli = CLI(controller=habit_controller)
 	cli.run()
 

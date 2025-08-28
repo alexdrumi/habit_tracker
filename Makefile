@@ -18,7 +18,6 @@ migrate_local:
 	@echo "Applying migrations locally..."
 	@source venv/bin/activate && python manage.py migrate
 
-#clean only containers, images, and networks, preserve volumes
 clean:
 	@echo "Stopping and removing all Docker containers..."
 	@docker stop $$(docker ps -aq) || true
@@ -29,7 +28,6 @@ clean:
 	@docker network prune -f || true
 	@echo "Cleanup complete! Persistent volumes are preserved."
 
-#total cleanup: Removes containers, images, and networks -> dont preserve volumes (erases all prev saved data from mariadb)
 total_clean:
 	@echo "Stopping and removing all Docker containers..."
 	@docker stop $$(docker ps -aq) || true

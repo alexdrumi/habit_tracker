@@ -1,6 +1,4 @@
 from apps.goals.repositories.goal_repository import GoalNotFoundError, GoalRepository, GoalAlreadyExistError, GoalRepositoryError
-# from apps.habits.repositories.habit_repository import HabitNotFoundError, HabitRepository
-# from apps.kvi_types.repositories.kvi_type_repository import KviTypesNotFoundError, KviTypeRepository
 from apps.habits.services.habit_service import HabitNotFoundError, HabitService
 from apps.kvi_types.services.kvi_type_service import KviTypesNotFoundError, KviTypeService
 from mysql.connector.errors import IntegrityError
@@ -29,10 +27,9 @@ def handle_log_service_exceptions(f):
 
 
 class GoalService:
-	def __init__(self, repository: GoalRepository, habit_service: HabitService): #, kvi_service: KviTypeService
-		self._repository = repository
+	def __init__(self, repository: GoalRepository, habit_service: HabitService):
 		self._habit_service = habit_service
-		# self._kvi_service = kvi_service
+
 
 
 	def _validate_goal(self, action, goal_id=None, goal_name=None, habit_id_id=None, target_kvi_value=None, current_kvi_value=None):
@@ -44,9 +41,6 @@ class GoalService:
 
 		if action in ["update", "delete"] and not goal_id:
 			raise ValueError("goal_id is required for updating or deleting a goal.")
-
-		# if action == "create" and not (kvi_type_id_id and habit_id_id):
-		# 	raise ValueError("kvi_type_id_id and habit_id_id is required for creating a goal.")
 
 		if action == "create" and not goal_name:
 			raise ValueError("user_goal_name is required for creating a goal type.")
@@ -133,7 +127,6 @@ class GoalService:
 
 
 
-	#slightly ugly and ambiguous name but will change it.
 	def get_goal_entity_by_goal_id(self, goal_id):
 		"""
 		Retrieves comprehensive goal data (including streak and names) purely by goal id.
@@ -209,7 +202,6 @@ class GoalService:
 
 
 	
-	#NOT SURE WHETHER WE NEED THIS AT THE MOMENT, we will use only to update the current kvi value, later this might be more extensive
 	@handle_log_service_exceptions
 	def update_a_goal(self, goal_id, goal_name=None, target_kvi_value=None, current_kvi_value=None):
 		"""

@@ -2,12 +2,11 @@ from django.db import models
 from apps.habits.models import Habits
 from django.db.models import UniqueConstraint
 
-# Create your models here.
 class Analytics(models.Model):
 	analytics_id = models.AutoField(primary_key=True)
 	habit_id = models.OneToOneField(
 		Habits,
-		on_delete=models.CASCADE, #dont delete analytics just cuz habit is deleted
+		on_delete=models.CASCADE,
 		related_name='habit_analytics',
 		unique=True,
 	)

@@ -2,10 +2,8 @@ from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
 from apps.users.repositories.user_repository import UserRepository, UserNotFoundError
 from apps.users.services.user_service import UserService
-# from django.db import IntegrityError->we use mysql integrity error for duplicates
 from mysql.connector.errors import IntegrityError
 
-#baseclass
 class HabitRepositoryError(Exception):
 	def __init__(self, message="An unexpected error occurred in habit repository."):
 		super().__init__(message)
@@ -44,7 +42,7 @@ def handle_habit_repository_errors(f):
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
 			name = args[0] if len(args) >= 1 else "<unknown>"
-			user_id = args[-1] if len(args) >= 1 else "<unknown>" #shouldn this be len args>2?
+			user_id = args[-1] if len(args) >= 1 else "<unknown>"
 			raise HabitAlreadyExistError(name, user_id) from ierror
 		except HabitRepositoryError as herror:
 			raise herror
@@ -56,9 +54,6 @@ def handle_habit_repository_errors(f):
 
 
 class HabitRepository:
-	#dependency injection, loose coupling
-	#can extend functionalities without modifying existing code
-	#habitrepo only depends on abstract layers such as userservice
 	def __init__(self, database: MariadbConnection, user_repository: UserRepository):
 		self._db = database
 		self._user_repository = user_repository
@@ -110,7 +105,6 @@ class HabitRepository:
 			HabitAlreadyExistError: If a duplicate record is found.
 		"""
 		with self._db._connection.cursor() as cursor:
-			#duplicate check?
 			duplicate_check_query = "SELECT habit_id FROM habits WHERE habit_name = %s AND habit_user_id = %s"
 			cursor.execute(duplicate_check_query, (habit_name, habit_user_id,))
 			existing_habit = cursor.fetchone()
@@ -149,7 +143,6 @@ class HabitRepository:
 			HabitNotFoundError: If the habit does not exist.
 			ValueError: If attempting to update a disallowed field.
 		"""
-		#against sql injection? In the future I have to guard also in other repos.
 		allowed_fields = {
 			"habit_name", "habit_action", "habit_streak",
 			"habit_periodicity_type", "habit_periodicity_value", "habit_user_id"
@@ -167,15 +160,13 @@ class HabitRepository:
 			if not current_value:
 				raise HabitNotFoundError(f"Habit of with id of: {habit_id} is not found.")
 			if current_value[0] == habit_field_value:
-				return 0 #no rows updated but also no error found
+				return 0
 		
-		#This could be SQL injected
-		#UPDATE habits SET habit_streak; DROP TABLE habits; = %s WHERE habit_id = %s
-		#if we insert SET habit_streak; + DROP TABLE habits; = %s
+
 		with self._db._connection.cursor() as cursor:
 			query = "UPDATE habits SET {} = %s WHERE habit_id = %s".format(habit_field_name)
 			cursor.execute(query, (habit_field_value, habit_id,))
-			self._db._connection.commit() #modifies data thus have to commit
+			self._db._connection.commit()
 			return cursor.rowcount
 
 
@@ -250,21 +241,13 @@ class HabitRepository:
 			HabitNotFoundError: If the habit does not exist.
 		"""
 		self._db._connection.autocommit = False
-		#ifautocommit is enabled, each delete statement in the function would be immediately committed to the database before  the next statement.
-		try: #not sure how else to solve this because the decorator already has a try block but we need to reset autocommit
+		try:
 			with self._db._connection.cursor() as cursor:
-				#delete progresses first
 				prorgresses_query = "DELETE FROM progresses WHERE goal_id_id = %s"
 				cursor.execute(prorgresses_query, (goal_id,))
 
-				#delete the related analytics first, cascade only works with ORMS
-				# analytics_query = "DELETE FROM analytics WHERE habit_id_id = %s"
-				# cursor.execute(analytics_query, (habit_id,))
-
-				#delete also goals
 				goals_query = "DELETE FROM goals WHERE habit_id_id = %s"
 				cursor.execute(goals_query, (habit_id,))
-
 
 				query = "DELETE FROM habits WHERE habit_id = %s"
 				cursor.execute(query, (habit_id,))
@@ -272,11 +255,11 @@ class HabitRepository:
 				if cursor.rowcount == 0:
 					raise HabitNotFoundError(habit_id)
 
-				self._db._connection.commit() #if all deletions passed, commit
+				self._db._connection.commit()
 				return cursor.rowcount
 
 		finally:
-			self._db._connection.autocommit = True #allow autocommit again
+			self._db._connection.autocommit = True
 
 
 
@@ -300,11 +283,9 @@ class HabitRepository:
 				set_null_query = f"UPDATE progresses SET goal_id_id = NULL WHERE goal_id_id = %s;"
 				cursor.execute(set_null_query, (goal_id, ))
 
-				#delete the goals for this habit
 				delete_goals_query = "DELETE FROM goals WHERE habit_id_id = %s;"
 				cursor.execute(delete_goals_query, (habit_id,))
 
-				#delete the habit
 				delete_habit_query = "DELETE FROM habits WHERE habit_id = %s;"
 				cursor.execute(delete_habit_query, (habit_id,))
 
@@ -318,7 +299,7 @@ class HabitRepository:
 				self._db._connection.rollback()
 				raise err
 			finally:
-				self._db._connection.autocommit = True #not sure how else can i escape this one
+				self._db._connection.autocommit = True
 
 
 
@@ -340,7 +321,7 @@ class HabitRepository:
 				return []
 			
 			return habits
-		
+
 
 
 	@handle_habit_repository_errors
@@ -363,11 +344,9 @@ class HabitRepository:
 			streak = cursor.fetchall()
 
 			if not streak:
-				# dummy_id_holder = -1 #gotta come up with a better version here eventually
 				raise HabitNotFoundError(habit_id)
 
 			return streak[0]
-
 
 
 
@@ -392,9 +371,10 @@ class HabitRepository:
 				
 			if not habits:
 				dummy_id_holder = -1
-				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
+				raise HabitNotFoundError(dummy_id_holder)
 			
 			return habits
+
 
 
 	@handle_habit_repository_errors
@@ -418,6 +398,6 @@ class HabitRepository:
 				
 			if not goal:
 				dummy_id_holder = -1
-				raise HabitNotFoundError(dummy_id_holder) #dummy id holder
+				raise HabitNotFoundError(dummy_id_holder)
 			
 			return goal

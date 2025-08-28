@@ -34,7 +34,6 @@ def test_create_habit_success(habit_service, mock_habit_repository):
 		 'habit_periodicity_type': "daily",
 		 'habit_user_id': 1,
 	}
-	#set an expected return value upon creation
 	mock_habit_repository.create_a_habit.return_value = expected_result
 	result = habit_service.create_a_habit("test1", "testing 1", "daily", 1)
 	
@@ -70,9 +69,8 @@ def test_create_habit_with_duplicate_should_raise_error(habit_service, mock_habi
 	}
 	mock_habit_repository.create_a_habit.side_effect = [expected_result, HabitAlreadyExistError("test1", 1)]
 	result1 = habit_service.create_a_habit("test1", "testing 1", "daily", 1)
-	assert result1 == expected_result #this succeeds, next one should fail
+	assert result1 == expected_result
 
-	#this should raise a duplicate error
 	with pytest.raises(HabitAlreadyExistError) as exc_info:
 		habit_service.create_a_habit("test1", "testing 1", "daily", 1)
 	assert "Habit 'test1' already exists for user with id: 1" in str(exc_info.value)
@@ -115,7 +113,6 @@ def test_update_habit_streak_success(habit_service, mock_habit_repository):
 	result = habit_service.update_habit_streak(1, 5)
 	mock_habit_repository.validate_a_habit.assert_called_with(1)
 	mock_habit_repository.update_habit_field.assert_called_with(1, 'habit_streak', 5)
-	# print(f"RESULT IS : {result}")
 	assert result == 1
 
 
@@ -133,7 +130,7 @@ def test_update_habit_streak_invalid_value(habit_service):
 	"""
 	with pytest.raises(ValueError) as exc_info:
 		habit_service.update_habit_streak(1, -1)
-	assert "Invalid streak value. It must be a positive integer." in str(exc_info.value) #these messages are raised from the '_validate_habit_input'
+	assert "Invalid streak value. It must be a positive integer." in str(exc_info.value)
 
 
 
