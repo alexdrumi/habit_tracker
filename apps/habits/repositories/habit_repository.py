@@ -41,8 +41,8 @@ def handle_habit_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			name = args[0] if len(args) >= 1 else "<unknown>"
-			user_id = args[-1] if len(args) >= 1 else "<unknown>"
+			name = kwargs.get("habit_name", args[0] if args else "<unknown>")
+			user_id = kwargs.get("habit_user_id", args[-1] if args else "<unknown>")
 			raise HabitAlreadyExistError(name, user_id) from ierror
 		except HabitRepositoryError as herror:
 			raise herror
@@ -105,6 +105,13 @@ class HabitRepository:
 			HabitAlreadyExistError: If a duplicate record is found.
 		"""
 		with self._db._connection.cursor() as cursor:
+			global_name_check_query = "SELECT habit_id, habit_user_id FROM habits WHERE habit_name = %s LIMIT 1"
+			cursor.execute(global_name_check_query, (habit_name,))
+			row = cursor.fetchone()
+			if row and row[1] != habit_user_id:
+				raise HabitAlreadyExistError(habit_name=habit_name, habit_user_id=row[1])
+			
+			
 			duplicate_check_query = "SELECT habit_id FROM habits WHERE habit_name = %s AND habit_user_id = %s"
 			cursor.execute(duplicate_check_query, (habit_name, habit_user_id,))
 			existing_habit = cursor.fetchone()

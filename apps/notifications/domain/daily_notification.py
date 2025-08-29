@@ -22,7 +22,7 @@ class DailyNotificationStrategy(NotificationStrategy):
 		"""
 		streak = progress_data.to_dict().get('streak')
 		if streak != 0:
-			return f"Congratulations, you have completed a daily habit with, your current streak is {streak}"
+			return f"Congratulations, you have completed a daily habit, your current streak is {streak}"
 
 
 

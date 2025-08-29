@@ -73,7 +73,10 @@ class HabitOrchestrator:
 		if goal_subject.is_too_early() == True:
 			now = datetime.now()
 			difference = now - goal_subject._goal_data['last_occurence']
-			waiting_time = timedelta(hours=24) - difference
+			if kvi_increment_amount == 1.0:
+				waiting_time = timedelta(hours=24) - difference
+			else:
+				waiting_time = timedelta(hours=168) - difference
 			click.echo(click.style(f"\nIt is too early to tick this habit. You need to wait {waiting_time} hours before you can tick it again.", fg="red", bold=True))
 			return
 		

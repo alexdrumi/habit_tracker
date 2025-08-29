@@ -20,25 +20,6 @@ def create_mock_goal_service():
 
 
 
-# @pytest.fixture
-# def create_mock_goal_service():
-# 	"""
-# 	Fixture to create a GoalService with mocked repository and habit service.
-# 	Supports both public and underscore attrs used by tests.
-# 	"""
-# 	mock_goal_repo = MagicMock(spec=GoalRepository)
-# 	mock_habit_service = MagicMock(spec=HabitService)
-
-# 	service = GoalService(repository=mock_goal_repo, habit_service=mock_habit_service)
-
-# 	if not hasattr(service, "_repository"):
-# 		service._repository = service.repository
-# 	if not hasattr(service, "_habit_service"):
-# 		service._habit_service = service.habit_service
-
-# 	return service
-
-
 def test_create_goal_success(create_mock_goal_service):
 	"""
 	Test creating a goal with valid inputs.
