@@ -7,10 +7,6 @@ class NotificationStrategy(ABC):
 	notification strategies. Any custom notification strategy should 
 	implement these methods.
 	"""
-	# @abstractmethod
-	# def before_deadline_message(self, goal_subject):
-	# 	pass
-	
 	@abstractmethod
 	def on_completion_message(self, goal_subject):
 		pass

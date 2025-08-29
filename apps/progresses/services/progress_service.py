@@ -34,7 +34,6 @@ class ProgressesService:
 		self._goal_service = goal_service
 
 
-	#this might go to the orchestrator, does too many things at the moment
 	@handle_progresses_service_exceptions
 	def create_progress(self, goal_id, current_kvi_value, distance_from_target_kvi_value,  goal_name, habit_name, current_streak=None, progress_description=None, occurence_date=None):
 		"""
@@ -61,18 +60,18 @@ class ProgressesService:
 			ProgressesRepositoryError: For repository-level progress errors.
 			Exception: For any other unexpected errors.
 		"""
-		validated_goal_id = self._goal_service.validate_goal_id(goal_id) #we could call this from somewhere else, or validate befgore passing it onto the service.
+		validated_goal_id = self._goal_service.validate_goal_id(goal_id)
 		goal_entity = self._goal_service.get_goal_entity_by_goal_id(validated_goal_id)
 		target_kvi = goal_entity['target_kvi']
 		last_progress_entry = self._repository.get_last_progress_entry(goal_id=validated_goal_id)
 		
-		if not last_progress_entry and current_streak == None: #not sure if this will return None
+		if not last_progress_entry and current_streak == None:
 			new_streak = 1
 		elif current_streak is not None:
 			new_streak = current_streak
 		else:
-			last_date = last_progress_entry[3]  #or last_progress_entry["occurence_date"] if dict
-			last_streak = last_progress_entry[6]  #or whichever index is current_streak
+			last_date = last_progress_entry[3]
+			last_streak = last_progress_entry[6]
 			
 			threshold = datetime.timedelta(hours=48) if target_kvi == 1.0 else datetime.timedelta(weeks=2)
 			if (occurence_date - last_date) < threshold:

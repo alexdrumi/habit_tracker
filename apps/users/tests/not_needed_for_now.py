@@ -2,12 +2,10 @@ import pytest
 from django.db.utils import DataError
 from apps.users.models import AppUsers, AppUsersRoles
 
-#https://docs.pytest.org/en/6.2.x/fixture.html
 @pytest.fixture
 def setup_roles():
 	'''Fixtures are how we prepare for a certain test, here setup the AppUsersRoles'''
-	AppUsersRoles.objects.all().delete() #clear test results from before
-	
+	AppUsersRoles.objects.all().delete()
 	roles = ['user', 'admin', 'bot']
 	for role in roles:
 		AppUsersRoles.objects.create(user_role=role)
@@ -17,7 +15,7 @@ def setup_roles():
 @pytest.mark.django_db
 def test_create_valid_user_role(setup_roles):
 	'''Test for creating a valid user'''
-	AppUsersRoles.objects.all().delete() #clear test results from before
+	AppUsersRoles.objects.all().delete()
 
 	user_role = AppUsersRoles.objects.create(user_role="user")
 	user = AppUsers.objects.create(
@@ -45,7 +43,6 @@ def test_create_invalid_user_role(setup_roles):
 @pytest.mark.django_db
 def test_create_too_short_user_name(setup_roles):
 	'''Test for creating a valid user'''
-	# AppUsersRoles.objects.all().delete() #clear test results from before, if we are using get_or_create, this is not needed.
 	user_role, some_bool = AppUsersRoles.objects.get_or_create(user_role="user")
 	too_short_name = "a" * 0
 	with pytest.raises(ValueError):
@@ -62,7 +59,6 @@ def test_create_too_short_user_name(setup_roles):
 @pytest.mark.django_db
 def test_create_too_long_user_name(setup_roles):
 	'''Test for creating a valid user'''
-	# AppUsersRoles.objects.all().delete() #clear test results from before, if we are using get_or_create, this is not needed.
 	user_role, some_bool = AppUsersRoles.objects.get_or_create(user_role="user")
 	too_long_name = "a" * 101
 	with pytest.raises(DataError):
@@ -73,5 +69,3 @@ def test_create_too_long_user_name(setup_roles):
 			user_gender="male",
 		)
 
-
-"""next: test querying users by their role using related_name"""

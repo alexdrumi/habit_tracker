@@ -36,17 +36,17 @@ class AlreadyExistError(UserRepositoryError):
 def handle_user_repository_errors(f):
 	'''A decorator to make exceptions in database errors cleaner.'''
 	def exception_wrapper(self, *args, **kwargs):
-		try: #all functions, create, delete etc wil be wrapped in this try block, not sure how to pass already exist error username or id
+		try:
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
 			user_identifier = args[0] if args else "unknown"
-			raise AlreadyExistError(user_identifier) from ierror #id is args[0]
+			raise AlreadyExistError(user_identifier) from ierror
 		except UserRepositoryError as urerror:
 			raise urerror
 		except Exception as error:
 			self._db._connection.rollback()
-			raise error #anything else here? should b just error
+			raise error
 
 	return exception_wrapper		
 		
@@ -132,7 +132,6 @@ class UserRepository:
 			role = cursor.fetchone()
 			if role:
 				return role[0]
-			#insert the new role.since user_role is the primary key thenreturn it directly
 			query = "INSERT INTO app_users_role(user_role) VALUES (%s);"
 			cursor.execute(query, (user_role,))
 			self._db._connection.commit()
@@ -187,21 +186,19 @@ class UserRepository:
 		"""
 		try:
 			self._db._connection.autocommit = False
-			with self._db._connection.cursor() as cursor: #this closes cursor anyway, https://www.psycopg.org/docs/cursor.html
-				#delete the related habit first
+			with self._db._connection.cursor() as cursor:
 				query_habit = "DELETE FROM habits WHERE habit_user_id = %s";
 				cursor.execute(query_habit, (user_id,))
 
-				#then the user
 				query = "DELETE FROM app_users WHERE user_id = %s"
 				cursor.execute(query, (user_id,))
 
 				if cursor.rowcount == 0:
 					raise UserNotFoundError(user_id)
-				self._db._connection.commit() #if all deletions passed, commit
-				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+				self._db._connection.commit()
+				return cursor.rowcount
 		finally:
-			self._db._connection.autocommit = True #allow autocommit again
+			self._db._connection.autocommit = True
 
 
 
@@ -223,7 +220,6 @@ class UserRepository:
 		Raises:
 			UserNotFoundError: If no user is found with the given user_name.
 		"""
-		#will eventually correct this with dict and list comprehension prob
 		updated_cols = []
 		updated_vals = []
 		if user_name is not None:
@@ -239,7 +235,6 @@ class UserRepository:
 			updated_vals.append(user_gender)
 
 		if user_role is not None:
-			#if you need a role_id, you can call self.create_a_role(user_role) to create it
 			role_id = self.create_a_role(user_role)
 			updated_cols.append("user_role_id = %s")
 			updated_vals.append(role_id)
@@ -249,9 +244,8 @@ class UserRepository:
 
 		set_commands = ', '.join(updated_cols) 
 		
-		#WE SHOULD FIND A WAY WITHOUT STRING FORMATTING (F'') BECAUSE SQL INJECTIONS CAN THROW THIS OFF.
 		query = f"UPDATE app_users SET {set_commands} WHERE user_name = %s"
-		updated_vals.append(user_name) #once more for the where clause
+		updated_vals.append(user_name)
 		
 		with self._db._connection.cursor() as cursor:
 			cursor.execute(query, updated_vals)
@@ -259,7 +253,7 @@ class UserRepository:
 			
 			if cursor.rowcount == 0:
 				raise UserNotFoundError(user_name)
-			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+			return cursor.rowcount
 		
 
 
@@ -310,7 +304,7 @@ class UserRepository:
 
 
 	@handle_user_repository_errors
-	def query_user_and_related_habits(self): #INNER JOIN
+	def query_user_and_related_habits(self):
 		"""
 		Retrieves a joined list of users and their associated habits.
 

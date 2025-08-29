@@ -2,20 +2,14 @@ from apps.users.models import AppUsers
 from apps.database.database_manager import MariadbConnection
 from apps.users.repositories.user_repository import UserRepository, UserNotFoundError
 from apps.users.services.user_service import UserService
-# from django.db import IntegrityError
 from mysql.connector.errors import IntegrityError
 
 class KviTypesNotFoundError(Exception):
 	"""Custom exception raised when a kvi type is not found."""
 	pass
 
-# class HabitCreationError(Exception):
-# 	"""Custom raised when a role cannot be created."""
-# 	pass
 class KviTypeRepository:
-	#dependency injection, loose coupling
-	#can extend functionalities without modifying existing code
-	#habitrepo only depends on abstract layers such as userservice
+
 	def __init__(self, database: MariadbConnection):
 		self._db = database
 	''''
@@ -34,10 +28,9 @@ class KviTypeRepository:
 				
 				if not current_value:
 					raise KviTypesNotFoundError(f"Kvi type with id of: {kvi_type_id} is not found.")
-				# if current_value[0] == kvi_type_id:
-				return current_value[0] #no rows updated but also no error found
+				return current_value[0]
 		except Exception as error:
-			self._db._connection.rollback()  # Required if using manual transactions
+			self._db._connection.rollback()
 			raise
 
 
@@ -53,9 +46,6 @@ class KviTypeRepository:
 		'''
 		try:
 			with self._db._connection.cursor() as cursor:
-				# if not (kvi_multiplier >= 0.0 and kvi_multiplier <= 10.0):
-				# 	raise ValueError("kvi_multiplier must be between 0.0 and 10.0.")
-				
 				query = "INSERT INTO kvi_types(kvi_type_name, kvi_description, kvi_multiplier, kvi_type_user_id) VALUES (%s, %s, %s, %s);"
 				cursor.execute(query, (kvi_type_name, kvi_description, kvi_multiplier, user_id))
 				self._db._connection.commit()
@@ -70,7 +60,7 @@ class KviTypeRepository:
 			if "Duplicate entry" in str(ierror):
 				self._db._connection.rollback()
 				raise IntegrityError(f"Duplicate kvi_type with {kvi_type_name}.")
-			raise #for other integrity errors in mariadb (fk, not null etc)
+			raise
 		except Exception as error:
 			self._db._connection.rollback()
 			raise
@@ -87,7 +77,7 @@ class KviTypeRepository:
 					return result[kvi_type_id_idx]
 				else:
 					raise KviTypesNotFoundError(f"Kvi type with name: {kvi_type_name} and kvi type user id: {kvi_type_user_id} is not found.")
-		except Exception as error: #rolback for unexpected errors
+		except Exception as error:
 			self._db._connection.rollback()
 			raise
 
@@ -97,10 +87,10 @@ class KviTypeRepository:
 			with self._db._connection.cursor() as cursor:
 				query = "UPDATE kvi_types SET kvi_multiplier = %s WHERE kvi_type_id = %s"
 				cursor.execute(query, (kvi_multiplier, kvi_type_id))
-				self._db._connection.commit() #modifies data thus have to commit
+				self._db._connection.commit()
 				
 				if cursor.rowcount == 0:
-					raise KviTypesNotFoundError(f"KVI type with ID {kvi_type_id} not found.")  # Raise if no rows were updated
+					raise KviTypesNotFoundError(f"KVI type with ID {kvi_type_id} not found.")
 				
 				return cursor.rowcount
 			
@@ -122,7 +112,7 @@ class KviTypeRepository:
 
 				if cursor.rowcount == 0:
 					raise KviTypesNotFoundError(f"Kvi type with id {kvi_type_id} is not found.")
-				return cursor.rowcount #nr of rows effected in DELETE SQL, this could also be just a bool but x>0 will act anyway as bool
+				return cursor.rowcount
 		
 		except Exception as error:
 				self._db._connection.rollback()

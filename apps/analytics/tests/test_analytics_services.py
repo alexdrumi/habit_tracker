@@ -245,17 +245,14 @@ def test_get_and_delete_analytics_flow(analytics_service, mock_analytics_repo):
 	mock_analytics_repo.get_analytics_id.return_value = 7
 	mock_analytics_repo.delete_analytics.return_value = 1
 
-	#get
 	a_id = analytics_service.get_analytics_id(habit_id=123)
 	assert a_id == 7
 	mock_analytics_repo.get_analytics_id.assert_called_once_with(123)
 
-	#delete via habit_id
 	deleted = analytics_service.delete_analytics(habit_id=123)
 	mock_analytics_repo.delete_analytics.assert_called_with(7)
 	assert deleted == 1
 
-	#delete explicit
 	mock_analytics_repo.delete_analytics.reset_mock()
 	deleted2 = analytics_service.delete_analytics(analytics_id=99)
 	mock_analytics_repo.delete_analytics.assert_called_once_with(99)

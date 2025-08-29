@@ -1,4 +1,3 @@
-# apps/goals/domain/factories.py
 from apps.goals.domain.goal_subject import GoalSubject
 from apps.goals.repositories.goal_repository import GoalRepository
 

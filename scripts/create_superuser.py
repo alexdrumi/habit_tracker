@@ -5,8 +5,7 @@ import sys
 
 sys.path.append('/app')
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings') #if we import this from another folder we gotta do smth else as well.
-django.setup()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 from django.contrib.auth.models import User
 
@@ -19,7 +18,6 @@ def create_superuser(username, email, password):
 
 
 if __name__ == '__main__':
-    #env variables?
     env = environ.Env()
     environ.Env.read_env()
     username = env('MARIADB_USER')

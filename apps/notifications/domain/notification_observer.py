@@ -1,4 +1,3 @@
-# from apps.notifications.domain.notification_strategy import NotificationStrategy
 from apps.goals.domain.goal_subject import GoalSubject
 from apps.progresses.domain.progress_dto import ProgressHistoryDTO
 from apps.notifications.domain.daily_notification import DailyNotificationStrategy
@@ -11,12 +10,12 @@ class NotificationObserver:
 	progress is updated. Based on the notification strategy (daily or weekly), 
 	it generates relevant messages.
 	"""
-	def __init__(self, notification_stragety: str): #notification_service
+	def __init__(self, notification_stragety: str):
 		self._notification_stragety = notification_stragety
 
 
 
-	def update(self, progress_data: dict): #shouldnt we just pass around data instead of this object? too heavy
+	def update(self, progress_data: dict):
 		"""
 		Sends out notifications based on the updated progress data and the 
 		chosen notification strategy.
@@ -31,16 +30,14 @@ class NotificationObserver:
 			"weekly": WeeklyNotificationStrategy
 		}
 
-		#does this get the updated kvi or since its updating in sync, its still the old one before update?
 		progress_dto = ProgressHistoryDTO(
 				progress_data['last_occurence'], 
 				progress_data['target_kvi'] - progress_data['current_kvi'],
 				progress_data['streak'],
 			)
 
-		strategy = strategy_mapping[self._notification_stragety]() #this will return DailyNotificationStrategy
+		strategy = strategy_mapping[self._notification_stragety]()
 
-		#some messages, will extend this in the future
 		completion_msg = strategy.on_completion_message(progress_data=progress_dto)
 		failure_msg = strategy.on_expired_message(progress_data=progress_dto)
 

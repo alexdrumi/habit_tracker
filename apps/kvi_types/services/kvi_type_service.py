@@ -33,13 +33,10 @@ class KviTypeService:
 
 	def create_a_kvi_type(self, kvi_type_name, kvi_description, kvi_multiplier, user_name):
 		try:
-			#validate
 			self._validate_kvi("create", kvi_type_name, kvi_multiplier, user_name)
 
-			#get user id
 			user_id = self._user_service.get_user_id(user_name)
 			
-			#create kvi typer
 			kvi_type_entity = self._repository.create_a_kvi_type(kvi_type_name, kvi_description, kvi_multiplier, user_id)
 			return kvi_type_entity
 
@@ -57,10 +54,8 @@ class KviTypeService:
 
 	def update_a_kvi_type(self, kvi_multiplier, kvi_type_name=None, kvi_type_user_id=None, kvi_type_id=None):
 			try:
-				#validate
 				self._validate_kvi("update", kvi_type_id=kvi_type_id, kvi_multiplier=kvi_multiplier)
 				
-				#update
 				updated_rows = self._repository.update_kvi_type(kvi_type_id, kvi_multiplier)
 				return updated_rows
 	
@@ -88,10 +83,8 @@ class KviTypeService:
 
 	def delete_a_kvi_type(self, kvi_type_id):
 		try:
-			#validate
 			self._validate_kvi("delete", kvi_type_id=kvi_type_id)
 
-			#delete
 			self._repository.delete_a_kvi_type(kvi_type_id)
 
 		except KviTypesNotFoundError as kerror:

@@ -4,8 +4,7 @@ class SingletonMeta(type):
 	'''
 	_instances = {}
 
-	def __call__(cls, *args, **kwargs): #https://www.geeksforgeeks.org/__call__-in-python/ ->functions like init but for metaclasses
-		#cls checks if this class (cls) already, exist in instances
+	def __call__(cls, *args, **kwargs):
 		if cls not in cls._instances:
 			instance = super().__call__(*args, **kwargs)
 			cls._instances[cls] = instance

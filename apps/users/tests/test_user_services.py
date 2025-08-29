@@ -2,7 +2,6 @@ import pytest
 from   unittest.mock import MagicMock
 from   apps.users.services.user_service import UserService, RoleCreationError, UserNotFoundError
 
-#MOCK REPO SETUP
 @pytest.fixture
 def mock_repository():
 	"""
@@ -31,8 +30,6 @@ def user_service(mock_repository):
 	return UserService(repository=mock_repository)
 
 
-#--------USER CRUD TESTS--------
-#CREATE
 def test_create_a_user(user_service, mock_repository):
 	"""
     Test creating a user with valid inputs.
@@ -89,7 +86,6 @@ def test_create_a_user_with_role_error(user_service, mock_repository):
 
 
 
-#UPDATE
 def test_update_a_user_success(user_service, mock_repository):
 	"""
 	Test updating an existing user with valid fields.
@@ -165,7 +161,6 @@ def test_update_a_user_not_found(user_service, mock_repository):
 
 
 
-#DELETE
 def test_delete_user_success(user_service, mock_repository):
 	"""
 	Test deleting a user with a valid user_id.
@@ -215,7 +210,6 @@ def test_delete_user_not_found(user_service, mock_repository):
 
 
 
-#--------UTILS--------
 def test_get_user_id_success(user_service, mock_repository):
 	"""
 	Test retrieving user_id by valid username.

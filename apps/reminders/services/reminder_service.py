@@ -60,7 +60,7 @@ class ReminderService:
 		Returns:
 			bool: True if the goal can be ticked, otherwise False.
 		"""
-		if len(last_occurence) == 0: #if it was never ticked, its tickable, time to track it
+		if len(last_occurence) == 0:
 			return True
 		
 		current_time = datetime.now()
@@ -79,10 +79,8 @@ class ReminderService:
 		Raises:
 			Exception: For any unexpected errors during the reminder process.
 		"""
-		#get all goals via goal service
 		all_goals = self._goal_service.query_all_goals()
 		goals_which_need_reminders = []
-		#go through all goals
 		for goal in all_goals:
 			last_occurence = self._goal_service.get_last_progress_entry_associated_with_goal_id(goal['goal_id'])
 			daily_or_weekly = 1 if goal	['target_kvi_value'] == 1.0 else 7
@@ -91,7 +89,6 @@ class ReminderService:
 			if is_tickable == False:
 				continue
 
-			#if is_tickable is not None:
 			goals_which_need_reminders.append({
 				'goal_id': goal['goal_id'],
 				'goal_name': goal['goal_name'],
@@ -120,5 +117,5 @@ class ReminderService:
 		for goal in goals_which_need_reminders:
 			if goal['print_message'] == None:
 				goal['print_message'] = "Habit was never ticked, you are free to tick it for the first time!"
-			print(f"\033[91m- Goal name: {goal['goal_name']}, Goal ID: {goal['goal_id']}, Habit ID: {goal['habit_id']}\033[0m")  # Red text
+			print(f"\033[91m- Goal name: {goal['goal_name']}, Goal ID: {goal['goal_id']}, Habit ID: {goal['habit_id']}\033[0m")
  

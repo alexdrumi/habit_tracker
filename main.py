@@ -159,8 +159,8 @@ def main():
 	progress_repository = ProgressesRepository(database, goal_repository)
 	progress_service = ProgressesService(progress_repository, goal_service)
 	reminder_service = ReminderService(goal_service=goal_service)
-	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository) #not sure if we need habit stuff here
-	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service, progress_service=progress_service) #not sure if we need habit stuff here
+	analytics_repository = AnalyticsRepository(database=database, habit_repository=habit_repository)
+	analytics_service = AnalyticsService(repository=analytics_repository, habit_service=habit_service, progress_service=progress_service)
 	
 	habit_tracker_facade = HabitTrackerFacadeImpl(user_service=user_service, habit_service=habit_service, goal_service=goal_service, progress_service=progress_service, reminder_service=reminder_service, analytics_service=analytics_service)
 	habit_tracker_orchestrator = HabitOrchestrator(habit_tracker_facade=habit_tracker_facade)

@@ -23,7 +23,7 @@ def handle_analytics_repository_errors(f):
 			self._db._connection.rollback()
 			raise ierror
 		except AnalyticsRepositoryError as arerror:
-			raise arerror #just re raise it
+			raise arerror
 		except Exception as error:
 			self._db._connection.rollback()
 			raise error
@@ -149,10 +149,10 @@ class AnalyticsRepository:
 			cursor.execute(query, updated_values)
 			self._db._connection.commit()
 
-			if cursor.rowcount == 0: #shouldnt be the case by now
+			if cursor.rowcount == 0:
 				raise AnalyticsNotFoundError(f"Analytics for habit with analyticsid: {analytics_id} is not found.")
 
-			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+			return cursor.rowcount
 
 
 
@@ -179,10 +179,10 @@ class AnalyticsRepository:
 			self._db._connection.commit()
 			if cursor.rowcount == 0:
 				raise AnalyticsNotFoundError(f"Analytics for habit with id analyticsid: {analytics_id} is not found.")
-			return cursor.rowcount #nr of rows effected in UPDATE SQL (ideally 1)
+			return cursor.rowcount
 
 
-  
+
 	@handle_analytics_repository_errors
 	def calculate_longest_streak(self):
 		"""
@@ -202,7 +202,6 @@ class AnalyticsRepository:
 			
 			cursor.execute(query)
 			result = cursor.fetchall()
-			#no commit needed, nothing changed
 			if result:
 				return result[0]
 			else:
@@ -295,7 +294,7 @@ class AnalyticsRepository:
 			raise AnalyticsNotFoundError(f"Longest streak for habit with id: {habit_id} is not found.")
 
 
-	# #https://mariadb.com/kb/en/json_arrayagg/ , otherwise I would have split calls in the layers above. This is gonna be a simple loop
+
 	@handle_analytics_repository_errors
 	def get_habit_streaks(self):
 		"""
@@ -313,11 +312,11 @@ class AnalyticsRepository:
 			Exception: For any other unexpected exceptions.
 		"""
 		with self._db._connection.cursor() as cursor:
-			query = "SELECT habit_streak FROM habits;" #no need for WHERE habit_streak > 0;
+			query = "SELECT habit_streak FROM habits;"
 			cursor.execute(query, )
 
 			result = cursor.fetchall()
 			if result:
 				return result
-			else: #what happens if there are no streaks? it shouldnt throw an error. Result will be an empty list or tuple if no habits are found no?
+			else:
 				raise AnalyticsNotFoundError(f"There are no streaks to be found.")

@@ -105,7 +105,6 @@ class HabitService:
 			habit_streak=0
 		)
 
-		#UnboundLocalError?=
 		habit_entity = self._repository.create_a_habit(
 			habit_name=habit_name, 
 			habit_action=habit_action, 

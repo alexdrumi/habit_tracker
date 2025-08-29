@@ -64,11 +64,3 @@ def test_for_valid_current_kvi(setup_goal, valid_kvi_val, error_raised):
 			progress_description = "Current progress for test_goal"
 		)
 	assert test_progress.current_kvi_value == valid_kvi_val
-
-
-'''
-TODO:
-#max len progress descrioption
-#relationship tests with goal
-
-'''

@@ -6,7 +6,7 @@ from apps.utils.singleton_meta import SingletonMeta
 from apps.utils.env_manager import EnvManager
 
 class MariadbConnection(metaclass=SingletonMeta):
-	'''Singleton class for managing database connections.'''
+	"""Singleton class for managing database connections."""
 	def __init__(self):
 
 		config = EnvManager()

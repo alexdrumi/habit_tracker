@@ -20,7 +20,6 @@ class DailyNotificationStrategy(NotificationStrategy):
 		Returns:
 			str or None: A congratulations message if the streak is non-zero. Otherwise None.
 		"""
-		# if progress_data._distance_from_goal == 0:
 		streak = progress_data.to_dict().get('streak')
 		if streak != 0:
 			return f"Congratulations, you have completed a daily habit with, your current streak is {streak}"

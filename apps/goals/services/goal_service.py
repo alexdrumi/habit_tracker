@@ -29,7 +29,7 @@ def handle_log_service_exceptions(f):
 class GoalService:
 	def __init__(self, repository: GoalRepository, habit_service: HabitService):
 		self._habit_service = habit_service
-
+		self._repository = repository
 
 
 	def _validate_goal(self, action, goal_id=None, goal_name=None, habit_id_id=None, target_kvi_value=None, current_kvi_value=None):

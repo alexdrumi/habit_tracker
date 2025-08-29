@@ -8,7 +8,7 @@ class ProgressObserver:
 		self._progress_service = progress_service
 
 
-	def update(self, progress_data: dict): #we can just pass a dict to update methods in general.
+	def update(self, progress_data: dict):
 		"""
 		Should be updated when the goals current kvi value changes.
 		Creates a progress entry in the database.
@@ -24,7 +24,6 @@ class ProgressObserver:
 		current_streak = progress_data['streak']
 		distance_from_goal = target_val - current_val
 
-		#should we handle this via the service? No validation logic is applied here.		
 		self._progress_service.create_progress(
 			goal_id=goal_id,
 			current_kvi_value=current_val,
@@ -33,7 +32,4 @@ class ProgressObserver:
 			progress_description="some autogen entry",
 			goal_name=goal_name,
 			habit_name=habit_name
-			#progress will need streak as well
-			#here we could add the habit name and goal name
-
 		)

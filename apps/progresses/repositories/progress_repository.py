@@ -4,7 +4,6 @@ from apps.goals.repositories.goal_repository import GoalRepository
 from apps.database.database_manager import MariadbConnection
 from mysql.connector.errors import IntegrityError
 
-#baseclass
 class ProgressesRepositoryError(Exception):
 	def __init__(self, message="An unexpected error occurred in progress repository."):
 		super().__init__(message)
@@ -13,7 +12,7 @@ class ProgressesRepositoryError(Exception):
 class ProgressNotFoundError(ProgressesRepositoryError):
 	"""Raised when a progress is not found."""
 	def __init__(self, goal_id_or_progress_id):
-		message = f"Progress not found with goal/progress ID: {goal_id_or_progress_id}" #for now..
+		message = f"Progress not found with goal/progress ID: {goal_id_or_progress_id}"
 		super().__init__(message)
 
 
@@ -30,7 +29,6 @@ def handle_goal_repository_errors(f):
 			return f(self, *args, **kwargs)
 		except IntegrityError as ierror:
 			self._db._connection.rollback()
-			#in create_a_habit the first argument is habit_name and last is habit_user_id?
 			raise ProgressAlreadyExistError(progress_name=args[0], progress_id=args[-1]) from ierror
 		except ProgressesRepositoryError as herror:
 			raise herror
@@ -153,12 +151,12 @@ class ProgressesRepository:
 			result = cursor.fetchall()
 
 			if result:
-				return result[-1] #last entry
+				return result[-1]
 			else:
 				return None
-		
 
-	#https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursordict.html
+
+
 	@handle_goal_repository_errors
 	def get_progress(self, progress_id):
 		"""
@@ -180,9 +178,10 @@ class ProgressesRepository:
 			progress_entry = cursor.fetchone()
 
 			if not progress_entry:
-				return None #instead of raising errors, here it is expected that sometimes there wil be no entry
+				return None
 
 			return progress_entry
+
 
 
 	@handle_goal_repository_errors

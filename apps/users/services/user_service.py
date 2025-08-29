@@ -4,7 +4,7 @@ import logging
 def handle_log_service_exceptions(f):
 	'''A decorator to log exceptions in the service layer.'''
 	def exception_wrapper(self, *args, **kwargs):
-		try: #all functions, create, delete etc wil be wrapped in this try block, not sure how to pass already exist error username or id
+		try:
 			return f(self, *args, **kwargs)
 		except ValueError as verror:
 			logging.error(f"Service error in user_service from function {f.__name__}: {verror}")
@@ -19,7 +19,7 @@ def handle_log_service_exceptions(f):
 
 
 class UserService:
-	def __init__(self, repository: UserRepository): #inject user repo here
+	def __init__(self, repository: UserRepository):
 		self._repository = repository
 
 
@@ -39,15 +39,12 @@ class UserService:
 		Raises:
 			ValueError: If any field fails validation checks.
 		"""
-		if is_update == False: #if its create
+		if is_update == False:
 			if user_age is None or user_gender is None or user_role is None:
 				raise ValueError("Fields needed for creating a user: user_age, user_gender, user_role.")
 
 		if not isinstance(user_name, str) or not user_name.strip():
 			raise ValueError("Invalid user name.")
-
-		# if not isinstance(user_password, str) or not user_password.strip():
-		# 	raise ValueError("Invalid user password.")
 
 		if user_age is not None:
 			if not isinstance(user_age, int) or not (0 < user_age < 120):
@@ -128,7 +125,7 @@ class UserService:
 			ValueError: If user_id is invalid.
 			UserNotFoundError: If the user doesn't exist.
 		"""
-		if not isinstance(user_id, int) or user_id <=0: #max users? do we need to check both with linters and isintance?
+		if not isinstance(user_id, int) or user_id <=0:
 			raise ValueError("Invalid user id.")
 
 		deleted_count = self._repository.delete_a_user(user_id)
@@ -206,7 +203,7 @@ class UserService:
 
 
 	@handle_log_service_exceptions
-	def query_all_user_data(self) -> list: #maybe list of dicts?
+	def query_all_user_data(self) -> list:
 		"""
 		Retrieves all users from the database (user_id, user_name).
 

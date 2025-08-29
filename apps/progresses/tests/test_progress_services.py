@@ -59,7 +59,7 @@ def test_create_progress_success(progresses_service, mock_progress_repo, mock_go
 		- repository.create_progress is called with current_streak == 1.
 		- The returned entity is forwarded.
 	"""
-	mock_goal_service.validate_goal_id.return_value = 10  #goal_id
+	mock_goal_service.validate_goal_id.return_value = 10
 	mock_progress_repo.create_progress.return_value = {   
 		'progress_id': 1,  	
 		'goal_id': 10,	
@@ -106,7 +106,7 @@ def test_create_progress_with_explicit_streak(progresses_service, mock_progress_
 		current_streak=5
 	)
 
-	_, kwargs = mock_progress_repo.create_progress.call_args #this works as well
+	_, kwargs = mock_progress_repo.create_progress.call_args
 	assert kwargs['current_streak'] == 5
 	assert result == expected
 
@@ -190,7 +190,7 @@ def test_delete_progress_with_no_id_passed(progresses_service, mock_progress_rep
 		- The returned count is forwarded.
 	"""
 	mock_progress_repo.get_progress_id.return_value = 23
-	mock_progress_repo.delete_progress.return_value = 1  #deleted amount of rows, 1 expected
+	mock_progress_repo.delete_progress.return_value = 1
 
 	rows_deleted = progresses_service.delete_progress(goal_id=10) 
 	assert rows_deleted == 1  

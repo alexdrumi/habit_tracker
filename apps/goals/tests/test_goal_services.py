@@ -20,6 +20,25 @@ def create_mock_goal_service():
 
 
 
+# @pytest.fixture
+# def create_mock_goal_service():
+# 	"""
+# 	Fixture to create a GoalService with mocked repository and habit service.
+# 	Supports both public and underscore attrs used by tests.
+# 	"""
+# 	mock_goal_repo = MagicMock(spec=GoalRepository)
+# 	mock_habit_service = MagicMock(spec=HabitService)
+
+# 	service = GoalService(repository=mock_goal_repo, habit_service=mock_habit_service)
+
+# 	if not hasattr(service, "_repository"):
+# 		service._repository = service.repository
+# 	if not hasattr(service, "_habit_service"):
+# 		service._habit_service = service.habit_service
+
+# 	return service
+
+
 def test_create_goal_success(create_mock_goal_service):
 	"""
 	Test creating a goal with valid inputs.
@@ -128,20 +147,20 @@ def test_get_goal_entity_not_found(create_mock_goal_service):
 
 
 def test_create_goal_calls_validate_and_repository(create_mock_goal_service):
-    """
-    Test that create_a_goal first validates habit then calls repository.
+	"""
+	Test that create_a_goal first validates habit then calls repository.
 
-    Given:
-        - habit_service.validate_a_habit returns valid ID.
-    When:
-        - service.create_a_goal is called.
-    Then:
-        - validate_a_habit is called before repository.create_a_goal.
-    """
-    create_mock_goal_service._habit_service.validate_a_habit.return_value = 7
-    create_mock_goal_service._repository.create_a_goal.return_value = {"goal_id": 7}
+	Given:
+		- habit_service.validate_a_habit returns valid ID.
+	When:
+		- service.create_a_goal is called.
+	Then:
+		- validate_a_habit is called before repository.create_a_goal.
+	"""
+	create_mock_goal_service._habit_service.validate_a_habit.return_value = 7
+	create_mock_goal_service._repository.create_a_goal.return_value = {"goal_id": 7}
 
-    create_mock_goal_service.create_a_goal("G1", 7, 2.0, 0.5, "desc")
+	create_mock_goal_service.create_a_goal("G1", 7, 2.0, 0.5, "desc")
 
-    create_mock_goal_service._habit_service.validate_a_habit.assert_called_once_with(7)
-    create_mock_goal_service._repository.create_a_goal.assert_called_once_with("G1", 7, 2.0, 0.5, "desc")
+	create_mock_goal_service._habit_service.validate_a_habit.assert_called_once_with(7)
+	create_mock_goal_service._repository.create_a_goal.assert_called_once_with("G1", 7, 2.0, 0.5, "desc")

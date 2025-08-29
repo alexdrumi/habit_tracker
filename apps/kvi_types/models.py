@@ -13,7 +13,7 @@ CREATE TABLE kvi_types {
 '''
 class KviTypes(models.Model):
 	kvi_type_id = models.AutoField(primary_key=True)
-	kvi_type_name = models.CharField(max_length=20, blank=False, null=False, unique=True) #if kvi name exist, we should 
+	kvi_type_name = models.CharField(max_length=20, blank=False, null=False, unique=True)
 	kvi_description = models.CharField(max_length=40, blank=True, null=True)
 	kvi_multiplier = models.FloatField(
 		validators=[MinValueValidator(0.0), MaxValueValidator(10.0)]
@@ -23,7 +23,7 @@ class KviTypes(models.Model):
 		AppUsers,
 		on_delete=models.CASCADE,
 		related_name = "user_kvi_type",
-		null=True #temporarily nullable
+		null=True
 	)
 
 	class Meta:
@@ -33,7 +33,6 @@ class KviTypes(models.Model):
 		]
 
 	def save(self, *args, **kwargs):
-		#could write a clean function but for now this works, empty name wont get saved and throws exception
 		if not self.kvi_type_name.strip():
 			raise ValueError("KVI type name can not be empty, please enter maximum 20 characters long type.\nExample: mood, steps.")
 		super().save(*args, **kwargs)
